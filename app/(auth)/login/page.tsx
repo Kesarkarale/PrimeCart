@@ -1,438 +1,38 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 import {
+  Mail,
+  Lock,
   Eye,
   EyeOff,
   ArrowRight,
-  Crown,
-  ShieldCheck,
-  Truck,
+  ShoppingBag,
   Sparkles,
 } from "lucide-react";
 
-import {
-  FaGoogle,
-  FaGithub,
-} from "react-icons/fa";
-
-import { toast } from "sonner";
+import { FcGoogle } from "react-icons/fc";
+import { useState } from "react";
 import { motion } from "framer-motion";
 
-import { createClient } from "@/lib/supabase/client";
 
+export default function LoginPage() {
 
-export default function LoginPage(){
 
-const router = useRouter();
+const [showPassword,setShowPassword] = useState(false);
 
-const supabase = createClient();
 
-
-const [email,setEmail] = useState("");
-
-const [password,setPassword] = useState("");
-
-const [show,setShow] = useState(false);
-
-const [loading,setLoading] = useState(false);
-
-
-
-
-
-async function login(){
-
-try{
-
-setLoading(true);
-
-
-const {error} =
-await supabase.auth.signInWithPassword({
-
-email,
-password
-
-});
-
-
-if(error){
-
-toast.error(error.message);
-return;
-
-}
-
-
-toast.success("Welcome back to PrimeCart 👑");
-
-router.push("/dashboard");
-
-
-}
-
-catch{
-
-toast.error("Login failed");
-
-}
-
-finally{
-
-setLoading(false);
-
-}
-
-}
-
-
-
-
-
-async function googleLogin(){
-
-const {error} =
-await supabase.auth.signInWithOAuth({
-
-provider:"google",
-
-options:{
-redirectTo:
-`${window.location.origin}/auth/callback`
-}
-
-});
-
-
-if(error)
-toast.error(error.message);
-
-}
-
-
-
-
-
-async function githubLogin(){
-
-const {error} =
-await supabase.auth.signInWithOAuth({
-
-provider:"github",
-
-options:{
-redirectTo:
-`${window.location.origin}/auth/callback`
-}
-
-});
-
-
-if(error)
-toast.error(error.message);
-
-}
-
-
-
-
-
-return(
+return (
 
 <main className="
 min-h-screen
-flex
-bg-[#F8FAFC]
-">
-
-
-{/* LEFT BRAND AREA */}
-
-
-<section className="
-hidden
-lg:flex
-w-1/2
-
-bg-[#111827]
-
-text-white
-
-relative
-
-overflow-hidden
-
-items-center
-
-px-16
-">
-
-
-<div className="
-absolute
-
-w-[450px]
-
-h-[450px]
-
-bg-[#D4AF37]
-
-opacity-20
-
-blur-[150px]
-
-rounded-full
-
-top-[-150px]
-
-left-[-150px]
-"/>
-
-
-
-
-<motion.div
-
-initial={{
-opacity:0,
-x:-50
-}}
-
-animate={{
-opacity:1,
-x:0
-}}
-
-transition={{
-duration:.7
-}}
-
-className="
-relative
-z-10
-"
-
->
-
-
-
-<div className="
+bg-[#f8f5ef]
 flex
 items-center
-gap-3
-mb-8
-">
-
-
-<div className="
-p-3
-rounded-xl
-
-bg-[#D4AF37]
-
-text-[#111827]
-">
-
-<Crown/>
-
-</div>
-
-
-<h2 className="
-text-2xl
-
-font-black
-
-tracking-[5px]
-">
-
-PRIME CART
-
-</h2>
-
-
-</div>
-
-
-
-
-
-<h1 className="
-text-6xl
-
-font-black
-
-leading-tight
-">
-
-
-Premium Shopping
-
-<br/>
-
-
-<span className="
-text-[#D4AF37]
-">
-
-Experience
-
-</span>
-
-
-</h1>
-
-
-
-
-<p className="
-mt-6
-
-text-gray-300
-
-text-lg
-
-max-w-lg
-">
-
-A modern ecommerce platform designed
-for premium products, secure payments
-and smarter shopping.
-
-</p>
-
-
-
-
-
-
-<div className="
-mt-10
-
-space-y-5
-">
-
-
-<div className="
-flex
-items-center
-gap-4
-">
-
-<div className="
-bg-white/10
-
-p-3
-
-rounded-xl
-">
-
-<ShieldCheck
-className="text-[#D4AF37]"
-/>
-
-</div>
-
-Secure Payments
-
-</div>
-
-
-
-
-
-<div className="
-flex
-items-center
-gap-4
-">
-
-<div className="
-bg-white/10
-
-p-3
-
-rounded-xl
-">
-
-<Truck
-className="text-[#D4AF37]"
-/>
-
-</div>
-
-Fast Delivery
-
-</div>
-
-
-
-
-
-<div className="
-flex
-items-center
-gap-4
-">
-
-<div className="
-bg-white/10
-
-p-3
-
-rounded-xl
-">
-
-<Sparkles
-className="text-[#D4AF37]"
-/>
-
-</div>
-
-AI Smart Recommendations
-
-</div>
-
-
-</div>
-
-
-
-
-
-</motion.div>
-
-
-</section>
-
-
-
-
-
-
-
-
-
-{/* LOGIN SECTION */}
-
-
-<section className="
-w-full
-
-lg:w-1/2
-
-flex
-
-items-center
-
 justify-center
-
-px-6
-
+px-4
+py-10
 ">
 
 
@@ -454,90 +54,71 @@ duration:.6
 
 className="
 w-full
-
-max-w-md
-
+max-w-6xl
+grid
+lg:grid-cols-2
+overflow-hidden
+rounded-[35px]
 bg-white
-
-rounded-3xl
-
-p-10
-
-shadow-[0_25px_70px_rgba(17,24,39,0.12)]
-
+shadow-2xl
 border
-
-border-gray-100
+border-[#e7d7b5]
 "
+
 
 >
 
 
-
-<h1 className="
-text-4xl
-
-font-black
-
-text-[#1F2937]
-">
-
-Welcome Back
-
-</h1>
+{/* LEFT PREMIUM BRAND SECTION */}
 
 
-
-<p className="
-mt-3
-
-text-gray-500
-
-mb-8
-">
-
-Login to your PrimeCart account
-
-</p>
-
-
-
-
-
-
-<input
-
-value={email}
-
-onChange={
-e=>setEmail(e.target.value)
-}
-
-placeholder="Email Address"
+<section
 
 className="
-w-full
-
-px-5
-
-py-4
-
-rounded-2xl
-
-border
-
-border-gray-200
-
-outline-none
-
-focus:border-[#D4AF37]
-
-mb-4
-
+hidden
+lg:flex
+flex-col
+justify-center
+p-14
+relative
+overflow-hidden
+bg-gradient-to-br
+from-[#0b0b0b]
+via-[#17130c]
+to-[#2a1f0b]
+text-white
 "
 
-/>
 
+>
+
+
+{/* GOLD EFFECT */}
+
+
+<div className="
+absolute
+w-80
+h-80
+bg-yellow-500/20
+blur-3xl
+rounded-full
+top-[-100px]
+right-[-100px]
+"/>
+
+
+
+<div className="
+absolute
+w-72
+h-72
+bg-yellow-600/20
+blur-3xl
+rounded-full
+bottom-[-100px]
+left-[-100px]
+"/>
 
 
 
@@ -545,220 +126,49 @@ mb-4
 
 <div className="
 relative
+z-10
 ">
-
-
-<input
-
-value={password}
-
-onChange={
-e=>setPassword(e.target.value)
-}
-
-type={
-show?
-"text":
-"password"
-}
-
-placeholder="Password"
-
-className="
-w-full
-
-px-5
-
-py-4
-
-pr-14
-
-rounded-2xl
-
-border
-
-border-gray-200
-
-outline-none
-
-focus:border-[#D4AF37]
-"
-
-/>
-
-
-
-<button
-
-onClick={()=>setShow(!show)}
-
-className="
-absolute
-
-right-5
-
-top-4
-
-text-gray-400
-"
-
->
-
-{
-
-show?
-
-<EyeOff size={20}/>
-
-:
-
-<Eye size={20}/>
-
-}
-
-
-</button>
-
-
-</div>
-
-
-
-
 
 
 <div className="
 flex
-justify-end
-mt-3
+items-center
+gap-4
+mb-12
 ">
 
 
-<Link
-
-href="/forgot-password"
-
-className="
-text-sm
-
-text-[#D4AF37]
-
-font-semibold
+<div className="
+p-4
+rounded-2xl
+bg-gradient-to-br
+from-yellow-300
+to-yellow-600
+text-black
+shadow-lg
 ">
 
-Forgot Password?
 
-</Link>
+<ShoppingBag size={35}/>
 
 
 </div>
 
 
 
-
-
-
-
-<button
-
-onClick={login}
-
-disabled={loading}
-
-className="
-mt-7
-
-w-full
-
-py-4
-
-rounded-2xl
-
-bg-[#111827]
-
-text-white
-
+<h1 className="
+text-4xl
 font-bold
-
-flex
-
-justify-center
-
-items-center
-
-gap-3
-
-hover:bg-[#D4AF37]
-
-hover:text-black
-
-transition
-"
-
-
->
-
-
-{
-
-loading ?
-
-"Logging in..."
-
-:
-
-<>
-Login
-<ArrowRight size={20}/>
-</>
-
-}
-
-
-</button>
-
-
-
-
-
-
-<div className="
-flex
-
-items-center
-
-gap-3
-
-my-7
+tracking-wide
 ">
 
-<div className="
-h-px
 
-bg-gray-200
-
-flex-1
-"/>
+PrimeCart
 
 
-<span className="
-text-gray-400
-
-text-sm
-">
-
-OR
-
-</span>
+</h1>
 
 
-<div className="
-h-px
-
-bg-gray-200
-
-flex-1
-"/>
 
 </div>
 
@@ -766,135 +176,200 @@ flex-1
 
 
 
+<h2 className="
+text-5xl
+font-extrabold
+leading-tight
+">
 
 
-
-<button
-
-onClick={googleLogin}
-
-className="
-w-full
-
-py-4
-
-rounded-2xl
-
-border
-
-border-gray-200
-
-font-semibold
-
-flex
-
-items-center
-
-justify-center
-
-gap-3
-
-hover:border-[#D4AF37]
-
-transition
-"
-
->
-
-<FaGoogle/>
-
-Continue with Google
-
-</button>
+Premium Shopping.
 
 
+<br/>
+
+Royal Experience.
 
 
-
-
-
-<button
-
-onClick={githubLogin}
-
-className="
-mt-3
-
-w-full
-
-py-4
-
-rounded-2xl
-
-bg-[#111827]
-
-text-white
-
-font-semibold
-
-flex
-
-items-center
-
-justify-center
-
-gap-3
-"
-
->
-
-<FaGithub/>
-
-Continue with Github
-
-</button>
-
-
-
+</h2>
 
 
 
 
 <p className="
-text-center
-
-mt-8
-
-text-gray-500
+mt-6
+text-gray-300
+text-lg
+leading-relaxed
+max-w-md
 ">
 
-Don't have account?
 
-
-<Link
-
-href="/register"
-
-className="
-ml-2
-
-text-[#D4AF37]
-
-font-bold
-">
-
-Create Account
-
-</Link>
+Discover luxury products,
+exclusive collections and
+a smarter way to shop online.
 
 
 </p>
 
 
 
-</motion.div>
+
+
+
+<div className="
+mt-10
+flex
+items-center
+gap-3
+text-yellow-400
+">
+
+
+<Sparkles size={22}/>
+
+
+<span className="
+font-medium
+">
+
+
+Trusted by thousands of shoppers
+
+
+</span>
+
+
+</div>
+
+
+
+
+
+
+
+<div className="
+mt-10
+grid
+grid-cols-3
+gap-4
+">
+
+
+<div className="
+bg-white/10
+backdrop-blur-md
+rounded-2xl
+p-4
+border
+border-white/10
+">
+
+
+<h3 className="
+text-2xl
+font-bold
+text-yellow-400
+">
+
+10K+
+
+</h3>
+
+
+<p className="
+text-sm
+text-gray-300
+">
+
+Products
+
+</p>
+
+
+</div>
+
+
+
+
+
+<div className="
+bg-white/10
+backdrop-blur-md
+rounded-2xl
+p-4
+border
+border-white/10
+">
+
+
+<h3 className="
+text-2xl
+font-bold
+text-yellow-400
+">
+
+50K+
+
+</h3>
+
+
+<p className="
+text-sm
+text-gray-300
+">
+
+Customers
+
+</p>
+
+
+</div>
+
+
+
+
+
+<div className="
+bg-white/10
+backdrop-blur-md
+rounded-2xl
+p-4
+border
+border-white/10
+">
+
+
+<h3 className="
+text-2xl
+font-bold
+text-yellow-400
+">
+
+24/7
+
+</h3>
+
+
+<p className="
+text-sm
+text-gray-300
+">
+
+Support
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
 
 
 </section>
-
-
-</main>
-
-)
-
-}
+  
