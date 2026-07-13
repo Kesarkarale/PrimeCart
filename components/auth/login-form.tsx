@@ -8,7 +8,6 @@ import {
   Eye,
   EyeOff,
   ShoppingBag,
-  Github,
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -689,7 +688,9 @@ hover:scale-[1.02]
 >
 
 
-<Github size={20}/>
+<span className="text-xl">
+🐙
+</span>
 
 
 Continue with Github
