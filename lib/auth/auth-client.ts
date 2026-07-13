@@ -1,111 +1,11 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
 
 import { createClient } from "@/lib/supabase/client";
 
 
-// Forgot Password
 
-export async function resetPasswordRequest(
-email:string
-){
-
-const supabase=createClient();
-
-
-const {
-error
-}=await supabase.auth.resetPasswordForEmail(
-
-email,
-
-{
-
-redirectTo:
-`${window.location.origin}/reset-password`
-
-}
-
-);
-
-
-return {
-
-error
-
-};
-
-}
-
-
-
-
-// Update Password
-
-export async function updatePassword(
-password:string
-){
-
-const supabase=createClient();
-
-
-const {
-
-error
-
-}=await supabase.auth.updateUser({
-
-password
-
-});
-
-
-return {
-
-error
-
-};
-
-}
 // Register User
-export async function signUpUser(
-email:string,
-password:string,
-name:string
-){
-
-const supabase=createClient();
-
-
-const {
-data,
-error
-}=await supabase.auth.signUp({
-
-email,
-
-password,
-
-options:{
-
-data:{
-
-name
-
-}
-
-}
-
-});
-
-
-return {
-data,
-error
-};
-
-}
 
 export async function signUpUser(
 email:string,
@@ -210,6 +110,7 @@ provider:"google",
 options:{
 
 redirectTo:
+
 `${window.location.origin}/auth/callback`
 
 }
@@ -238,11 +139,92 @@ provider:"github",
 options:{
 
 redirectTo:
+
 `${window.location.origin}/auth/callback`
 
 }
 
 });
+
+
+}
+
+
+
+
+
+// Forgot Password
+
+export async function resetPasswordRequest(
+
+email:string
+
+){
+
+
+const supabase=createClient();
+
+
+const {
+
+error
+
+}=await supabase.auth.resetPasswordForEmail(
+
+email,
+
+{
+
+redirectTo:
+
+`${window.location.origin}/reset-password`
+
+}
+
+);
+
+
+return {
+
+error
+
+};
+
+
+}
+
+
+
+
+
+// Update Password
+
+export async function updatePassword(
+
+password:string
+
+){
+
+
+const supabase=createClient();
+
+
+const {
+
+error
+
+}=await supabase.auth.updateUser({
+
+password
+
+});
+
+
+return {
+
+error
+
+};
 
 
 }
@@ -268,7 +250,7 @@ return await supabase.auth.signOut();
 
 
 
-// Get Current User
+// Current User
 
 export async function getCurrentUser(){
 
