@@ -4,6 +4,43 @@ import { createClient } from "@/lib/supabase/client";
 
 
 // Register User
+export async function signUpUser(
+email:string,
+password:string,
+name:string
+){
+
+const supabase=createClient();
+
+
+const {
+data,
+error
+}=await supabase.auth.signUp({
+
+email,
+
+password,
+
+options:{
+
+data:{
+
+name
+
+}
+
+}
+
+});
+
+
+return {
+data,
+error
+};
+
+}
 
 export async function signUpUser(
 email:string,
