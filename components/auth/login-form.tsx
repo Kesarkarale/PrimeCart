@@ -5,6 +5,8 @@ import { useState } from "react";
 
 import { useRouter } from "next/navigation";
 
+import { Github } from "lucide-react";
+
 import { Eye, EyeOff, ShoppingBag } from "lucide-react";
 
 import { toast } from "sonner";
@@ -56,7 +58,8 @@ export default function LoginForm(){
 
 
 const router=useRouter();
-
+ 
+const [socialLoading,setSocialLoading]=useState(false);
 
 const [showPassword,setShowPassword]=useState(false);
 
@@ -150,7 +153,82 @@ setLoading(false);
 
 }
 
+async function googleLogin(){
 
+try{
+
+setSocialLoading(true);
+
+const {error}=await signInWithGoogle();
+
+
+if(error){
+
+toast.error(error.message);
+
+return;
+
+}
+
+
+}
+
+catch{
+
+toast.error(
+"Google login failed"
+);
+
+}
+
+finally{
+
+setSocialLoading(false);
+
+}
+
+}
+
+
+
+
+
+async function githubLogin(){
+
+try{
+
+setSocialLoading(true);
+
+
+const {error}=await signInWithGithub();
+
+
+if(error){
+
+toast.error(error.message);
+
+return;
+
+}
+
+
+}
+
+catch{
+
+toast.error(
+"Github login failed"
+);
+
+}
+
+finally{
+
+setSocialLoading(false);
+
+}
+
+}
 
 
 
