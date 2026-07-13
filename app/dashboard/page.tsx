@@ -1,115 +1,92 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 import {
-  Search,
-  ShoppingCart,
-  Heart,
+  LayoutDashboard,
+  ShoppingBag,
   Package,
-  User,
-  MapPin,
-  CreditCard,
-  Settings,
-  LogOut,
-  Gift,
+  Users,
+  DollarSign,
+  TrendingUp,
   Star,
+  Truck,
   Menu,
-  X
+  Bell,
+  Search,
+  Plus,
+  ArrowUpRight
 } from "lucide-react";
 
-import { useRouter } from "next/navigation";
-
-import { toast } from "sonner";
-
-import { createClient } from "@/lib/supabase/client";
+import { motion } from "framer-motion";
+import { useState } from "react";
 
 
 
 export default function Dashboard(){
 
 
-const router = useRouter();
-
-const supabase = createClient();
-
-
-const [user,setUser]=useState<any>(null);
-
-const [menu,setMenu]=useState(false);
+const [open,setOpen]=useState(false);
 
 
 
+const stats=[
 
+{
+title:"Total Revenue",
+value:"₹12,45,800",
+icon:DollarSign,
+growth:"+18%"
+},
 
-useEffect(()=>{
+{
+title:"Total Orders",
+value:"8,942",
+icon:ShoppingBag,
+growth:"+12%"
+},
 
+{
+title:"Products",
+value:"1,240",
+icon:Package,
+growth:"+9%"
+},
 
-async function loadUser(){
-
-
-const {data}=await supabase.auth.getUser();
-
-
-if(!data.user){
-
-router.push("/login");
-
-return;
-
+{
+title:"Customers",
+value:"5,680",
+icon:Users,
+growth:"+15%"
 }
 
+];
 
-setUser(data.user);
 
 
+const orders=[
+
+{
+id:"#PC1024",
+customer:"Rahul Sharma",
+product:"iPhone 16 Pro",
+amount:"₹1,29,999",
+status:"Delivered"
+},
+
+{
+id:"#PC1025",
+customer:"Sneha Patil",
+product:"MacBook Air",
+amount:"₹99,999",
+status:"Processing"
+},
+
+{
+id:"#PC1026",
+customer:"Amit Joshi",
+product:"AirPods Pro",
+amount:"₹24,999",
+status:"Shipped"
 }
-
-
-loadUser();
-
-
-},[]);
-
-
-
-
-
-
-async function logout(){
-
-
-await supabase.auth.signOut();
-
-toast.success("Logout successful");
-
-router.push("/login");
-
-
-}
-
-
-
-
-
-
-
-const menuItems=[
-
-["My Profile",User],
-
-["My Orders",Package],
-
-["Wishlist",Heart],
-
-["My Cart",ShoppingCart],
-
-["Addresses",MapPin],
-
-["Payments",CreditCard],
-
-["Settings",Settings]
-
 
 ];
 
@@ -117,234 +94,14 @@ const menuItems=[
 
 
 
-
-
-const products=[
-
-{
-name:"iPhone 16 Pro",
-price:"₹1,29,999",
-rating:"4.9",
-emoji:"📱"
-},
-
-{
-name:"MacBook Air M4",
-price:"₹99,999",
-rating:"4.8",
-emoji:"💻"
-},
-
-{
-name:"Apple Watch",
-price:"₹45,000",
-rating:"4.7",
-emoji:"⌚"
-},
-
-{
-name:"Premium Sneakers",
-price:"₹6,999",
-rating:"4.6",
-emoji:"👟"
-}
-
-
-];
-
-
-
-
-
-
-
-return(
+return (
 
 <main className="
 min-h-screen
-bg-gray-100
-text-gray-900
-">
-
-
-
-
-
-
-{/* HEADER */}
-
-
-<header className="
-bg-white
-shadow-sm
-sticky
-top-0
-z-50
-">
-
-
-<div className="
-max-w-7xl
-mx-auto
-px-5
-py-4
+bg-[#050505]
+text-white
 flex
-items-center
-justify-between
 ">
-
-
-
-<div className="
-flex
-items-center
-gap-3
-">
-
-
-<button
-
-onClick={()=>setMenu(!menu)}
-
-className="
-md:hidden
-"
-
->
-
-{
-menu?
-<X/>
-:
-<Menu/>
-}
-
-</button>
-
-
-
-
-
-<div className="
-bg-[#D4AF37]
-p-3
-rounded-xl
-text-black
-">
-
-
-<ShoppingCart/>
-
-</div>
-
-
-
-<h1 className="
-text-2xl
-font-bold
-">
-
-
-Prime<span className="
-text-[#D4AF37]
-">
-
-Cart
-
-</span>
-
-
-</h1>
-
-
-</div>
-
-
-
-
-
-
-
-
-<div className="
-hidden
-md:flex
-items-center
-bg-gray-100
-rounded-xl
-px-4
-py-3
-w-[450px]
-gap-3
-">
-
-
-<Search size={20}/>
-
-
-<input
-
-placeholder="Search products, brands and more"
-
-className="
-bg-transparent
-outline-none
-w-full
-"
-
-/>
-
-
-</div>
-
-
-
-
-
-
-<div className="
-flex
-gap-5
-items-center
-">
-
-
-<Heart/>
-
-<ShoppingCart/>
-
-
-<User/>
-
-</div>
-
-
-
-
-</div>
-
-
-
-</header>
-
-
-
-
-
-
-
-
-
-<div className="
-max-w-7xl
-mx-auto
-px-5
-py-8
-flex
-gap-6
-">
-
-
 
 
 
@@ -355,65 +112,63 @@ gap-6
 
 
 <aside className={`
-
 fixed
 md:static
-top-20
+top-0
 left-0
+h-screen
 w-72
-bg-white
-rounded-2xl
+bg-black/80
+backdrop-blur-xl
+border-r
+border-white/10
 p-6
-shadow-sm
-h-fit
-z-40
-
-${menu?
-"block":
-"hidden md:block"}
-
+z-50
+transition
+${open?"translate-x-0":"-translate-x-full md:translate-x-0"}
 `}>
+
+
+
+<h1 className="
+text-3xl
+font-bold
+mb-10
+">
+
+Prime
+<span className="
+text-[#D4AF37]
+">
+
+Cart
+
+</span>
+
+</h1>
+
 
 
 
 
 <div className="
-mb-6
+space-y-3
 ">
-
-
-<h2 className="
-font-bold
-text-xl
-">
-
-Hello 👋
-
-</h2>
-
-
-<p className="
-text-gray-500
-text-sm
-">
-
-{user?.email}
-
-</p>
-
-
-</div>
-
-
-
 
 
 {
+[
 
-menuItems.map(([name,Icon]:any)=>(
+["Dashboard",LayoutDashboard],
+["Products",Package],
+["Orders",ShoppingBag],
+["Customers",Users],
+["Analytics",TrendingUp]
+
+].map(([name,Icon]:any)=>(
 
 
-<button
+<div
 
 key={name}
 
@@ -421,55 +176,34 @@ className="
 flex
 items-center
 gap-4
-w-full
 p-3
 rounded-xl
-hover:bg-yellow-50
+hover:bg-[#D4AF37]/20
 hover:text-[#D4AF37]
+cursor-pointer
 transition
 "
-
 
 >
 
 
-<Icon size={20}/>
+<Icon size={22}/>
 
 {name}
 
-
-</button>
+</div>
 
 
 ))
-
 
 }
 
 
 
+</div>
 
 
 
-<button
-
-onClick={logout}
-
-className="
-mt-6
-flex
-items-center
-gap-3
-text-red-500
-"
-
->
-
-<LogOut/>
-
-Logout
-
-</button>
 
 
 
@@ -482,264 +216,112 @@ Logout
 
 
 
+{/* MAIN */}
 
-{/* CONTENT */}
 
 
 <section className="
 flex-1
+p-5
+md:p-8
 ">
 
 
 
 
 
+
+{/* TOP BAR */}
+
+
+
+<div className="
+flex
+justify-between
+items-center
+mb-8
+">
+
+
+<button
+
+onClick={()=>setOpen(!open)}
+
+className="
+md:hidden
+"
+
+>
+
+<Menu/>
+
+</button>
+
+
+
+
+<div>
 
 <h1 className="
 text-3xl
 font-bold
-mb-6
 ">
 
-My Dashboard
+Dashboard
 
 </h1>
 
 
-
-
-
-
-
-
-
-{/* QUICK CARDS */}
-
-
-
-<div className="
-grid
-grid-cols-2
-md:grid-cols-4
-gap-5
-">
-
-
-
-<div className="
-bg-white
-rounded-2xl
-p-5
-shadow-sm
-">
-
-<Package
-className="text-[#D4AF37]"
-/>
-
 <p className="
-mt-3
+text-gray-400
 ">
 
-Orders
+Welcome back, Admin 👑
 
 </p>
 
-<h2 className="
-text-2xl
-font-bold
-">
-
-12
-
-</h2>
-
 
 </div>
 
 
 
-
-
-<div className="
-bg-white
-rounded-2xl
-p-5
-shadow-sm
-">
-
-<Heart
-className="text-red-500"
-/>
-
-
-<p className="mt-3">
-Wishlist
-</p>
-
-
-<h2 className="text-2xl font-bold">
-
-8
-
-</h2>
-
-
-</div>
-
-
-
-
-
-
-
-<div className="
-bg-white
-rounded-2xl
-p-5
-shadow-sm
-">
-
-<Gift
-className="text-[#D4AF37]"
-/>
-
-
-<p className="mt-3">
-Coupons
-</p>
-
-
-<h2 className="text-2xl font-bold">
-
-25
-
-</h2>
-
-
-</div>
-
-
-
-
-
-
-
-
-<div className="
-bg-white
-rounded-2xl
-p-5
-shadow-sm
-">
-
-
-<CreditCard
-className="text-green-500"
-/>
-
-
-<p className="mt-3">
-Wallet
-</p>
-
-
-<h2 className="text-2xl font-bold">
-
-₹5000
-
-</h2>
-
-
-
-</div>
-
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-
-
-{/* ORDER */}
-
-
-
-<div className="
-mt-8
-bg-white
-rounded-2xl
-p-6
-shadow-sm
-">
-
-
-<h2 className="
-text-xl
-font-bold
-mb-5
-">
-
-Recent Orders
-
-</h2>
 
 
 
 <div className="
 flex
-justify-between
-border-b
-py-4
+gap-4
+items-center
 ">
-
-
-<span>
-iPhone 16 Pro
-</span>
-
-
-<span className="
-text-green-600
-">
-
-Delivered
-
-</span>
-
-
-</div>
-
 
 
 <div className="
-flex
-justify-between
-py-4
+hidden
+md:flex
+bg-white/10
+px-4
+py-2
+rounded-xl
+gap-2
 ">
 
-<span>
 
-MacBook Air
+<Search size={18}/>
 
-</span>
+Search
+
+</div>
 
 
-<span className="
-text-orange-500
-">
 
-Shipping
+<Bell
 
-</span>
+className="
+text-[#D4AF37]
+"
+
+/>
+
 
 
 </div>
@@ -755,48 +337,44 @@ Shipping
 
 
 
-{/* PRODUCTS */}
 
-
-
-<h2 className="
-text-2xl
-font-bold
-mt-10
-mb-5
-">
-
-Recommended For You
-
-</h2>
-
-
+{/* STATS */}
 
 
 
 <div className="
 grid
-md:grid-cols-4
-gap-5
+sm:grid-cols-2
+xl:grid-cols-4
+gap-6
 ">
 
 
 {
 
-products.map(product=>(
+stats.map((item)=>{
 
 
-<div
+const Icon=item.icon;
 
-key={product.name}
+
+return (
+
+<motion.div
+
+whileHover={{
+y:-8
+}}
+
+key={item.title}
 
 className="
-bg-white
-rounded-2xl
-p-5
-shadow-sm
-hover:shadow-lg
-transition
+bg-white/10
+backdrop-blur-xl
+border
+border-white/10
+rounded-3xl
+p-6
 "
 
 
@@ -804,70 +382,255 @@ transition
 
 
 <div className="
-text-6xl
-text-center
+flex
+justify-between
 ">
 
-{product.emoji}
+
+<div className="
+bg-[#D4AF37]
+text-black
+p-3
+rounded-xl
+">
+
+
+<Icon/>
 
 </div>
 
 
-<h3 className="
-font-bold
-mt-4
+<span className="
+text-green-400
+text-sm
 ">
 
-{product.name}
+{item.growth}
+
+</span>
+
+
+</div>
+
+
+
+<h3 className="
+text-gray-400
+mt-5
+">
+
+{item.title}
 
 </h3>
 
 
-<div className="
-flex
-items-center
-gap-1
-text-yellow-500
-mt-2
-">
-
-<Star size={16}/>
-
-{product.rating}
-
-</div>
-
-
-<p className="
+<h2 className="
+text-3xl
 font-bold
 mt-2
 ">
 
-{product.price}
+{item.value}
 
-</p>
+</h2>
 
 
-<button className="
-mt-4
-w-full
-bg-[#D4AF37]
-py-2
-rounded-xl
-font-semibold
+
+</motion.div>
+
+)
+
+})
+
+}
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* CONTENT GRID */}
+
+
+
+<div className="
+grid
+lg:grid-cols-3
+gap-6
+mt-8
 ">
 
-Add Cart
-
-</button>
 
 
+
+
+
+{/* SALES CHART MOCK */}
+
+
+
+<div className="
+lg:col-span-2
+bg-white/10
+border
+border-white/10
+rounded-3xl
+p-6
+">
+
+
+<div className="
+flex
+justify-between
+">
+
+<h2 className="
+text-xl
+font-bold
+">
+
+Sales Analytics
+
+</h2>
+
+
+<TrendingUp className="
+text-[#D4AF37]
+"/>
+
+
+</div>
+
+
+
+
+<div className="
+h-56
+flex
+items-end
+gap-5
+mt-8
+">
+
+
+{
+[40,70,50,90,65,100,80].map((h,i)=>(
+
+
+<div
+
+key={i}
+
+className="
+bg-gradient-to-t
+from-[#D4AF37]
+to-yellow-200
+rounded-t-xl
+flex-1
+"
+
+style={{
+
+height:`${h}%`
+
+}}
+
+>
 
 </div>
 
 
 ))
 
+}
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* INVENTORY */}
+
+
+
+<div className="
+bg-white/10
+border
+border-white/10
+rounded-3xl
+p-6
+">
+
+
+<h2 className="
+font-bold
+text-xl
+mb-5
+">
+
+Inventory
+
+</h2>
+
+
+
+<div className="
+space-y-5
+">
+
+
+{
+
+[
+
+["iPhone 16 Pro","25"],
+["MacBook Air","12"],
+["AirPods Pro","45"]
+
+].map((p)=>(
+
+
+<div className="
+flex
+justify-between
+"
+
+key={p[0]}
+
+>
+
+
+<span>{p[0]}</span>
+
+<span className="
+text-[#D4AF37]
+">
+
+{p[1]} left
+
+</span>
+
+
+</div>
+
+
+))
 
 }
 
@@ -877,14 +640,197 @@ Add Cart
 
 
 
+</div>
 
 
-</section>
 
 
 
 
 </div>
+
+
+
+
+
+
+
+
+
+{/* ORDERS */}
+
+
+
+<div className="
+mt-8
+bg-white/10
+border
+border-white/10
+rounded-3xl
+p-6
+overflow-x-auto
+">
+
+
+<div className="
+flex
+justify-between
+mb-6
+">
+
+
+<h2 className="
+text-xl
+font-bold
+">
+
+Recent Orders
+
+</h2>
+
+
+
+<button className="
+bg-[#D4AF37]
+text-black
+px-4
+py-2
+rounded-xl
+flex
+gap-2
+items-center
+">
+
+
+<Plus size={18}/>
+
+Add Product
+
+</button>
+
+
+</div>
+
+
+
+
+
+<table className="
+w-full
+text-left
+">
+
+
+<thead className="
+text-gray-400
+">
+
+<tr>
+
+<th className="p-3">ID</th>
+
+<th>Customer</th>
+
+<th>Product</th>
+
+<th>Amount</th>
+
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+
+
+
+<tbody>
+
+{
+
+orders.map(order=>(
+
+
+<tr
+
+key={order.id}
+
+className="
+border-t
+border-white/10
+"
+
+
+>
+
+
+<td className="p-3">
+
+{order.id}
+
+</td>
+
+
+<td>
+
+{order.customer}
+
+</td>
+
+
+<td>
+
+{order.product}
+
+</td>
+
+
+<td>
+
+{order.amount}
+
+</td>
+
+
+<td className="
+text-[#D4AF37]
+">
+
+{order.status}
+
+</td>
+
+
+
+</tr>
+
+
+))
+
+
+}
+
+
+</tbody>
+
+
+
+</table>
+
+
+
+
+</div>
+
+
+
+
+
+
+
+</section>
+
+
 
 
 
