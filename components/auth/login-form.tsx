@@ -1,240 +1,272 @@
 "use client";
 
-
 import { useState } from "react";
-
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { Github } from "lucide-react";
-
-import { Eye, EyeOff, ShoppingBag } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  ShoppingBag,
+  Github,
+} from "lucide-react";
 
 import { toast } from "sonner";
 
 import {
-useForm
+  useForm
 } from "react-hook-form";
 
-
 import {
-zodResolver
+  zodResolver
 } from "@hookform/resolvers/zod";
 
-
 import {
-z
+  z
 } from "zod";
 
 
 import {
-signInUser
+  signInUser,
+  signInWithGoogle,
+  signInWithGithub,
 } from "@/lib/auth/auth-client";
 
 
 
-const schema=z.object({
+const loginSchema = z.object({
 
-email:z
-.string()
-.email("Enter valid email"),
+  email: z
+    .string()
+    .email("Please enter valid email"),
 
 
-password:z
-.string()
-.min(
-6,
-"Password must be minimum 6 characters"
-)
+  password: z
+    .string()
+    .min(6,"Password must be at least 6 characters"),
 
 });
 
 
 
-type LoginData=z.infer<typeof schema>;
+type LoginFormData = z.infer<typeof loginSchema>;
 
 
 
 export default function LoginForm(){
 
 
-const router=useRouter();
- 
-const [socialLoading,setSocialLoading]=useState(false);
+  const router = useRouter();
 
-const [showPassword,setShowPassword]=useState(false);
 
+  const [showPassword,setShowPassword] = useState(false);
 
-const [loading,setLoading]=useState(false);
 
+  const [loading,setLoading] = useState(false);
 
 
-const {
+  const [socialLoading,setSocialLoading] = useState(false);
 
-register,
 
-handleSubmit,
 
-formState:{
-errors
 
-}
+  const {
 
-}=useForm<LoginData>({
+    register,
 
-resolver:zodResolver(schema)
+    handleSubmit,
 
-});
+    formState:{
+      errors
 
+    }
 
+  } = useForm<LoginFormData>({
 
+    resolver:zodResolver(loginSchema)
 
+  });
 
-async function onSubmit(data:LoginData){
 
 
-try{
 
 
-setLoading(true);
 
+  async function onSubmit(
+    data:LoginFormData
+  ){
 
 
-const {
-error
-}=await signInUser(
+    try{
 
-data.email,
 
-data.password
+      setLoading(true);
 
-);
 
 
+      const {
 
-if(error){
+        error
 
-toast.error(
-error.message
-);
+      } = await signInUser(
 
-return;
+        data.email,
 
-}
+        data.password
 
+      );
 
 
-toast.success(
-"Welcome back to PrimeCart"
-);
 
+      if(error){
 
+        toast.error(error.message);
 
-router.push("/dashboard");
+        return;
 
+      }
 
-}
 
 
-catch{
 
-toast.error(
-"Something went wrong"
-);
+      toast.success(
+        "Welcome back to PrimeCart"
+      );
 
 
-}
 
-finally{
+      router.push("/dashboard");
 
-setLoading(false);
 
-}
 
+    }
 
-}
+    catch(error){
 
-async function googleLogin(){
+      toast.error(
+        "Login failed. Try again."
+      );
 
-try{
+    }
 
-setSocialLoading(true);
+    finally{
 
-const {error}=await signInWithGoogle();
+      setLoading(false);
 
+    }
 
-if(error){
 
-toast.error(error.message);
+  }
 
-return;
 
-}
 
 
-}
 
-catch{
+  async function handleGoogleLogin(){
 
-toast.error(
-"Google login failed"
-);
 
-}
+    try{
 
-finally{
 
-setSocialLoading(false);
+      setSocialLoading(true);
 
-}
 
-}
+      const {
 
+        error
 
+      } = await signInWithGoogle();
 
 
 
-async function githubLogin(){
+      if(error){
 
-try{
+        toast.error(error.message);
 
-setSocialLoading(true);
+      }
 
 
-const {error}=await signInWithGithub();
+    }
 
+    catch{
 
-if(error){
+      toast.error(
+        "Google login failed"
+      );
 
-toast.error(error.message);
+    }
 
-return;
+    finally{
 
-}
+      setSocialLoading(false);
 
+    }
 
-}
 
-catch{
+  }
 
-toast.error(
-"Github login failed"
-);
 
-}
 
-finally{
 
-setSocialLoading(false);
 
-}
 
-}
+
+  async function handleGithubLogin(){
+
+
+    try{
+
+
+      setSocialLoading(true);
+
+
+      const {
+
+        error
+
+      } = await signInWithGithub();
+
+
+
+      if(error){
+
+        toast.error(error.message);
+
+      }
+
+
+    }
+
+    catch{
+
+      toast.error(
+        "Github login failed"
+      );
+
+    }
+
+    finally{
+
+      setSocialLoading(false);
+
+    }
+
+
+  }
+
+
+
+
+
 
 
 
 return (
 
-<div className="w-full max-w-md">
+<div className="
+w-full
+max-w-md
+">
 
 
 <div className="
@@ -249,7 +281,12 @@ text-white
 ">
 
 
-<div className="flex justify-center mb-6">
+
+<div className="
+flex
+justify-center
+mb-6
+">
 
 
 <div className="
@@ -259,13 +296,14 @@ p-4
 rounded-2xl
 ">
 
-<ShoppingBag size={32}/>
+<ShoppingBag size={34}/>
+
+</div>
 
 
 </div>
 
 
-</div>
 
 
 
@@ -278,6 +316,8 @@ text-center
 Welcome Back
 
 </h1>
+
+
 
 
 <p className="
@@ -295,10 +335,21 @@ Login to your PrimeCart account
 
 
 
+
+
 <form
-onSubmit={handleSubmit(onSubmit)}
-className="space-y-5"
+
+onSubmit={
+handleSubmit(onSubmit)
+}
+
+className="
+space-y-5
+"
+
 >
+
+
 
 
 
@@ -307,9 +358,11 @@ className="space-y-5"
 
 <input
 
-{...register("email")}
+type="email"
 
 placeholder="Email Address"
+
+{...register("email")}
 
 className="
 w-full
@@ -324,14 +377,23 @@ focus:ring-2
 focus:ring-white
 "
 
-/>
+ />
+
 
 
 {
 errors.email &&
-<p className="text-red-400 text-sm mt-1">
+
+<p className="
+text-red-400
+text-sm
+mt-1
+">
+
 {errors.email.message}
+
 </p>
+
 }
 
 
@@ -342,12 +404,16 @@ errors.email &&
 
 
 
-<div className="relative">
+
+
+
+<div className="
+relative
+">
 
 
 <input
 
-{...register("password")}
 
 type={
 showPassword
@@ -357,7 +423,13 @@ showPassword
 "password"
 }
 
+
 placeholder="Password"
+
+
+{...register("password")}
+
+
 
 className="
 w-full
@@ -367,13 +439,14 @@ border
 border-white/20
 px-4
 py-3
+pr-12
 outline-none
 focus:ring-2
 focus:ring-white
-pr-12
 "
 
 />
+
 
 
 
@@ -387,34 +460,83 @@ className="
 absolute
 right-4
 top-3
+text-gray-300
 "
 
 >
 
 
 {
+
 showPassword
+
 ?
+
 <EyeOff size={20}/>
+
 :
+
 <Eye size={20}/>
+
 }
+
 
 
 </button>
 
 
 
+
 {
 errors.password &&
-<p className="text-red-400 text-sm mt-1">
+
+<p className="
+text-red-400
+text-sm
+mt-1
+">
+
 {errors.password.message}
+
 </p>
+
 }
 
 
 
 </div>
+
+
+
+
+
+
+<div className="
+flex
+justify-end
+">
+
+
+<Link
+
+href="/forgot-password"
+
+className="
+text-sm
+text-gray-300
+hover:text-white
+"
+
+>
+
+Forgot Password?
+
+</Link>
+
+
+</div>
+
+
 
 
 
@@ -428,26 +550,30 @@ className="
 w-full
 bg-white
 text-black
-font-semibold
 rounded-xl
 py-3
-hover:scale-[1.02]
+font-semibold
 transition
+hover:scale-[1.02]
 disabled:opacity-50
 "
-
 
 >
 
 
 {
-loading
-?
-"Logging in..."
-:
-"Login"
-}
 
+loading
+
+?
+
+"Logging in..."
+
+:
+
+"Login"
+
+}
 
 
 </button>
@@ -455,7 +581,125 @@ loading
 
 
 
+
+
 </form>
+
+
+
+
+
+
+
+
+<div className="
+flex
+items-center
+gap-3
+my-6
+">
+
+
+<div className="
+h-px
+bg-white/20
+flex-1
+"/>
+
+
+<span className="
+text-gray-300
+text-sm
+">
+
+OR
+
+</span>
+
+
+
+<div className="
+h-px
+bg-white/20
+flex-1
+"/>
+
+
+</div>
+
+
+
+
+
+
+
+<button
+
+onClick={handleGoogleLogin}
+
+disabled={socialLoading}
+
+className="
+w-full
+bg-white
+text-black
+rounded-xl
+py-3
+font-semibold
+transition
+hover:scale-[1.02]
+"
+
+>
+
+
+🌐 Continue with Google
+
+
+</button>
+
+
+
+
+
+
+<button
+
+onClick={handleGithubLogin}
+
+disabled={socialLoading}
+
+className="
+mt-3
+w-full
+bg-black
+border
+border-white/20
+rounded-xl
+py-3
+font-semibold
+flex
+items-center
+justify-center
+gap-2
+transition
+hover:scale-[1.02]
+"
+
+>
+
+
+<Github size={20}/>
+
+
+Continue with Github
+
+
+</button>
+
+
+
+
 
 
 
@@ -469,14 +713,29 @@ mt-6
 
 Don't have an account?
 
-<span className="text-white font-semibold cursor-pointer">
 
- Register
+<Link
 
-</span>
+href="/register"
+
+className="
+text-white
+font-semibold
+ml-1
+"
+
+>
+
+Create Account
+
+</Link>
+
 
 
 </p>
+
+
+
 
 
 
@@ -486,6 +745,5 @@ Don't have an account?
 
 
 );
-
 
 }
