@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -11,12 +11,12 @@ import {
   Crown,
   ShieldCheck,
   Truck,
-  Sparkles
+  Sparkles,
 } from "lucide-react";
 
 import {
   FaGoogle,
-  FaGithub
+  FaGithub,
 } from "react-icons/fa";
 
 import { toast } from "sonner";
@@ -26,7 +26,6 @@ import { createClient } from "@/lib/supabase/client";
 
 
 export default function LoginPage(){
-
 
 const router = useRouter();
 
@@ -47,16 +46,15 @@ const [loading,setLoading] = useState(false);
 
 async function login(){
 
-
 try{
 
 setLoading(true);
 
 
-const {error} = await supabase.auth.signInWithPassword({
+const {error} =
+await supabase.auth.signInWithPassword({
 
 email,
-
 password
 
 });
@@ -89,9 +87,7 @@ setLoading(false);
 
 }
 
-
 }
-
 
 
 
@@ -99,8 +95,8 @@ setLoading(false);
 
 async function googleLogin(){
 
-
-const {error}=await supabase.auth.signInWithOAuth({
+const {error} =
+await supabase.auth.signInWithOAuth({
 
 provider:"google",
 
@@ -115,9 +111,7 @@ redirectTo:
 if(error)
 toast.error(error.message);
 
-
 }
-
 
 
 
@@ -125,8 +119,8 @@ toast.error(error.message);
 
 async function githubLogin(){
 
-
-const {error}=await supabase.auth.signInWithOAuth({
+const {error} =
+await supabase.auth.signInWithOAuth({
 
 provider:"github",
 
@@ -141,56 +135,62 @@ redirectTo:
 if(error)
 toast.error(error.message);
 
-
 }
 
 
 
 
 
-
-return (
+return(
 
 <main className="
 min-h-screen
 flex
-bg-white
-overflow-hidden
+bg-[#F8FAFC]
 ">
 
 
-{/* LEFT BRAND SECTION */}
+{/* LEFT BRAND AREA */}
 
 
 <section className="
 hidden
 lg:flex
 w-1/2
-bg-[#050505]
+
+bg-[#111827]
+
 text-white
+
 relative
-flex-col
-justify-center
-px-16
+
 overflow-hidden
+
+items-center
+
+px-16
 ">
 
 
-
-{/* Gold Glow */}
-
 <div className="
 absolute
-w-[500px]
-h-[500px]
-bg-[#D4AF37]
-opacity-20
-blur-[150px]
-rounded-full
-top-[-100px]
-left-[-100px]
-"/>
 
+w-[450px]
+
+h-[450px]
+
+bg-[#D4AF37]
+
+opacity-20
+
+blur-[150px]
+
+rounded-full
+
+top-[-150px]
+
+left-[-150px]
+"/>
 
 
 
@@ -219,22 +219,35 @@ z-10
 >
 
 
+
 <div className="
 flex
 items-center
 gap-3
-text-[#D4AF37]
 mb-8
 ">
 
 
-<Crown size={30}/>
+<div className="
+p-3
+rounded-xl
+
+bg-[#D4AF37]
+
+text-[#111827]
+">
+
+<Crown/>
+
+</div>
 
 
 <h2 className="
-text-xl
-tracking-[8px]
-font-bold
+text-2xl
+
+font-black
+
+tracking-[5px]
 ">
 
 PRIME CART
@@ -250,21 +263,26 @@ PRIME CART
 
 <h1 className="
 text-6xl
+
 font-black
+
 leading-tight
 ">
 
-The Future Of
+
+Premium Shopping
 
 <br/>
+
 
 <span className="
 text-[#D4AF37]
 ">
 
-Premium Shopping
+Experience
 
 </span>
+
 
 </h1>
 
@@ -273,14 +291,17 @@ Premium Shopping
 
 <p className="
 mt-6
-text-gray-400
-max-w-md
+
+text-gray-300
+
 text-lg
+
+max-w-lg
 ">
 
-Experience a luxury commerce platform
-built for modern India with smart shopping
-and premium service.
+A modern ecommerce platform designed
+for premium products, secure payments
+and smarter shopping.
 
 </p>
 
@@ -288,8 +309,10 @@ and premium service.
 
 
 
+
 <div className="
 mt-10
+
 space-y-5
 ">
 
@@ -301,9 +324,11 @@ gap-4
 ">
 
 <div className="
-p-3
-rounded-xl
 bg-white/10
+
+p-3
+
+rounded-xl
 ">
 
 <ShieldCheck
@@ -312,9 +337,7 @@ className="text-[#D4AF37]"
 
 </div>
 
-<span>
 Secure Payments
-</span>
 
 </div>
 
@@ -329,9 +352,11 @@ gap-4
 ">
 
 <div className="
-p-3
-rounded-xl
 bg-white/10
+
+p-3
+
+rounded-xl
 ">
 
 <Truck
@@ -340,9 +365,7 @@ className="text-[#D4AF37]"
 
 </div>
 
-<span>
 Fast Delivery
-</span>
 
 </div>
 
@@ -357,9 +380,11 @@ gap-4
 ">
 
 <div className="
-p-3
-rounded-xl
 bg-white/10
+
+p-3
+
+rounded-xl
 ">
 
 <Sparkles
@@ -368,9 +393,7 @@ className="text-[#D4AF37]"
 
 </div>
 
-<span>
 AI Smart Recommendations
-</span>
 
 </div>
 
@@ -378,59 +401,10 @@ AI Smart Recommendations
 </div>
 
 
-
-<div className="
-mt-12
-flex
-gap-10
-">
-
-
-<div>
-
-<h3 className="
-text-3xl
-font-bold
-text-[#D4AF37]
-">
-
-10K+
-
-</h3>
-
-<p className="text-gray-400">
-Customers
-</p>
-
-</div>
-
-
-
-<div>
-
-<h3 className="
-text-3xl
-font-bold
-text-[#D4AF37]
-">
-
-99.9%
-
-</h3>
-
-<p className="text-gray-400">
-Secure
-</p>
-
-</div>
-
-
-</div>
 
 
 
 </motion.div>
-
 
 
 </section>
@@ -441,18 +415,24 @@ Secure
 
 
 
-{/* RIGHT LOGIN */}
 
+
+{/* LOGIN SECTION */}
 
 
 <section className="
 w-full
+
 lg:w-1/2
+
 flex
+
 items-center
+
 justify-center
+
 px-6
-bg-gray-50
+
 ">
 
 
@@ -474,29 +454,32 @@ duration:.6
 
 className="
 w-full
+
 max-w-md
+
 bg-white
-rounded-[32px]
+
+rounded-3xl
+
 p-10
 
-shadow-[0_30px_80px_rgba(0,0,0,0.12)]
+shadow-[0_25px_70px_rgba(17,24,39,0.12)]
 
+border
+
+border-gray-100
 "
-
 
 >
 
 
 
-<div className="
-mb-8
-">
-
-
 <h1 className="
 text-4xl
+
 font-black
-text-black
+
+text-[#1F2937]
 ">
 
 Welcome Back
@@ -504,18 +487,18 @@ Welcome Back
 </h1>
 
 
+
 <p className="
-text-gray-500
 mt-3
+
+text-gray-500
+
+mb-8
 ">
 
-Login to continue your PrimeCart journey
+Login to your PrimeCart account
 
 </p>
-
-
-</div>
-
 
 
 
@@ -534,11 +517,15 @@ placeholder="Email Address"
 
 className="
 w-full
+
 px-5
+
 py-4
+
 rounded-2xl
 
 border
+
 border-gray-200
 
 outline-none
@@ -546,11 +533,10 @@ outline-none
 focus:border-[#D4AF37]
 
 mb-4
+
 "
 
 />
-
-
 
 
 
@@ -580,19 +566,22 @@ placeholder="Password"
 
 className="
 w-full
+
 px-5
+
 py-4
+
 pr-14
 
 rounded-2xl
 
 border
+
 border-gray-200
 
 outline-none
 
 focus:border-[#D4AF37]
-
 "
 
 />
@@ -605,11 +594,13 @@ onClick={()=>setShow(!show)}
 
 className="
 absolute
+
 right-5
+
 top-4
+
 text-gray-400
 "
-
 
 >
 
@@ -635,6 +626,7 @@ show?
 
 
 
+
 <div className="
 flex
 justify-end
@@ -648,8 +640,10 @@ href="/forgot-password"
 
 className="
 text-sm
-text-[#B8860B]
-font-medium
+
+text-[#D4AF37]
+
+font-semibold
 ">
 
 Forgot Password?
@@ -658,7 +652,6 @@ Forgot Password?
 
 
 </div>
-
 
 
 
@@ -681,15 +674,18 @@ py-4
 
 rounded-2xl
 
-bg-black
+bg-[#111827]
 
 text-white
 
 font-bold
 
 flex
+
 justify-center
+
 items-center
+
 gap-3
 
 hover:bg-[#D4AF37]
@@ -697,15 +693,15 @@ hover:bg-[#D4AF37]
 hover:text-black
 
 transition
-
 "
+
 
 >
 
 
 {
 
-loading?
+loading ?
 
 "Logging in..."
 
@@ -726,24 +722,28 @@ Login
 
 
 
-
 <div className="
 flex
+
 items-center
+
 gap-3
+
 my-7
 ">
 
-
 <div className="
 h-px
+
 bg-gray-200
+
 flex-1
 "/>
 
 
 <span className="
 text-gray-400
+
 text-sm
 ">
 
@@ -754,12 +754,14 @@ OR
 
 <div className="
 h-px
+
 bg-gray-200
+
 flex-1
 "/>
 
-
 </div>
+
 
 
 
@@ -773,34 +775,38 @@ onClick={googleLogin}
 
 className="
 w-full
+
 py-4
 
 rounded-2xl
 
 border
+
 border-gray-200
 
-flex
-justify-center
-items-center
-gap-3
-
 font-semibold
+
+flex
+
+items-center
+
+justify-center
+
+gap-3
 
 hover:border-[#D4AF37]
 
 transition
-
 "
 
 >
 
-
 <FaGoogle/>
 
-Google
+Continue with Google
 
 </button>
+
 
 
 
@@ -820,24 +826,26 @@ py-4
 
 rounded-2xl
 
-bg-black
+bg-[#111827]
 
 text-white
 
-flex
-justify-center
-items-center
-gap-3
-
 font-semibold
 
+flex
+
+items-center
+
+justify-center
+
+gap-3
 "
 
 >
 
 <FaGithub/>
 
-Github
+Continue with Github
 
 </button>
 
@@ -849,12 +857,13 @@ Github
 
 <p className="
 text-center
+
 mt-8
+
 text-gray-500
 ">
 
-
-Don't have an account?
+Don't have account?
 
 
 <Link
@@ -864,13 +873,10 @@ href="/register"
 className="
 ml-2
 
+text-[#D4AF37]
+
 font-bold
-
-text-[#B8860B]
-
-"
-
->
+">
 
 Create Account
 
@@ -882,7 +888,6 @@ Create Account
 
 
 </motion.div>
-
 
 
 </section>
