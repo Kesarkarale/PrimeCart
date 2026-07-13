@@ -85,7 +85,11 @@ const protectedRoutes=[
 
 "/orders",
 
-"/checkout"
+"/checkout",
+
+"/wishlist",
+
+"/cart"
 
 ];
 
