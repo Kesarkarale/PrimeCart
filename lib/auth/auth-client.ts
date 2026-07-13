@@ -2,7 +2,72 @@
 
 import { createClient } from "@/lib/supabase/client";
 
+import { createClient } from "@/lib/supabase/client";
 
+
+// Forgot Password
+
+export async function resetPasswordRequest(
+email:string
+){
+
+const supabase=createClient();
+
+
+const {
+error
+}=await supabase.auth.resetPasswordForEmail(
+
+email,
+
+{
+
+redirectTo:
+`${window.location.origin}/reset-password`
+
+}
+
+);
+
+
+return {
+
+error
+
+};
+
+}
+
+
+
+
+// Update Password
+
+export async function updatePassword(
+password:string
+){
+
+const supabase=createClient();
+
+
+const {
+
+error
+
+}=await supabase.auth.updateUser({
+
+password
+
+});
+
+
+return {
+
+error
+
+};
+
+}
 // Register User
 export async function signUpUser(
 email:string,
