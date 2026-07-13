@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -12,12 +12,14 @@ import {
   Star,
   Sparkles,
   ArrowRight,
+  Crown,
+  Zap
 } from "lucide-react";
 
 import { motion } from "framer-motion";
 
 
-export default function Home() {
+export default function Home(){
 
 
 const [open,setOpen]=useState(false);
@@ -31,11 +33,34 @@ min-h-screen
 bg-[#050505]
 text-white
 overflow-hidden
+relative
 ">
 
 
 
+{/* GOLD BACKGROUND GLOW */}
+
+<div className="
+absolute
+top-40
+left-1/2
+-translate-x-1/2
+w-[700px]
+h-[700px]
+bg-[#D4AF37]
+opacity-20
+blur-[180px]
+rounded-full
+">
+
+</div>
+
+
+
+
+
 {/* ================= NAVBAR ================= */}
+
 
 
 <nav className="
@@ -51,20 +76,22 @@ px-5
 <div className="
 max-w-7xl
 mx-auto
-bg-black/70
-backdrop-blur-xl
+bg-black/60
+backdrop-blur-2xl
 border
 border-white/10
 rounded-2xl
 px-6
 py-4
 flex
-justify-between
 items-center
+justify-between
+shadow-xl
 ">
 
 
-{/* LOGO */}
+
+
 
 <Link
 href="/"
@@ -77,43 +104,56 @@ gap-3
 
 
 <div className="
-bg-gradient-to-r
+bg-gradient-to-br
 from-yellow-300
 to-yellow-700
 text-black
 p-3
 rounded-xl
+shadow-lg
 ">
 
 
-<ShoppingBag size={25}/>
+<ShoppingBag size={28}/>
+
 
 </div>
 
 
+
+
 <div>
+
 
 <h1 className="
 text-2xl
 font-bold
 ">
 
-Prime<span className="text-[#D4AF37]">
+Prime
+<span className="
+text-[#D4AF37]
+">
+
 Cart
+
 </span>
 
 </h1>
+
 
 <p className="
 text-xs
 text-gray-400
 ">
 
-Luxury Shopping
+Luxury Marketplace
 
 </p>
 
+
 </div>
+
 
 
 </Link>
@@ -122,35 +162,60 @@ Luxury Shopping
 
 
 
-{/* MENU */}
+
+
 
 <div className="
 hidden
 md:flex
 gap-8
+text-gray-300
 ">
 
 
-<a className="hover:text-[#D4AF37]">
+<a className="
+hover:text-[#D4AF37]
+transition
+">
+
 Home
+
 </a>
 
-<a className="hover:text-[#D4AF37]">
+
+<a className="
+hover:text-[#D4AF37]
+transition
+">
+
 Shop
+
 </a>
 
 
-<a className="hover:text-[#D4AF37]">
+<a className="
+hover:text-[#D4AF37]
+transition
+">
+
 Categories
+
 </a>
 
 
-<a className="hover:text-[#D4AF37]">
+<a className="
+hover:text-[#D4AF37]
+transition
+">
+
 Deals
+
 </a>
 
 
 </div>
+
+
 
 
 
@@ -174,6 +239,7 @@ rounded-xl
 border
 border-white/20
 hover:border-[#D4AF37]
+transition
 "
 
 >
@@ -181,6 +247,7 @@ hover:border-[#D4AF37]
 Login
 
 </Link>
+
 
 
 
@@ -193,9 +260,13 @@ className="
 px-5
 py-2
 rounded-xl
-bg-[#D4AF37]
+bg-gradient-to-r
+from-yellow-300
+to-yellow-700
 text-black
-font-semibold
+font-bold
+hover:scale-105
+transition
 "
 
 >
@@ -205,7 +276,9 @@ Get Started
 </Link>
 
 
+
 </div>
+
 
 
 
@@ -221,15 +294,20 @@ md:hidden
 
 >
 
-
 {
+
 open?
-<X/>:
+
+<X/>
+
+:
+
 <Menu/>
+
 }
 
-
 </button>
+
 
 
 
@@ -239,13 +317,16 @@ open?
 
 
 
+
 {
+
 open &&
 
 <div className="
 md:hidden
 mt-3
-bg-black
+bg-black/90
+backdrop-blur-xl
 border
 border-white/10
 rounded-xl
@@ -255,18 +336,26 @@ space-y-4
 
 
 <Link href="/login">
+
 Login
+
 </Link>
 
 
+<br/>
+
 <Link href="/register">
+
 Register
+
 </Link>
 
 
 </div>
 
+
 }
+
 
 
 </nav>
@@ -275,7 +364,14 @@ Register
 
 
 
+
+
+
+
+
 {/* ================= HERO ================= */}
+
+
 
 
 
@@ -286,9 +382,12 @@ max-w-7xl
 mx-auto
 grid
 md:grid-cols-2
-gap-10
+gap-16
 items-center
 ">
+
+
+
 
 
 
@@ -296,7 +395,7 @@ items-center
 
 initial={{
 opacity:0,
-x:-50
+x:-60
 }}
 
 animate={{
@@ -307,15 +406,24 @@ x:0
 >
 
 
-<p className="
+<div className="
+flex
+items-center
+gap-2
 text-[#D4AF37]
-font-semibold
-mb-4
+mb-5
 ">
 
-✨ Premium Online Marketplace
 
-</p>
+<Crown size={22}/>
+
+
+Premium Online Marketplace
+
+
+</div>
+
+
 
 
 
@@ -327,13 +435,17 @@ leading-tight
 ">
 
 
-Shop Smarter.
+Luxury Shopping.
 
 <br/>
 
-Live Better.
+
+Made Simple.
+
 
 </h1>
+
+
 
 
 
@@ -344,11 +456,17 @@ text-lg
 max-w-xl
 ">
 
-Experience next-generation shopping with
-premium products, secure payments and
-AI-powered recommendations.
+
+Discover premium products,
+exclusive collections and a
+next-generation shopping
+experience designed for you.
+
 
 </p>
+
+
+
 
 
 
@@ -356,6 +474,7 @@ AI-powered recommendations.
 flex
 gap-4
 mt-8
+flex-wrap
 ">
 
 
@@ -364,24 +483,31 @@ mt-8
 href="/register"
 
 className="
-bg-[#D4AF37]
+bg-gradient-to-r
+from-yellow-300
+to-yellow-700
 text-black
-px-7
-py-3
+px-8
+py-4
 rounded-xl
 font-bold
 flex
 items-center
 gap-2
+hover:scale-105
+transition
 "
 
 >
+
 
 Start Shopping
 
 <ArrowRight size={18}/>
 
+
 </Link>
+
 
 
 
@@ -392,9 +518,11 @@ href="/login"
 className="
 border
 border-white/20
-px-7
-py-3
+px-8
+py-4
 rounded-xl
+hover:border-[#D4AF37]
+transition
 "
 
 >
@@ -415,19 +543,33 @@ Login
 
 
 
+
+
+
+
 {/* PRODUCT CARD */}
+
+
 
 
 <motion.div
 
+
 animate={{
+
 y:[0,-20,0]
+
 }}
 
+
 transition={{
+
 duration:4,
+
 repeat:Infinity
+
 }}
+
 
 className="
 relative
@@ -439,29 +581,50 @@ relative
 
 <div className="
 bg-white/10
-backdrop-blur-xl
+backdrop-blur-3xl
 border
-border-[#D4AF37]/30
+border-[#D4AF37]/40
 rounded-3xl
 p-10
-text-center
 shadow-2xl
+text-center
 ">
+
+
+<div className="
+absolute
+top-5
+right-5
+bg-[#D4AF37]
+text-black
+px-4
+py-1
+rounded-full
+text-sm
+font-bold
+">
+
+NEW
+
+</div>
+
 
 
 <div className="
 text-8xl
 ">
 
-🛒
+🛍️
 
 </div>
 
 
+
+
 <h2 className="
-text-3xl
+text-4xl
 font-bold
-mt-5
+mt-6
 ">
 
 PrimeCart
@@ -469,19 +632,72 @@ PrimeCart
 </h2>
 
 
+
+
 <p className="
 text-gray-400
+mt-2
 ">
 
-Everything you need
+Premium Products Collection
 
 </p>
+
+
+
+
+<div className="
+flex
+justify-center
+gap-5
+mt-8
+">
+
+
+<div className="
+bg-black/40
+p-4
+rounded-xl
+">
+
+⭐
+
+</div>
+
+
+<div className="
+bg-black/40
+p-4
+rounded-xl
+">
+
+🚚
+
+</div>
+
+
+
+<div className="
+bg-black/40
+p-4
+rounded-xl
+">
+
+🔒
+
+</div>
+
 
 
 </div>
 
 
+</div>
+
+
+
 </motion.div>
+
 
 
 </section>
@@ -491,7 +707,10 @@ Everything you need
 
 
 
-{/* ================= FEATURES ================= */}
+
+
+
+{/* FEATURES */}
 
 
 
@@ -510,18 +729,27 @@ gap-6
 
 [
 
-["Fast Delivery",Truck],
+{
+title:"Fast Delivery",
+icon:Truck
+},
 
-["Secure Payment",ShieldCheck],
+{
+title:"Secure Payment",
+icon:ShieldCheck
+},
 
-["Premium Quality",Star]
+{
+title:"Premium Quality",
+icon:Star
+}
 
-].map(([title,Icon]:any)=>(
+].map((item)=>(
 
 
 <div
 
-key={title}
+key={item.title}
 
 className="
 bg-white/5
@@ -530,6 +758,7 @@ border-white/10
 rounded-3xl
 p-8
 hover:border-[#D4AF37]
+hover:-translate-y-2
 transition
 "
 
@@ -537,10 +766,16 @@ transition
 >
 
 
-<Icon className="
+<item.icon
+
+className="
 text-[#D4AF37]
 mb-5
-"/>
+"
+size={35}
+
+/>
+
 
 
 <h3 className="
@@ -548,19 +783,21 @@ text-xl
 font-bold
 ">
 
-{title}
+{item.title}
 
 </h3>
 
 
+
 <p className="
 text-gray-400
-mt-2
+mt-3
 ">
 
-Best experience for customers
+Best shopping experience
 
 </p>
+
 
 
 </div>
@@ -580,7 +817,9 @@ Best experience for customers
 
 
 
-{/* ================= CTA ================= */}
+
+
+{/* CTA */}
 
 
 
@@ -597,13 +836,22 @@ text-center
 ">
 
 
-<Sparkles className="mx-auto"/>
+<Sparkles
+
+className="
+mx-auto
+"
+
+size={40}
+
+/>
+
 
 
 <h2 className="
 text-4xl
 font-bold
-mt-4
+mt-5
 ">
 
 Welcome To PrimeCart
@@ -611,13 +859,42 @@ Welcome To PrimeCart
 </h2>
 
 
+
 <p className="
 mt-3
+text-lg
 ">
 
-Premium shopping starts here.
+Where luxury meets technology.
 
 </p>
+
+
+
+<Link
+
+href="/register"
+
+className="
+inline-flex
+items-center
+gap-2
+mt-6
+bg-black
+text-white
+px-7
+py-3
+rounded-xl
+"
+
+>
+
+Join Now
+
+<Zap size={18}/>
+
+</Link>
+
 
 
 </section>
@@ -626,9 +903,6 @@ Premium shopping starts here.
 
 
 
-
-
-{/* FOOTER */}
 
 
 <footer className="
@@ -647,7 +921,12 @@ text-gray-400
 
 
 
+
+
+
 </main>
 
 );
+
+
 }
