@@ -5,10 +5,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import {
-  Eye,
-  EyeOff,
-  ShoppingBag,
+ Eye,
+ EyeOff,
+ ShoppingBag,
 } from "lucide-react";
+
+import {
+ FaGithub,
+ FaGoogle
+} from "react-icons/fa";
 
 import { toast } from "sonner";
 
@@ -652,7 +657,8 @@ hover:scale-[1.02]
 >
 
 
-🌐 Continue with Google
+<FaGoogle size={20}/>
+Continue with Google
 
 
 </button>
@@ -688,9 +694,7 @@ hover:scale-[1.02]
 >
 
 
-<span className="text-xl">
-🐙
-</span>
+<FaGithub size={20}/>
 
 
 Continue with Github
