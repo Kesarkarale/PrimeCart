@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -8,10 +8,12 @@ import {
   Eye,
   EyeOff,
   ShoppingBag,
-  ArrowRight
+  ArrowRight,
+  Sparkles
 } from "lucide-react";
 
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 import { createClient } from "@/lib/supabase/client";
 
@@ -20,18 +22,14 @@ import { createClient } from "@/lib/supabase/client";
 export default function RegisterPage(){
 
 
-const supabase = createClient();
+const supabase=createClient();
 
-const router = useRouter();
-
+const router=useRouter();
 
 
 const [name,setName]=useState("");
-
 const [email,setEmail]=useState("");
-
 const [password,setPassword]=useState("");
-
 const [confirmPassword,setConfirmPassword]=useState("");
 
 const [show,setShow]=useState(false);
@@ -45,13 +43,9 @@ const [loading,setLoading]=useState(false);
 async function register(){
 
 
-
 if(!name || !email || !password){
 
-toast.error(
-"Please fill all fields"
-);
-
+toast.error("Please fill all fields");
 return;
 
 }
@@ -60,10 +54,7 @@ return;
 
 if(password !== confirmPassword){
 
-toast.error(
-"Passwords do not match"
-);
-
+toast.error("Passwords do not match");
 return;
 
 }
@@ -78,13 +69,7 @@ setLoading(true);
 
 
 
-const {
-
-data,
-
-error
-
-}=await supabase.auth.signUp({
+const {error}=await supabase.auth.signUp({
 
 email,
 
@@ -101,44 +86,34 @@ name:name
 
 }
 
-
 });
-
-
 
 
 
 if(error){
 
 toast.error(error.message);
-
 return;
 
 }
 
 
 
-
-
 toast.success(
-"Account created! Check your email for verification"
+"Account created successfully ✨"
 );
 
 
-
 router.push("/login");
-
 
 
 }
 
 catch{
 
-
 toast.error(
 "Registration failed"
 );
-
 
 }
 
@@ -159,26 +134,110 @@ return (
 
 <main className="
 min-h-screen
-bg-[#050505]
+bg-gradient-to-br
+from-[#050505]
+via-[#111827]
+to-[#F8F1E7]
 flex
 items-center
 justify-center
-px-5
-text-white
+p-5
+relative
 overflow-hidden
 ">
 
 
 
+
+
 <div className="
 absolute
-w-[450px]
-h-[450px]
+w-[600px]
+h-[600px]
 bg-[#D4AF37]
 opacity-20
-blur-[160px]
+blur-[180px]
 rounded-full
 ">
+
+</div>
+
+
+
+
+
+
+<div className="
+relative
+max-w-6xl
+w-full
+grid
+md:grid-cols-2
+gap-10
+items-center
+">
+
+
+
+
+
+
+{/* LEFT SIDE */}
+
+
+
+<motion.div
+
+initial={{
+opacity:0,
+x:-50
+}}
+
+animate={{
+opacity:1,
+x:0
+}}
+
+className="
+hidden
+md:block
+text-white
+"
+
+>
+
+
+<div className="
+flex
+items-center
+gap-3
+mb-8
+">
+
+
+<div className="
+bg-gradient-to-br
+from-yellow-300
+to-yellow-700
+text-black
+p-4
+rounded-2xl
+">
+
+<ShoppingBag size={40}/>
+
+</div>
+
+
+
+<h1 className="
+text-5xl
+font-bold
+">
+
+PrimeCart
+
+</h1>
 
 
 </div>
@@ -187,19 +246,101 @@ rounded-full
 
 
 
-<div className="
-relative
-w-full
+<h2 className="
+text-4xl
+font-semibold
+leading-tight
+">
+
+
+Create Your
+<br/>
+Premium Account
+
+
+</h2>
+
+
+
+<p className="
+text-gray-300
+mt-5
+text-lg
 max-w-md
+">
+
+
+Join PrimeCart and experience
+luxury shopping with exclusive
+products and offers.
+
+</p>
+
+
+
+
+
+<div className="
+flex
+gap-3
+items-center
+mt-8
+text-[#D4AF37]
+">
+
+
+<Sparkles/>
+
+
+Premium • Secure • Elegant
+
+
+</div>
+
+
+
+</motion.div>
+
+
+
+
+
+
+
+
+
+{/* REGISTER CARD */}
+
+
+
+<motion.div
+
+
+initial={{
+opacity:0,
+y:50
+}}
+
+animate={{
+opacity:1,
+y:0
+}}
+
+
+className="
 bg-white/10
-backdrop-blur-2xl
+backdrop-blur-3xl
 border
-border-white/10
+border-white/20
 rounded-3xl
 p-8
 shadow-2xl
-">
+w-full
+max-w-md
+mx-auto
+"
 
+>
 
 
 
@@ -212,17 +353,17 @@ mb-6
 
 
 <div className="
-bg-gradient-to-r
+bg-gradient-to-br
 from-yellow-300
 to-yellow-700
 text-black
-p-4
+p-5
 rounded-2xl
-shadow-lg
+shadow-xl
 ">
 
 
-<ShoppingBag size={35}/>
+<ShoppingBag size={38}/>
 
 
 </div>
@@ -236,9 +377,10 @@ shadow-lg
 
 
 <h1 className="
-text-4xl
+text-3xl
 font-bold
 text-center
+text-white
 ">
 
 
@@ -250,14 +392,17 @@ Create Account
 
 
 
+
 <p className="
-text-gray-400
+text-gray-300
 text-center
 mt-2
 mb-8
 ">
 
+
 Join PrimeCart Premium Shopping
+
 
 </p>
 
@@ -266,9 +411,8 @@ Join PrimeCart Premium Shopping
 
 
 
-<input
 
-type="text"
+<input
 
 placeholder="Full Name"
 
@@ -284,12 +428,15 @@ w-full
 bg-black/40
 border
 border-white/20
+text-white
+placeholder-gray-400
 rounded-xl
 px-4
 py-3
 mb-4
 outline-none
 focus:border-[#D4AF37]
+transition
 "
 
 />
@@ -317,16 +464,18 @@ w-full
 bg-black/40
 border
 border-white/20
+text-white
+placeholder-gray-400
 rounded-xl
 px-4
 py-3
 mb-4
 outline-none
 focus:border-[#D4AF37]
+transition
 "
 
 />
-
 
 
 
@@ -341,11 +490,7 @@ relative
 <input
 
 type={
-show
-?
-"text"
-:
-"password"
+show?"text":"password"
 }
 
 
@@ -363,6 +508,8 @@ w-full
 bg-black/40
 border
 border-white/20
+text-white
+placeholder-gray-400
 rounded-xl
 px-4
 py-3
@@ -370,10 +517,10 @@ pr-12
 mb-4
 outline-none
 focus:border-[#D4AF37]
+transition
 "
 
 />
-
 
 
 
@@ -392,12 +539,9 @@ text-gray-400
 
 >
 
-
 {
 
-show
-
-?
+show?
 
 <EyeOff size={20}/>
 
@@ -437,14 +581,18 @@ w-full
 bg-black/40
 border
 border-white/20
+text-white
+placeholder-gray-400
 rounded-xl
 px-4
 py-3
 outline-none
 focus:border-[#D4AF37]
+transition
 "
 
 />
+
 
 
 
@@ -470,29 +618,31 @@ font-bold
 py-3
 rounded-xl
 flex
-items-center
 justify-center
+items-center
 gap-2
 hover:scale-105
 transition
+shadow-lg
 "
-
 
 >
 
+
 {
 
-loading
-
-?
+loading?
 
 "Creating Account..."
 
 :
 
 <>
+
 Create Account
+
 <ArrowRight size={18}/>
+
 </>
 
 }
@@ -505,10 +655,9 @@ Create Account
 
 
 
-
 <p className="
 text-center
-text-gray-400
+text-gray-300
 mt-7
 ">
 
@@ -524,6 +673,7 @@ className="
 text-[#D4AF37]
 font-semibold
 ml-2
+hover:underline
 "
 
 >
@@ -540,8 +690,10 @@ Login
 
 
 
-</div>
+</motion.div>
 
+
+</div>
 
 
 </main>
