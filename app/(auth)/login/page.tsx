@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -9,20 +9,19 @@ import {
   EyeOff,
   ShoppingBag,
   ArrowRight,
+  Sparkles
 } from "lucide-react";
 
 import {
   FaGoogle,
-  FaGithub,
+  FaGithub
 } from "react-icons/fa";
-
-import { toast } from "sonner";
 
 import { motion } from "framer-motion";
 
-import {
-  createClient
-} from "@/lib/supabase/client";
+import { toast } from "sonner";
+
+import { createClient } from "@/lib/supabase/client";
 
 
 
@@ -31,22 +30,80 @@ export default function LoginPage(){
 
 const router = useRouter();
 
-
 const supabase = createClient();
+
 
 
 const [email,setEmail]=useState("");
 
 const [password,setPassword]=useState("");
 
-const [show,setShow]=useState(false);
+const [showPassword,setShowPassword]=useState(false);
 
 const [loading,setLoading]=useState(false);
 
 
 
 
+
+// already logged user check
+
+useEffect(()=>{
+
+
+async function checkUser(){
+
+
+const {data}=await supabase.auth.getUser();
+
+
+if(data.user){
+
+router.push("/dashboard");
+
+}
+
+
+}
+
+
+checkUser();
+
+
+},[]);
+
+
+
+
+
+
+
 async function login(){
+
+
+
+if(!email || !password){
+
+toast.error(
+"Please enter email and password"
+);
+
+return;
+
+}
+
+
+
+if(!email.includes("@")){
+
+toast.error(
+"Enter valid email address"
+);
+
+return;
+
+}
+
 
 
 try{
@@ -70,6 +127,7 @@ password
 
 
 
+
 if(error){
 
 toast.error(error.message);
@@ -81,15 +139,22 @@ return;
 
 
 toast.success(
-"Welcome back to PrimeCart"
+"Welcome to PrimeCart 👑"
 );
 
 
+
+setTimeout(()=>{
+
 router.push("/dashboard");
+
+},800);
+
+
+
 
 
 }
-
 
 catch{
 
@@ -98,7 +163,6 @@ toast.error(
 );
 
 }
-
 
 finally{
 
@@ -113,16 +177,24 @@ setLoading(false);
 
 
 
+
+
+
 async function googleLogin(){
 
 
-const {error}=await supabase.auth.signInWithOAuth({
+const {
+
+error
+
+}=await supabase.auth.signInWithOAuth({
 
 provider:"google",
 
 options:{
 
 redirectTo:
+
 `${window.location.origin}/auth/callback`
 
 }
@@ -138,6 +210,8 @@ toast.error(error.message);
 
 
 }
+
+
 
 
 
@@ -146,13 +220,19 @@ toast.error(error.message);
 async function githubLogin(){
 
 
-const {error}=await supabase.auth.signInWithOAuth({
+
+const {
+
+error
+
+}=await supabase.auth.signInWithOAuth({
 
 provider:"github",
 
 options:{
 
 redirectTo:
+
 `${window.location.origin}/auth/callback`
 
 }
@@ -173,30 +253,36 @@ toast.error(error.message);
 
 
 
-return (
+
+
+return(
 
 
 <main className="
 min-h-screen
-bg-[#050505]
+bg-black
 text-white
 flex
 items-center
 justify-center
 px-5
+relative
 overflow-hidden
 ">
 
 
-{/* Glow */}
+
+
+
+{/* Background Glow */}
+
 
 <div className="
 absolute
-w-[500px]
-h-[500px]
-bg-[#D4AF37]
-opacity-20
-blur-[150px]
+w-[600px]
+h-[600px]
+bg-yellow-500/20
+blur-[180px]
 rounded-full
 ">
 
@@ -205,17 +291,30 @@ rounded-full
 
 
 
+
+
+
+
 <motion.div
+
 
 initial={{
 opacity:0,
-y:40
+y:50
 }}
+
 
 animate={{
 opacity:1,
 y:0
 }}
+
+
+transition={{
+duration:0.6
+}}
+
+
 
 className="
 relative
@@ -224,7 +323,7 @@ max-w-md
 bg-white/10
 backdrop-blur-2xl
 border
-border-white/10
+border-white/20
 rounded-3xl
 p-8
 shadow-2xl
@@ -235,7 +334,11 @@ shadow-2xl
 
 
 
+
+
+
 {/* Logo */}
+
 
 <div className="
 flex
@@ -245,21 +348,46 @@ mb-6
 
 
 <div className="
-bg-gradient-to-r
+relative
+bg-gradient-to-br
 from-yellow-300
 to-yellow-700
 text-black
-p-4
+p-5
 rounded-2xl
-shadow-lg
+shadow-xl
 ">
 
-<ShoppingBag size={35}/>
+
+<ShoppingBag size={40}/>
+
+
+<div className="
+absolute
+-right-2
+-top-2
+bg-black
+rounded-full
+p-1
+">
+
+<Sparkles
+size={15}
+className="text-yellow-400"
+/>
+
 
 </div>
 
 
 </div>
+
+
+</div>
+
+
+
+
 
 
 
@@ -271,9 +399,7 @@ font-bold
 text-center
 ">
 
-
 Welcome Back
-
 
 </h1>
 
@@ -282,13 +408,11 @@ Welcome Back
 <p className="
 text-center
 text-gray-400
-mt-2
+mt-3
 mb-8
 ">
 
-
 Login to your PrimeCart account
-
 
 </p>
 
@@ -296,10 +420,27 @@ Login to your PrimeCart account
 
 
 
+
+
+
+
 {/* Email */}
+
+
+
+<label className="
+text-sm
+text-gray-300
+">
+
+Email
+
+</label>
+
 
 <input
 
+type="email"
 
 value={email}
 
@@ -308,10 +449,12 @@ e=>setEmail(e.target.value)
 }
 
 
-placeholder="Email Address"
+placeholder="Enter your email"
 
 
 className="
+mt-2
+mb-5
 w-full
 bg-black/40
 border
@@ -320,8 +463,8 @@ rounded-xl
 px-4
 py-3
 outline-none
-focus:border-[#D4AF37]
-mb-4
+focus:border-yellow-500
+transition
 "
 
 />
@@ -330,15 +473,41 @@ mb-4
 
 
 
+
+
+
+
 {/* Password */}
+
+
+
+<label className="
+text-sm
+text-gray-300
+">
+
+Password
+
+</label>
+
 
 
 <div className="
 relative
+mt-2
 ">
 
 
 <input
+
+
+type={
+showPassword
+?
+"text"
+:
+"password"
+}
 
 
 value={password}
@@ -348,14 +517,7 @@ e=>setPassword(e.target.value)
 }
 
 
-type={
-show?
-"text":
-"password"
-}
-
-
-placeholder="Password"
+placeholder="Enter password"
 
 
 className="
@@ -368,7 +530,8 @@ px-4
 py-3
 pr-12
 outline-none
-focus:border-[#D4AF37]
+focus:border-yellow-500
+transition
 "
 
 />
@@ -379,7 +542,7 @@ focus:border-[#D4AF37]
 
 type="button"
 
-onClick={()=>setShow(!show)}
+onClick={()=>setShowPassword(!showPassword)}
 
 className="
 absolute
@@ -388,26 +551,32 @@ top-3
 text-gray-400
 "
 
-
 >
+
 
 {
 
-show?
+showPassword
 
-<EyeOff size={20}/>
+?
+
+<EyeOff/>
 
 :
 
-<Eye size={20}/>
+<Eye/>
 
 }
+
 
 
 </button>
 
 
 </div>
+
+
+
 
 
 
@@ -426,7 +595,8 @@ href="/forgot-password"
 
 className="
 text-sm
-text-[#D4AF37]
+text-yellow-400
+hover:text-yellow-300
 "
 
 >
@@ -437,6 +607,8 @@ Forgot Password?
 
 
 </div>
+
+
 
 
 
@@ -466,6 +638,7 @@ items-center
 gap-2
 hover:scale-105
 transition
+disabled:opacity-50
 "
 
 
@@ -474,7 +647,9 @@ transition
 
 {
 
-loading?
+loading
+
+?
 
 "Logging in..."
 
@@ -491,7 +666,11 @@ Login
 }
 
 
+
 </button>
+
+
+
 
 
 
@@ -524,7 +703,6 @@ OR
 </span>
 
 
-
 <div className="
 h-px
 bg-white/20
@@ -532,7 +710,10 @@ flex-1
 "/>
 
 
+
 </div>
+
+
 
 
 
@@ -550,21 +731,26 @@ bg-white
 text-black
 py-3
 rounded-xl
-font-semibold
 flex
 justify-center
 items-center
 gap-3
+font-semibold
+hover:scale-105
+transition
 "
 
-
 >
+
 
 <FaGoogle/>
 
 Continue with Google
 
+
 </button>
+
+
 
 
 
@@ -583,15 +769,17 @@ border
 border-white/20
 py-3
 rounded-xl
-font-semibold
 flex
 justify-center
 items-center
 gap-3
+font-semibold
+hover:scale-105
+transition
 "
 
-
 >
+
 
 <FaGithub/>
 
@@ -599,6 +787,8 @@ Continue with Github
 
 
 </button>
+
+
 
 
 
@@ -621,8 +811,8 @@ Don't have account?
 href="/register"
 
 className="
-text-[#D4AF37]
-font-semibold
+text-yellow-400
+font-bold
 ml-2
 "
 
@@ -640,7 +830,11 @@ Create Account
 
 
 
+
+
 </motion.div>
+
+
 
 
 
