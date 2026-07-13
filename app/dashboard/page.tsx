@@ -1,26 +1,29 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import {
-  LayoutDashboard,
-  ShoppingBag,
-  Package,
-  Users,
-  DollarSign,
-  TrendingUp,
-  Star,
-  Bell,
   Search,
+  ShoppingCart,
+  Heart,
+  Package,
+  User,
+  MapPin,
+  CreditCard,
+  Settings,
   LogOut,
+  Gift,
+  Star,
   Menu,
-  X,
-  Plus,
+  X
 } from "lucide-react";
 
 import { useRouter } from "next/navigation";
+
 import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
+
 
 
 export default function Dashboard(){
@@ -33,14 +36,16 @@ const supabase = createClient();
 
 const [user,setUser]=useState<any>(null);
 
-const [sidebar,setSidebar]=useState(false);
+const [menu,setMenu]=useState(false);
+
+
 
 
 
 useEffect(()=>{
 
 
-async function getUser(){
+async function loadUser(){
 
 
 const {data}=await supabase.auth.getUser();
@@ -61,10 +66,11 @@ setUser(data.user);
 }
 
 
-getUser();
+loadUser();
 
 
 },[]);
+
 
 
 
@@ -75,11 +81,7 @@ async function logout(){
 
 await supabase.auth.signOut();
 
-
-toast.success(
-"Logged out successfully"
-);
-
+toast.success("Logout successful");
 
 router.push("/login");
 
@@ -90,37 +92,67 @@ router.push("/login");
 
 
 
-const stats=[
 
-{
-title:"Total Revenue",
-value:"₹12,45,000",
-icon:DollarSign,
-growth:"+24%"
-},
 
-{
-title:"Total Orders",
-value:"8,540",
-icon:ShoppingBag,
-growth:"+18%"
-},
+const menuItems=[
 
-{
-title:"Products",
-value:"1,240",
-icon:Package,
-growth:"+12%"
-},
+["My Profile",User],
 
-{
-title:"Customers",
-value:"25.8K",
-icon:Users,
-growth:"+32%"
-}
+["My Orders",Package],
+
+["Wishlist",Heart],
+
+["My Cart",ShoppingCart],
+
+["Addresses",MapPin],
+
+["Payments",CreditCard],
+
+["Settings",Settings]
+
 
 ];
+
+
+
+
+
+
+
+const products=[
+
+{
+name:"iPhone 16 Pro",
+price:"₹1,29,999",
+rating:"4.9",
+emoji:"📱"
+},
+
+{
+name:"MacBook Air M4",
+price:"₹99,999",
+rating:"4.8",
+emoji:"💻"
+},
+
+{
+name:"Apple Watch",
+price:"₹45,000",
+rating:"4.7",
+emoji:"⌚"
+},
+
+{
+name:"Premium Sneakers",
+price:"₹6,999",
+rating:"4.6",
+emoji:"👟"
+}
+
+
+];
+
+
 
 
 
@@ -130,30 +162,36 @@ return(
 
 <main className="
 min-h-screen
-bg-[#050505]
-text-white
-flex
+bg-gray-100
+text-gray-900
 ">
 
 
 
-{/* Sidebar */}
 
 
-<aside className={`
-fixed
-md:static
-z-40
-h-screen
-w-72
-bg-black
-border-r
-border-white/10
-p-6
-transition
-${sidebar?"left-0":"-left-full md:left-0"}
 
-`}>
+{/* HEADER */}
+
+
+<header className="
+bg-white
+shadow-sm
+sticky
+top-0
+z-50
+">
+
+
+<div className="
+max-w-7xl
+mx-auto
+px-5
+py-4
+flex
+items-center
+justify-between
+">
 
 
 
@@ -161,20 +199,41 @@ ${sidebar?"left-0":"-left-full md:left-0"}
 flex
 items-center
 gap-3
-mb-10
 ">
+
+
+<button
+
+onClick={()=>setMenu(!menu)}
+
+className="
+md:hidden
+"
+
+>
+
+{
+menu?
+<X/>
+:
+<Menu/>
+}
+
+</button>
+
+
+
 
 
 <div className="
 bg-[#D4AF37]
-text-black
 p-3
 rounded-xl
+text-black
 ">
 
 
-<ShoppingBag/>
-
+<ShoppingCart/>
 
 </div>
 
@@ -185,9 +244,15 @@ text-2xl
 font-bold
 ">
 
-Prime<span className="text-[#D4AF37]">
+
+Prime<span className="
+text-[#D4AF37]
+">
+
 Cart
+
 </span>
+
 
 </h1>
 
@@ -199,20 +264,153 @@ Cart
 
 
 
-<nav className="
-space-y-3
+
+
+<div className="
+hidden
+md:flex
+items-center
+bg-gray-100
+rounded-xl
+px-4
+py-3
+w-[450px]
+gap-3
 ">
 
 
-{
-[
-["Dashboard",LayoutDashboard],
-["Products",Package],
-["Orders",ShoppingBag],
-["Customers",Users],
-]
+<Search size={20}/>
 
-.map(([name,Icon]:any)=>(
+
+<input
+
+placeholder="Search products, brands and more"
+
+className="
+bg-transparent
+outline-none
+w-full
+"
+
+/>
+
+
+</div>
+
+
+
+
+
+
+<div className="
+flex
+gap-5
+items-center
+">
+
+
+<Heart/>
+
+<ShoppingCart/>
+
+
+<User/>
+
+</div>
+
+
+
+
+</div>
+
+
+
+</header>
+
+
+
+
+
+
+
+
+
+<div className="
+max-w-7xl
+mx-auto
+px-5
+py-8
+flex
+gap-6
+">
+
+
+
+
+
+
+
+{/* SIDEBAR */}
+
+
+
+<aside className={`
+
+fixed
+md:static
+top-20
+left-0
+w-72
+bg-white
+rounded-2xl
+p-6
+shadow-sm
+h-fit
+z-40
+
+${menu?
+"block":
+"hidden md:block"}
+
+`}>
+
+
+
+
+<div className="
+mb-6
+">
+
+
+<h2 className="
+font-bold
+text-xl
+">
+
+Hello 👋
+
+</h2>
+
+
+<p className="
+text-gray-500
+text-sm
+">
+
+{user?.email}
+
+</p>
+
+
+</div>
+
+
+
+
+
+{
+
+menuItems.map(([name,Icon]:any)=>(
 
 
 <button
@@ -220,17 +418,17 @@ space-y-3
 key={name}
 
 className="
-w-full
 flex
 items-center
 gap-4
-p-4
+w-full
+p-3
 rounded-xl
-text-gray-300
-hover:bg-white/10
+hover:bg-yellow-50
 hover:text-[#D4AF37]
 transition
 "
+
 
 >
 
@@ -249,10 +447,6 @@ transition
 }
 
 
-</nav>
-
-
-
 
 
 
@@ -262,27 +456,20 @@ transition
 onClick={logout}
 
 className="
-mt-10
-w-full
+mt-6
 flex
 items-center
 gap-3
-p-4
-rounded-xl
-bg-red-500/10
-text-red-400
+text-red-500
 "
 
 >
 
-
-<LogOut size={20}/>
+<LogOut/>
 
 Logout
 
-
 </button>
-
 
 
 
@@ -296,124 +483,29 @@ Logout
 
 
 
-
-{/* MAIN */}
+{/* CONTENT */}
 
 
 <section className="
 flex-1
-p-6
-md:p-10
 ">
 
 
 
 
-
-{/* Topbar */}
-
-
-<div className="
-flex
-justify-between
-items-center
-mb-10
-">
-
-
-<button
-
-onClick={()=>setSidebar(!sidebar)}
-
-className="
-md:hidden
-"
-
->
-
-{
-
-sidebar?
-
-<X/>:
-
-<Menu/>
-
-}
-
-
-</button>
-
-
-
-
-
-<div>
 
 
 <h1 className="
-text-4xl
+text-3xl
 font-bold
+mb-6
 ">
 
-Good Morning 👋
+My Dashboard
 
 </h1>
 
 
-<p className="
-text-gray-400
-">
-
-Welcome back to your PrimeCart store
-
-</p>
-
-
-</div>
-
-
-
-
-<div className="
-flex
-gap-4
-items-center
-">
-
-
-<div className="
-hidden
-md:flex
-bg-white/10
-rounded-xl
-px-4
-py-3
-gap-2
-">
-
-
-<Search size={18}/>
-
-Search...
-
-
-</div>
-
-
-
-<Bell
-className="
-text-[#D4AF37]
-"
-/>
-
-
-</div>
-
-
-
-</div>
 
 
 
@@ -421,149 +513,48 @@ text-[#D4AF37]
 
 
 
+{/* QUICK CARDS */}
 
-
-{/* Stats */}
 
 
 <div className="
 grid
+grid-cols-2
 md:grid-cols-4
-gap-6
+gap-5
 ">
 
 
 
-{
+<div className="
+bg-white
+rounded-2xl
+p-5
+shadow-sm
+">
 
-stats.map((item)=>(
-
-
-<div
-
-key={item.title}
-
-className="
-bg-white/10
-border
-border-white/10
-rounded-3xl
-p-6
-hover:border-[#D4AF37]
-transition
-"
-
->
-
-
-<item.icon
-
-className="
-text-[#D4AF37]
-mb-5
-"
-
+<Package
+className="text-[#D4AF37]"
 />
 
-
-
 <p className="
-text-gray-400
-">
-
-{item.title}
-
-</p>
-
-
-<h2 className="
-text-3xl
-font-bold
-mt-2
-">
-
-{item.value}
-
-</h2>
-
-
-<p className="
-text-green-400
 mt-3
 ">
 
-{item.growth}
+Orders
 
 </p>
-
-
-</div>
-
-
-
-))
-
-
-}
-
-
-</div>
-
-
-
-
-
-
-
-
-
-{/* Analytics */}
-
-
-<div className="
-grid
-lg:grid-cols-3
-gap-6
-mt-10
-">
-
-
-
-
-
-<div className="
-lg:col-span-2
-bg-white/10
-border
-border-white/10
-rounded-3xl
-p-8
-">
-
-
-<div className="
-flex
-justify-between
-mb-6
-">
-
 
 <h2 className="
 text-2xl
 font-bold
 ">
 
-Sales Analytics
+12
 
 </h2>
 
 
-<TrendingUp
-className="
-text-[#D4AF37]
-"/>
-
-
 </div>
 
 
@@ -571,43 +562,27 @@ text-[#D4AF37]
 
 
 <div className="
-h-60
-flex
-items-end
-gap-5
+bg-white
+rounded-2xl
+p-5
+shadow-sm
 ">
 
-
-{
-
-[40,70,50,90,65,85,100].map((h,i)=>(
-
-
-<div
-
-key={i}
-
-style={{
-height:`${h}%`
-}}
-
-className="
-flex-1
-bg-[#D4AF37]/80
-rounded-t-xl
-"
-
+<Heart
+className="text-red-500"
 />
 
 
-))
+<p className="mt-3">
+Wishlist
+</p>
 
 
-}
+<h2 className="text-2xl font-bold">
 
+8
 
-
-</div>
+</h2>
 
 
 </div>
@@ -619,101 +594,98 @@ rounded-t-xl
 
 
 <div className="
-bg-white/10
-border
-border-white/10
-rounded-3xl
-p-8
+bg-white
+rounded-2xl
+p-5
+shadow-sm
+">
+
+<Gift
+className="text-[#D4AF37]"
+/>
+
+
+<p className="mt-3">
+Coupons
+</p>
+
+
+<h2 className="text-2xl font-bold">
+
+25
+
+</h2>
+
+
+</div>
+
+
+
+
+
+
+
+
+<div className="
+bg-white
+rounded-2xl
+p-5
+shadow-sm
+">
+
+
+<CreditCard
+className="text-green-500"
+/>
+
+
+<p className="mt-3">
+Wallet
+</p>
+
+
+<h2 className="text-2xl font-bold">
+
+₹5000
+
+</h2>
+
+
+
+</div>
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+{/* ORDER */}
+
+
+
+<div className="
+mt-8
+bg-white
+rounded-2xl
+p-6
+shadow-sm
 ">
 
 
 <h2 className="
 text-xl
 font-bold
-mb-6
-">
-
-Store Rating
-
-</h2>
-
-
-
-<div className="
-flex
-items-center
-gap-3
-">
-
-
-<Star
-className="
-text-[#D4AF37]
-fill-[#D4AF37]
-"
-/>
-
-
-<h3 className="
-text-4xl
-font-bold
-">
-
-4.9
-
-</h3>
-
-
-</div>
-
-
-<p className="
-text-gray-400
-mt-4
-">
-
-Excellent customer satisfaction
-
-</p>
-
-
-
-</div>
-
-
-
-
-</div>
-
-
-
-
-
-
-
-{/* Recent Orders */}
-
-
-<div className="
-mt-10
-bg-white/10
-border
-border-white/10
-rounded-3xl
-p-8
-">
-
-
-<div className="
-flex
-justify-between
-mb-6
-">
-
-
-<h2 className="
-text-2xl
-font-bold
+mb-5
 ">
 
 Recent Orders
@@ -722,24 +694,55 @@ Recent Orders
 
 
 
-<button className="
-bg-[#D4AF37]
-text-black
-px-4
-py-2
-rounded-xl
+<div className="
 flex
-gap-2
-items-center
+justify-between
+border-b
+py-4
 ">
 
 
-<Plus size={18}/>
+<span>
+iPhone 16 Pro
+</span>
 
-Add Product
+
+<span className="
+text-green-600
+">
+
+Delivered
+
+</span>
 
 
-</button>
+</div>
+
+
+
+<div className="
+flex
+justify-between
+py-4
+">
+
+<span>
+
+MacBook Air
+
+</span>
+
+
+<span className="
+text-orange-500
+">
+
+Shipping
+
+</span>
+
+
+</div>
 
 
 </div>
@@ -749,45 +752,115 @@ Add Product
 
 
 
+
+
+
+{/* PRODUCTS */}
+
+
+
+<h2 className="
+text-2xl
+font-bold
+mt-10
+mb-5
+">
+
+Recommended For You
+
+</h2>
+
+
+
+
+
+<div className="
+grid
+md:grid-cols-4
+gap-5
+">
+
+
 {
 
-[
-"iPhone 16 Pro",
-"MacBook Air M4",
-"Apple Watch",
-"Gaming Laptop"
-
-].map(product=>(
+products.map(product=>(
 
 
 <div
 
-key={product}
+key={product.name}
 
 className="
-flex
-justify-between
-border-b
-border-white/10
-py-4
+bg-white
+rounded-2xl
+p-5
+shadow-sm
+hover:shadow-lg
+transition
 "
 
 
 >
 
 
-<span>
-{product}
-</span>
-
-
-<span className="
-text-[#D4AF37]
+<div className="
+text-6xl
+text-center
 ">
 
-Completed
+{product.emoji}
 
-</span>
+</div>
+
+
+<h3 className="
+font-bold
+mt-4
+">
+
+{product.name}
+
+</h3>
+
+
+<div className="
+flex
+items-center
+gap-1
+text-yellow-500
+mt-2
+">
+
+<Star size={16}/>
+
+{product.rating}
+
+</div>
+
+
+<p className="
+font-bold
+mt-2
+">
+
+{product.price}
+
+</p>
+
+
+<button className="
+mt-4
+w-full
+bg-[#D4AF37]
+py-2
+rounded-xl
+font-semibold
+">
+
+Add Cart
+
+</button>
+
 
 
 </div>
@@ -806,9 +879,14 @@ Completed
 
 
 
-
-
 </section>
+
+
+
+
+</div>
+
+
 
 
 </main>
