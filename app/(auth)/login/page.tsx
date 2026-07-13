@@ -1,39 +1,208 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import {
-  Mail,
-  Lock,
   Eye,
   EyeOff,
-  ArrowRight,
   ShoppingBag,
-  Sparkles,
+  ArrowRight,
 } from "lucide-react";
 
-import { FcGoogle } from "react-icons/fc";
-import { useState } from "react";
+import {
+  FaGoogle,
+  FaGithub,
+} from "react-icons/fa";
+
+import { toast } from "sonner";
+
 import { motion } from "framer-motion";
 
+import {
+  createClient
+} from "@/lib/supabase/client";
 
-export default function LoginPage() {
 
 
-const [showPassword,setShowPassword] = useState(false);
+export default function LoginPage(){
+
+
+const router = useRouter();
+
+
+const supabase = createClient();
+
+
+const [email,setEmail]=useState("");
+
+const [password,setPassword]=useState("");
+
+const [show,setShow]=useState(false);
+
+const [loading,setLoading]=useState(false);
+
+
+
+
+async function login(){
+
+
+try{
+
+
+setLoading(true);
+
+
+
+const {
+
+error
+
+}=await supabase.auth.signInWithPassword({
+
+email,
+
+password
+
+});
+
+
+
+if(error){
+
+toast.error(error.message);
+
+return;
+
+}
+
+
+
+toast.success(
+"Welcome back to PrimeCart"
+);
+
+
+router.push("/dashboard");
+
+
+}
+
+
+catch{
+
+toast.error(
+"Login failed"
+);
+
+}
+
+
+finally{
+
+setLoading(false);
+
+}
+
+
+}
+
+
+
+
+
+async function googleLogin(){
+
+
+const {error}=await supabase.auth.signInWithOAuth({
+
+provider:"google",
+
+options:{
+
+redirectTo:
+`${window.location.origin}/auth/callback`
+
+}
+
+});
+
+
+if(error){
+
+toast.error(error.message);
+
+}
+
+
+}
+
+
+
+
+
+async function githubLogin(){
+
+
+const {error}=await supabase.auth.signInWithOAuth({
+
+provider:"github",
+
+options:{
+
+redirectTo:
+`${window.location.origin}/auth/callback`
+
+}
+
+});
+
+
+if(error){
+
+toast.error(error.message);
+
+}
+
+
+}
+
+
+
 
 
 return (
 
+
 <main className="
 min-h-screen
-bg-[#f8f5ef]
+bg-[#050505]
+text-white
 flex
 items-center
 justify-center
-px-4
-py-10
+px-5
+overflow-hidden
 ">
+
+
+{/* Glow */}
+
+<div className="
+absolute
+w-[500px]
+h-[500px]
+bg-[#D4AF37]
+opacity-20
+blur-[150px]
+rounded-full
+">
+
+</div>
+
+
 
 
 <motion.div
@@ -48,166 +217,77 @@ opacity:1,
 y:0
 }}
 
-transition={{
-duration:.6
-}}
-
 className="
+relative
 w-full
-max-w-6xl
-grid
-lg:grid-cols-2
-overflow-hidden
-rounded-[35px]
-bg-white
-shadow-2xl
+max-w-md
+bg-white/10
+backdrop-blur-2xl
 border
-border-[#e7d7b5]
+border-white/10
+rounded-3xl
+p-8
+shadow-2xl
 "
-
 
 >
 
 
-{/* LEFT PREMIUM BRAND SECTION */}
 
 
-<section
-
-className="
-hidden
-lg:flex
-flex-col
-justify-center
-p-14
-relative
-overflow-hidden
-bg-gradient-to-br
-from-[#0b0b0b]
-via-[#17130c]
-to-[#2a1f0b]
-text-white
-"
-
-
->
-
-
-{/* GOLD EFFECT */}
-
-
-<div className="
-absolute
-w-80
-h-80
-bg-yellow-500/20
-blur-3xl
-rounded-full
-top-[-100px]
-right-[-100px]
-"/>
-
-
-
-<div className="
-absolute
-w-72
-h-72
-bg-yellow-600/20
-blur-3xl
-rounded-full
-bottom-[-100px]
-left-[-100px]
-"/>
-
-
-
-
-
-<div className="
-relative
-z-10
-">
-
+{/* Logo */}
 
 <div className="
 flex
-items-center
-gap-4
-mb-12
+justify-center
+mb-6
 ">
 
 
 <div className="
+bg-gradient-to-r
+from-yellow-300
+to-yellow-700
+text-black
 p-4
 rounded-2xl
-bg-gradient-to-br
-from-yellow-300
-to-yellow-600
-text-black
 shadow-lg
 ">
 
-
 <ShoppingBag size={35}/>
+
+</div>
 
 
 </div>
+
+
 
 
 
 <h1 className="
 text-4xl
 font-bold
-tracking-wide
+text-center
 ">
 
 
-PrimeCart
+Welcome Back
 
 
 </h1>
 
 
 
-</div>
-
-
-
-
-
-<h2 className="
-text-5xl
-font-extrabold
-leading-tight
-">
-
-
-Premium Shopping.
-
-
-<br/>
-
-Royal Experience.
-
-
-</h2>
-
-
-
-
 <p className="
-mt-6
-text-gray-300
-text-lg
-leading-relaxed
-max-w-md
+text-center
+text-gray-400
+mt-2
+mb-8
 ">
 
 
-Discover luxury products,
-exclusive collections and
-a smarter way to shop online.
+Login to your PrimeCart account
 
 
 </p>
@@ -216,30 +296,242 @@ a smarter way to shop online.
 
 
 
+{/* Email */}
+
+<input
+
+
+value={email}
+
+onChange={
+e=>setEmail(e.target.value)
+}
+
+
+placeholder="Email Address"
+
+
+className="
+w-full
+bg-black/40
+border
+border-white/20
+rounded-xl
+px-4
+py-3
+outline-none
+focus:border-[#D4AF37]
+mb-4
+"
+
+/>
+
+
+
+
+
+{/* Password */}
+
 
 <div className="
-mt-10
+relative
+">
+
+
+<input
+
+
+value={password}
+
+onChange={
+e=>setPassword(e.target.value)
+}
+
+
+type={
+show?
+"text":
+"password"
+}
+
+
+placeholder="Password"
+
+
+className="
+w-full
+bg-black/40
+border
+border-white/20
+rounded-xl
+px-4
+py-3
+pr-12
+outline-none
+focus:border-[#D4AF37]
+"
+
+/>
+
+
+
+<button
+
+type="button"
+
+onClick={()=>setShow(!show)}
+
+className="
+absolute
+right-4
+top-3
+text-gray-400
+"
+
+
+>
+
+{
+
+show?
+
+<EyeOff size={20}/>
+
+:
+
+<Eye size={20}/>
+
+}
+
+
+</button>
+
+
+</div>
+
+
+
+
+
+<div className="
+flex
+justify-end
+mt-3
+">
+
+
+<Link
+
+href="/forgot-password"
+
+className="
+text-sm
+text-[#D4AF37]
+"
+
+>
+
+Forgot Password?
+
+</Link>
+
+
+</div>
+
+
+
+
+
+
+<button
+
+onClick={login}
+
+disabled={loading}
+
+className="
+mt-6
+w-full
+bg-gradient-to-r
+from-yellow-300
+via-yellow-500
+to-yellow-700
+text-black
+font-bold
+py-3
+rounded-xl
+flex
+justify-center
+items-center
+gap-2
+hover:scale-105
+transition
+"
+
+
+>
+
+
+{
+
+loading?
+
+"Logging in..."
+
+:
+
+<>
+
+Login
+
+<ArrowRight size={18}/>
+
+</>
+
+}
+
+
+</button>
+
+
+
+
+
+
+
+<div className="
 flex
 items-center
 gap-3
-text-yellow-400
+my-6
 ">
 
 
-<Sparkles size={22}/>
+<div className="
+h-px
+bg-white/20
+flex-1
+"/>
 
 
 <span className="
-font-medium
+text-gray-400
+text-sm
 ">
 
-
-Trusted by thousands of shoppers
-
+OR
 
 </span>
 
 
+
+<div className="
+h-px
+bg-white/20
+flex-1
+"/>
+
+
 </div>
 
 
@@ -248,128 +540,114 @@ Trusted by thousands of shoppers
 
 
 
-<div className="
-mt-10
-grid
-grid-cols-3
-gap-4
-">
+<button
+
+onClick={googleLogin}
+
+className="
+w-full
+bg-white
+text-black
+py-3
+rounded-xl
+font-semibold
+flex
+justify-center
+items-center
+gap-3
+"
 
 
-<div className="
-bg-white/10
-backdrop-blur-md
-rounded-2xl
-p-4
+>
+
+<FaGoogle/>
+
+Continue with Google
+
+</button>
+
+
+
+
+
+
+<button
+
+onClick={githubLogin}
+
+className="
+mt-3
+w-full
+bg-black
 border
-border-white/10
-">
+border-white/20
+py-3
+rounded-xl
+font-semibold
+flex
+justify-center
+items-center
+gap-3
+"
 
 
-<h3 className="
-text-2xl
-font-bold
-text-yellow-400
-">
+>
 
-10K+
+<FaGithub/>
 
-</h3>
+Continue with Github
+
+
+</button>
+
+
+
+
+
 
 
 <p className="
-text-sm
-text-gray-300
+text-center
+text-gray-400
+mt-7
 ">
 
-Products
+
+Don't have account?
+
+
+<Link
+
+href="/register"
+
+className="
+text-[#D4AF37]
+font-semibold
+ml-2
+"
+
+>
+
+Create Account
+
+</Link>
+
+
 
 </p>
 
 
-</div>
 
 
 
-
-
-<div className="
-bg-white/10
-backdrop-blur-md
-rounded-2xl
-p-4
-border
-border-white/10
-">
-
-
-<h3 className="
-text-2xl
-font-bold
-text-yellow-400
-">
-
-50K+
-
-</h3>
-
-
-<p className="
-text-sm
-text-gray-300
-">
-
-Customers
-
-</p>
-
-
-</div>
+</motion.div>
 
 
 
+</main>
 
 
-<div className="
-bg-white/10
-backdrop-blur-md
-rounded-2xl
-p-4
-border
-border-white/10
-">
+);
 
 
-<h3 className="
-text-2xl
-font-bold
-text-yellow-400
-">
-
-24/7
-
-</h3>
-
-
-<p className="
-text-sm
-text-gray-300
-">
-
-Support
-
-</p>
-
-
-</div>
-
-
-</div>
-
-
-
-</div>
-
-
-</section>
-  
+}
