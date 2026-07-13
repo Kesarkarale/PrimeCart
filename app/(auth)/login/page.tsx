@@ -7,14 +7,16 @@ import { useRouter } from "next/navigation";
 import {
   Eye,
   EyeOff,
-  ShoppingBag,
   ArrowRight,
   Crown,
+  ShieldCheck,
+  Truck,
+  Sparkles
 } from "lucide-react";
 
 import {
   FaGoogle,
-  FaGithub,
+  FaGithub
 } from "react-icons/fa";
 
 import { toast } from "sonner";
@@ -25,29 +27,36 @@ import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage(){
 
+
 const router = useRouter();
 
 const supabase = createClient();
 
 
-const [email,setEmail]=useState("");
-const [password,setPassword]=useState("");
+const [email,setEmail] = useState("");
 
-const [show,setShow]=useState(false);
-const [loading,setLoading]=useState(false);
+const [password,setPassword] = useState("");
+
+const [show,setShow] = useState(false);
+
+const [loading,setLoading] = useState(false);
+
+
 
 
 
 async function login(){
+
 
 try{
 
 setLoading(true);
 
 
-const {error}=await supabase.auth.signInWithPassword({
+const {error} = await supabase.auth.signInWithPassword({
 
 email,
+
 password
 
 });
@@ -80,13 +89,16 @@ setLoading(false);
 
 }
 
+
 }
 
 
 
 
 
+
 async function googleLogin(){
+
 
 const {error}=await supabase.auth.signInWithOAuth({
 
@@ -110,7 +122,9 @@ toast.error(error.message);
 
 
 
+
 async function githubLogin(){
+
 
 const {error}=await supabase.auth.signInWithOAuth({
 
@@ -133,47 +147,50 @@ toast.error(error.message);
 
 
 
-return(
+
+
+return (
 
 <main className="
 min-h-screen
-relative
-overflow-hidden
-bg-[#050816]
 flex
-items-center
-justify-center
-px-5
-text-white
+bg-white
+overflow-hidden
 ">
 
 
-{/* Luxury Glow */}
+{/* LEFT BRAND SECTION */}
+
+
+<section className="
+hidden
+lg:flex
+w-1/2
+bg-[#050505]
+text-white
+relative
+flex-col
+justify-center
+px-16
+overflow-hidden
+">
+
+
+
+{/* Gold Glow */}
 
 <div className="
 absolute
-top-[-150px]
-left-[-150px]
 w-[500px]
 h-[500px]
 bg-[#D4AF37]
 opacity-20
-blur-[160px]
+blur-[150px]
 rounded-full
+top-[-100px]
+left-[-100px]
 "/>
 
-
-<div className="
-absolute
-bottom-[-150px]
-right-[-100px]
-w-[400px]
-h-[400px]
-bg-[#F59E0B]
-opacity-10
-blur-[140px]
-rounded-full
-"/>
 
 
 
@@ -182,124 +199,47 @@ rounded-full
 
 initial={{
 opacity:0,
-scale:0.9,
-y:40
+x:-50
 }}
 
 animate={{
 opacity:1,
-scale:1,
-y:0
+x:0
 }}
 
 transition={{
-duration:0.6
+duration:.7
 }}
-
 
 className="
 relative
-w-full
-max-w-md
-rounded-[32px]
-p-8
-
-bg-white/5
-backdrop-blur-3xl
-
-border
-border-white/10
-
-shadow-[0_25px_80px_rgba(0,0,0,0.5)]
+z-10
 "
-
 
 >
 
 
-
-{/* Logo */}
-
 <div className="
-flex
-justify-center
-mb-7
-">
-
-
-<div className="
-relative
-">
-
-<div className="
-absolute
-inset-0
-bg-[#D4AF37]
-blur-xl
-opacity-40
-rounded-full
-"/>
-
-
-
-<div className="
-relative
-w-20
-h-20
-
-rounded-3xl
-
-bg-gradient-to-br
-from-yellow-200
-via-yellow-500
-to-yellow-800
-
 flex
 items-center
-justify-center
-
-text-black
-
-shadow-xl
-">
-
-<ShoppingBag size={38}/>
-
-
-</div>
-
-
-</div>
-
-
-
-</div>
-
-
-
-
-
-<div className="
-flex
-justify-center
-items-center
-gap-2
+gap-3
 text-[#D4AF37]
-mb-3
+mb-8
 ">
 
 
-<Crown size={18}/>
+<Crown size={30}/>
 
-<span className="
-uppercase
-tracking-[5px]
-text-sm
+
+<h2 className="
+text-xl
+tracking-[8px]
+font-bold
 ">
 
-PrimeCart
+PRIME CART
 
-</span>
+</h2>
 
 
 </div>
@@ -309,10 +249,254 @@ PrimeCart
 
 
 <h1 className="
-text-4xl
+text-6xl
+font-black
+leading-tight
+">
+
+The Future Of
+
+<br/>
+
+<span className="
+text-[#D4AF37]
+">
+
+Premium Shopping
+
+</span>
+
+</h1>
+
+
+
+
+<p className="
+mt-6
+text-gray-400
+max-w-md
+text-lg
+">
+
+Experience a luxury commerce platform
+built for modern India with smart shopping
+and premium service.
+
+</p>
+
+
+
+
+
+<div className="
+mt-10
+space-y-5
+">
+
+
+<div className="
+flex
+items-center
+gap-4
+">
+
+<div className="
+p-3
+rounded-xl
+bg-white/10
+">
+
+<ShieldCheck
+className="text-[#D4AF37]"
+/>
+
+</div>
+
+<span>
+Secure Payments
+</span>
+
+</div>
+
+
+
+
+
+<div className="
+flex
+items-center
+gap-4
+">
+
+<div className="
+p-3
+rounded-xl
+bg-white/10
+">
+
+<Truck
+className="text-[#D4AF37]"
+/>
+
+</div>
+
+<span>
+Fast Delivery
+</span>
+
+</div>
+
+
+
+
+
+<div className="
+flex
+items-center
+gap-4
+">
+
+<div className="
+p-3
+rounded-xl
+bg-white/10
+">
+
+<Sparkles
+className="text-[#D4AF37]"
+/>
+
+</div>
+
+<span>
+AI Smart Recommendations
+</span>
+
+</div>
+
+
+</div>
+
+
+
+<div className="
+mt-12
+flex
+gap-10
+">
+
+
+<div>
+
+<h3 className="
+text-3xl
 font-bold
-text-center
-tracking-tight
+text-[#D4AF37]
+">
+
+10K+
+
+</h3>
+
+<p className="text-gray-400">
+Customers
+</p>
+
+</div>
+
+
+
+<div>
+
+<h3 className="
+text-3xl
+font-bold
+text-[#D4AF37]
+">
+
+99.9%
+
+</h3>
+
+<p className="text-gray-400">
+Secure
+</p>
+
+</div>
+
+
+</div>
+
+
+
+</motion.div>
+
+
+
+</section>
+
+
+
+
+
+
+
+{/* RIGHT LOGIN */}
+
+
+
+<section className="
+w-full
+lg:w-1/2
+flex
+items-center
+justify-center
+px-6
+bg-gray-50
+">
+
+
+<motion.div
+
+initial={{
+opacity:0,
+y:40
+}}
+
+animate={{
+opacity:1,
+y:0
+}}
+
+transition={{
+duration:.6
+}}
+
+className="
+w-full
+max-w-md
+bg-white
+rounded-[32px]
+p-10
+
+shadow-[0_30px_80px_rgba(0,0,0,0.12)]
+
+"
+
+
+>
+
+
+
+<div className="
+mb-8
+">
+
+
+<h1 className="
+text-4xl
+font-black
+text-black
 ">
 
 Welcome Back
@@ -320,17 +504,17 @@ Welcome Back
 </h1>
 
 
-
 <p className="
-text-center
-text-gray-400
+text-gray-500
 mt-3
-mb-8
 ">
 
-Enter your details to access your premium shopping experience
+Login to continue your PrimeCart journey
 
 </p>
+
+
+</div>
 
 
 
@@ -350,28 +534,22 @@ placeholder="Email Address"
 
 className="
 w-full
-rounded-2xl
 px-5
 py-4
-
-bg-black/30
+rounded-2xl
 
 border
-border-white/10
+border-gray-200
 
 outline-none
 
-transition
-
 focus:border-[#D4AF37]
 
-placeholder:text-gray-500
-
 mb-4
-
 "
 
 />
+
 
 
 
@@ -392,37 +570,30 @@ onChange={
 e=>setPassword(e.target.value)
 }
 
-
 type={
 show?
 "text":
 "password"
 }
 
-
 placeholder="Password"
-
 
 className="
 w-full
-rounded-2xl
 px-5
 py-4
 pr-14
 
-bg-black/30
+rounded-2xl
 
 border
-border-white/10
+border-gray-200
 
 outline-none
 
 focus:border-[#D4AF37]
 
-placeholder:text-gray-500
-
 "
-
 
 />
 
@@ -437,11 +608,10 @@ absolute
 right-5
 top-4
 text-gray-400
-hover:text-[#D4AF37]
 "
 
->
 
+>
 
 {
 
@@ -459,9 +629,7 @@ show?
 </button>
 
 
-
 </div>
-
 
 
 
@@ -470,7 +638,7 @@ show?
 <div className="
 flex
 justify-end
-mt-4
+mt-3
 ">
 
 
@@ -480,11 +648,9 @@ href="/forgot-password"
 
 className="
 text-sm
-text-[#D4AF37]
-hover:text-yellow-300
-"
-
->
+text-[#B8860B]
+font-medium
+">
 
 Forgot Password?
 
@@ -499,49 +665,40 @@ Forgot Password?
 
 
 
-<motion.button
 
-
-whileHover={{
-scale:1.03
-}}
-
-whileTap={{
-scale:0.97
-}}
-
+<button
 
 onClick={login}
 
 disabled={loading}
 
-
 className="
 mt-7
+
 w-full
 
 py-4
 
 rounded-2xl
 
+bg-black
+
+text-white
+
 font-bold
-
-text-black
-
-bg-gradient-to-r
-from-yellow-300
-via-yellow-500
-to-yellow-700
 
 flex
 justify-center
 items-center
 gap-3
 
-shadow-lg
+hover:bg-[#D4AF37]
+
+hover:text-black
+
+transition
 
 "
-
 
 >
 
@@ -562,7 +719,7 @@ Login
 }
 
 
-</motion.button>
+</button>
 
 
 
@@ -578,10 +735,15 @@ my-7
 ">
 
 
-<div className="h-px bg-white/20 flex-1"/>
+<div className="
+h-px
+bg-gray-200
+flex-1
+"/>
+
 
 <span className="
-text-gray-500
+text-gray-400
 text-sm
 ">
 
@@ -589,7 +751,12 @@ OR
 
 </span>
 
-<div className="h-px bg-white/20 flex-1"/>
+
+<div className="
+h-px
+bg-gray-200
+flex-1
+"/>
 
 
 </div>
@@ -610,17 +777,17 @@ py-4
 
 rounded-2xl
 
-bg-white
-text-black
-
-font-semibold
+border
+border-gray-200
 
 flex
 justify-center
 items-center
 gap-3
 
-hover:scale-[1.02]
+font-semibold
+
+hover:border-[#D4AF37]
 
 transition
 
@@ -631,8 +798,7 @@ transition
 
 <FaGoogle/>
 
-Continue with Google
-
+Google
 
 </button>
 
@@ -647,6 +813,7 @@ onClick={githubLogin}
 
 className="
 mt-3
+
 w-full
 
 py-4
@@ -655,29 +822,22 @@ rounded-2xl
 
 bg-black
 
-border
-border-white/20
-
-font-semibold
+text-white
 
 flex
 justify-center
 items-center
 gap-3
 
-hover:border-[#D4AF37]
-
-transition
+font-semibold
 
 "
-
 
 >
 
 <FaGithub/>
 
-Continue with Github
-
+Github
 
 </button>
 
@@ -687,11 +847,10 @@ Continue with Github
 
 
 
-
 <p className="
 text-center
-text-gray-400
 mt-8
+text-gray-500
 ">
 
 
@@ -704,8 +863,11 @@ href="/register"
 
 className="
 ml-2
-text-[#D4AF37]
-font-semibold
+
+font-bold
+
+text-[#B8860B]
+
 "
 
 >
@@ -719,13 +881,15 @@ Create Account
 
 
 
-
 </motion.div>
+
+
+
+</section>
 
 
 </main>
 
 )
-
 
 }
