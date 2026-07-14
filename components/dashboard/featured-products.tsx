@@ -24,7 +24,7 @@ image:"/products/iphone.png"
 
 
 {
-id:2,
+id:"2",
 name:"MacBook Pro M4",
 price:189999,
 oldPrice:199999,
@@ -35,7 +35,7 @@ image:"/products/macbook.png"
 
 
 {
-id:3,
+id:"3",
 name:"Apple Watch Ultra",
 price:79999,
 oldPrice:89999,
@@ -46,7 +46,7 @@ image:"/products/watch.png"
 
 
 {
-id:4,
+id:"4",
 name:"Premium Sneakers",
 price:12999,
 oldPrice:15999,
