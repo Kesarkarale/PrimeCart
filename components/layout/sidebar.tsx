@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 
 import {
   Home,
@@ -65,27 +64,41 @@ link:"/dashboard/settings"
 ];
 
 
+
 return (
 
 <aside className="
+
 h-screen
 w-72
+
 fixed
 left-0
 top-0
-bg-black/80
+
+bg-white
+dark:bg-black/80
+
 backdrop-blur-xl
+
 border-r
-border-white/10
+border-gray-200
+dark:border-white/10
+
 p-6
-text-white
+
+text-gray-900
+dark:text-white
+
 hidden
 md:block
+
 ">
 
 
 
 {/* LOGO */}
+
 
 <div className="
 flex
@@ -102,6 +115,7 @@ to-yellow-700
 p-3
 rounded-xl
 text-black
+shadow-lg
 ">
 
 <ShoppingBag size={28}/>
@@ -110,7 +124,9 @@ text-black
 
 
 
+
 <div>
+
 
 <h1 className="
 text-2xl
@@ -129,7 +145,8 @@ Cart
 
 <p className="
 text-xs
-text-gray-400
+text-gray-500
+dark:text-gray-400
 ">
 
 Luxury Shopping
@@ -170,16 +187,27 @@ href={item.link}
 key={item.name}
 
 className="
+
 flex
 items-center
 gap-4
+
 px-4
 py-3
+
 rounded-xl
-text-gray-300
+
+
+text-gray-600
+dark:text-gray-300
+
+
 hover:bg-[#D4AF37]/20
+
 hover:text-[#D4AF37]
+
 transition
+
 "
 
 
@@ -189,7 +217,9 @@ transition
 <Icon size={21}/>
 
 
-<span>
+<span className="
+font-medium
+">
 
 {item.name}
 
@@ -207,8 +237,8 @@ transition
 }
 
 
-</div>
 
+</div>
 
 
 
@@ -218,31 +248,64 @@ transition
 {/* LOGOUT */}
 
 
-<button className="
+<button
+
+className="
+
 absolute
+
 bottom-8
+
 left-6
+
 right-6
+
+
 flex
+
 items-center
+
 gap-3
+
+
 px-4
+
 py-3
+
+
 rounded-xl
+
+
 border
-border-white/10
+
+border-gray-200
+dark:border-white/10
+
+
+text-gray-600
+dark:text-gray-300
+
+
 hover:border-[#D4AF37]
+
+hover:text-[#D4AF37]
+
+
 transition
-text-gray-300
-">
+
+"
+
+>
 
 
 <LogOut size={20}/>
+
 
 Logout
 
 
 </button>
+
 
 
 
