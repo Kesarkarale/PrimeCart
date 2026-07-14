@@ -13,7 +13,7 @@ import Link from "next/link";
 const products = [
 
 {
-id:1,
+id:"1",
 name:"iPhone 16 Pro Max",
 price:129999,
 oldPrice:139999,
