@@ -8,7 +8,7 @@ import {
  UserCircle
 } from "lucide-react";
 
-
+import ThemeToggle from "@/components/theme-toggle";
 export default function Navbar(){
 
 
@@ -127,7 +127,7 @@ text-[#D4AF37]
 
 
 </header>
-
+<ThemeToggle />
 
 );
 
