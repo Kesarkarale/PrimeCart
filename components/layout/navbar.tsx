@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 
 import {
@@ -8,7 +8,10 @@ import {
  UserCircle
 } from "lucide-react";
 
+
 import ThemeToggle from "@/components/theme-toggle";
+
+
 export default function Navbar(){
 
 
@@ -19,20 +22,20 @@ h-20
 flex
 items-center
 justify-between
-px-8
+px-5
+md:px-8
 bg-black/60
+dark:bg-black/60
+bg-white
 backdrop-blur-xl
 border-b
 border-white/10
 text-white
+dark:text-white
 ">
 
 
-
-
-
 {/* SEARCH */}
-
 
 <div className="
 hidden
@@ -59,6 +62,7 @@ bg-transparent
 outline-none
 w-full
 text-sm
+placeholder:text-gray-400
 "
 
 />
@@ -71,33 +75,49 @@ text-sm
 
 
 
+{/* RIGHT ICONS */}
+
 
 <div className="
 flex
 items-center
-gap-5
+gap-4
 ">
 
+
+{/* Theme */}
+
+<ThemeToggle />
+
+
+
+
+{/* Cart */}
 
 <div className="
 relative
+cursor-pointer
 ">
 
 
-<ShoppingCart/>
+<ShoppingCart size={25}/>
+
 
 <span className="
 absolute
--top-2
+- top-2
 -right-3
 bg-[#D4AF37]
 text-black
 text-xs
+font-bold
 rounded-full
 px-2
 ">
 
+
 0
+
 
 </span>
 
@@ -107,16 +127,35 @@ px-2
 
 
 
+
+{/* Notification */}
+
 <Bell
+
+size={23}
 
 className="
 text-[#D4AF37]
+cursor-pointer
 "
 
 />
 
 
-<UserCircle size={30}/>
+
+
+
+{/* User */}
+
+<UserCircle
+
+size={30}
+
+className="
+cursor-pointer
+"
+
+/>
 
 
 
@@ -124,10 +163,7 @@ text-[#D4AF37]
 
 
 
-
-
 </header>
-<ThemeToggle />
 
 );
 
