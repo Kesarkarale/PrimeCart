@@ -2,9 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
+
 import { addToCart } from "@/lib/cart";
 
-import {toast} from "sonner";
+import { toast } from "sonner";
+
 import {
   Heart,
   ShoppingCart,
@@ -15,30 +17,37 @@ import {
 import { motion } from "framer-motion";
 
 
+
 interface Product {
 
  id:string;
 
-  name:string;
+ name:string;
 
-  price:number;
+ price:number;
 
-  oldPrice?:number;
+ oldPrice?:number;
 
-  rating:number;
+ rating:number;
 
-  image:string;
+ image:string;
 
-  category:string;
+ category:string;
 
 }
 
 
 
+
+
 export default function ProductCard({
-  product
+
+product
+
 }:{
-  product:Product;
+
+product:Product;
+
 }) {
 
 
@@ -46,42 +55,71 @@ return (
 
 <motion.div
 
+
 initial={{
 opacity:0,
 y:30
 }}
+
 
 whileInView={{
 opacity:1,
 y:0
 }}
 
+
 viewport={{
 once:true
 }}
+
 
 whileHover={{
 y:-8
 }}
 
+
 transition={{
 duration:.3
 }}
 
+
 className="
+
 group
+
 relative
-bg-white/5
+
+bg-white
+
+dark:bg-white/5
+
 backdrop-blur-xl
+
 border
-border-white/10
+
+border-gray-200
+
+dark:border-white/10
+
 rounded-3xl
+
 overflow-hidden
+
 hover:border-[#D4AF37]
+
+shadow-sm
+
+dark:shadow-none
+
 transition
+
 "
 
+
 >
+
+
+
 
 
 {/* Wishlist */}
@@ -90,21 +128,40 @@ transition
 <button
 
 className="
+
 absolute
+
 right-4
+
 top-4
+
 z-10
-bg-black/50
+
+
+bg-gray-100
+
+dark:bg-black/50
+
+
 p-3
+
 rounded-full
+
+
 hover:bg-[#D4AF37]
+
 hover:text-black
+
+
 transition
+
 "
 
 >
 
+
 <Heart size={20}/>
+
 
 </button>
 
@@ -112,7 +169,10 @@ transition
 
 
 
-{/* Image */}
+
+
+{/* IMAGE */}
+
 
 
 <Link
@@ -122,14 +182,28 @@ href={`/dashboard/products/${product.id}`}
 >
 
 
+
 <div className="
+
 relative
+
 h-64
-bg-black/40
+
+
+bg-gray-100
+
+dark:bg-black/40
+
+
 flex
+
 items-center
+
 justify-center
+
+
 overflow-hidden
+
 ">
 
 
@@ -141,18 +215,27 @@ alt={product.name}
 
 fill
 
+
 className="
+
 object-contain
+
 p-8
+
 group-hover:scale-110
+
 transition
+
 duration-500
+
 "
 
 />
 
 
+
 </div>
+
 
 
 </Link>
@@ -163,22 +246,38 @@ duration-500
 
 
 
+
 <div className="
+
 p-5
+
 ">
 
 
-{/* Category */}
+
+
+
+{/* CATEGORY */}
+
 
 
 <p className="
+
 text-xs
+
 text-[#D4AF37]
+
 uppercase
+
 tracking-wider
+
+font-semibold
+
 ">
 
+
 {product.category}
+
 
 </p>
 
@@ -186,18 +285,34 @@ tracking-wider
 
 
 
-{/* Name */}
+
+
+
+{/* NAME */}
+
 
 
 <h3 className="
+
 mt-2
+
 text-xl
+
 font-bold
-text-white
+
+
+text-gray-900
+
+dark:text-white
+
+
 line-clamp-1
+
 ">
 
+
 {product.name}
+
 
 </h3>
 
@@ -205,32 +320,62 @@ line-clamp-1
 
 
 
-{/* Rating */}
+
+
+
+
+{/* RATING */}
+
 
 
 <div className="
+
 flex
+
 items-center
+
 gap-2
+
 mt-3
+
 ">
 
 
 <div className="
+
 flex
+
 items-center
+
 gap-1
+
+
 bg-[#D4AF37]
+
 text-black
+
+
 px-2
+
 py-1
+
 rounded-lg
+
 text-sm
+
 font-bold
+
 ">
 
 
-<Star size={14} fill="currentColor"/>
+<Star
+
+size={14}
+
+fill="currentColor"
+
+/>
+
 
 {product.rating}
 
@@ -238,12 +383,22 @@ font-bold
 </div>
 
 
+
+
+
 <span className="
-text-gray-400
+
+text-gray-500
+
+dark:text-gray-400
+
 text-sm
+
 ">
 
+
 (120 Reviews)
+
 
 </span>
 
@@ -256,42 +411,70 @@ text-sm
 
 
 
-{/* Price */}
+
+
+{/* PRICE */}
+
 
 
 <div className="
+
 flex
+
 items-center
+
 gap-3
+
 mt-4
+
 ">
 
 
 <h4 className="
+
 text-2xl
+
 font-bold
+
 text-[#D4AF37]
+
 ">
 
+
 ₹{product.price.toLocaleString()}
+
 
 </h4>
 
 
+
+
 {
+
 product.oldPrice &&
 
+
 <p className="
-text-gray-500
+
+text-gray-400
+
+dark:text-gray-500
+
 line-through
+
 text-sm
+
 ">
+
 
 ₹{product.oldPrice.toLocaleString()}
 
+
 </p>
 
+
 }
+
 
 
 </div>
@@ -302,64 +485,126 @@ text-sm
 
 
 
-{/* Buttons */}
+
+
+{/* BUTTONS */}
+
 
 
 <div className="
+
 grid
+
 grid-cols-2
+
 gap-3
+
 mt-5
+
 ">
+
+
 
 
 
 <button
 
+
 onClick={async()=>{
+
 
 try{
 
+
 await addToCart(product);
+
 
 toast.success(
 "Product added to cart 🛒"
 );
 
+
 }
+
 
 catch(error:any){
 
+
 toast.error(
-error.message || "Please login first"
+
+error.message ||
+
+"Please login first"
+
 );
+
 
 }
 
+
 }}
 
+
+
 className="
+
 flex
+
 items-center
+
 justify-center
+
 gap-2
-bg-white/10
+
+
+bg-gray-100
+
+dark:bg-white/10
+
+
 border
-border-white/10
+
+border-gray-200
+
+dark:border-white/10
+
+
 py-3
+
+
 rounded-xl
+
+
 hover:border-[#D4AF37]
+
+
 transition
+
+
 text-sm
+
+
+text-gray-900
+
+dark:text-white
+
 "
+
 
 >
 
+
 <ShoppingCart size={17}/>
+
 
 Cart
 
+
 </button>
+
+
+
+
 
 
 
@@ -367,36 +612,69 @@ Cart
 
 <button
 
+
 className="
+
+
 flex
+
 items-center
+
 justify-center
+
 gap-2
+
+
 bg-[#D4AF37]
+
+
 text-black
+
+
 font-bold
+
+
 py-3
+
+
 rounded-xl
+
+
 hover:scale-105
+
+
 transition
+
+
 text-sm
+
+
 "
 
 
 >
 
+
 <Zap size={17}/>
 
+
 Buy
+
 
 </button>
 
 
 
-</div>
 
 
 </div>
+
+
+
+
+</div>
+
+
 
 
 
