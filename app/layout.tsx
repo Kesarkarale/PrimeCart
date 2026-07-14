@@ -1,28 +1,14 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-
 import "./globals.css";
 
 import Providers from "@/components/providers";
 
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-
-
 export const metadata: Metadata = {
 
-title: "PrimeCart | Premium Online Shopping",
+title:"PrimeCart",
 
-description:
-"PrimeCart is a luxury e-commerce marketplace with premium products, secure payments and fast delivery.",
-
-icons:{
-icon:"/favicon.ico",
-},
+description:"Premium Shopping Experience"
 
 };
 
@@ -32,25 +18,18 @@ export default function RootLayout({
 
 children,
 
-}: Readonly<{
+}:{
 
-children: React.ReactNode;
+children:React.ReactNode;
 
-}>) {
+}){
 
 
 return (
 
-<html lang="en">
+<html lang="en" suppressHydrationWarning>
 
-<body
-className={`
-${inter.variable}
-antialiased
-bg-[#050505]
-text-white
-`}
->
+<body>
 
 <Providers>
 
@@ -58,12 +37,11 @@ text-white
 
 </Providers>
 
-
 </body>
-
 
 </html>
 
 );
+
 
 }
