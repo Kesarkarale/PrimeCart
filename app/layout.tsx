@@ -1,24 +1,69 @@
-import type { ReactNode } from "react";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 
-import Sidebar from "@/components/layout/sidebar";
-import Navbar from "@/components/layout/navbar";
+import "./globals.css";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  return (
-    <div className="min-h-screen bg-[#050505] text-white">
-      <Sidebar />
+import Providers from "@/components/providers";
 
-      <div className="md:ml-72 min-h-screen flex flex-col">
-        <Navbar />
 
-        <main className="flex-1 p-6 md:p-8">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+
+
+export const metadata: Metadata = {
+
+title: "PrimeCart | Premium Online Shopping",
+
+description:
+"PrimeCart is a luxury e-commerce marketplace with premium products, secure payments and fast delivery.",
+
+icons:{
+icon:"/favicon.ico",
+},
+
+};
+
+
+
+export default function RootLayout({
+
+children,
+
+}: Readonly<{
+
+children: React.ReactNode;
+
+}>) {
+
+
+return (
+
+<html lang="en">
+
+<body
+className={`
+${inter.variable}
+antialiased
+bg-[#050505]
+text-white
+`}
+>
+
+<Providers>
+
+{children}
+
+</Providers>
+
+
+</body>
+
+
+</html>
+
+);
+
 }
