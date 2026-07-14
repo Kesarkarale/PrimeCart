@@ -24,25 +24,33 @@ items-center
 justify-between
 px-5
 md:px-8
-bg-black/60
-dark:bg-black/60
+
 bg-white
+text-gray-900
+
+dark:bg-black/60
+dark:text-white
+
 backdrop-blur-xl
 border-b
-border-white/10
-text-white
-dark:text-white
+border-gray-200
+dark:border-white/10
 ">
 
 
+
 {/* SEARCH */}
+
 
 <div className="
 hidden
 md:flex
 items-center
 gap-3
-bg-white/10
+
+bg-gray-100
+dark:bg-white/10
+
 px-5
 py-3
 rounded-xl
@@ -62,13 +70,16 @@ bg-transparent
 outline-none
 w-full
 text-sm
-placeholder:text-gray-400
+
+placeholder:text-gray-500
+dark:placeholder:text-gray-400
 "
 
 />
 
 
 </div>
+
 
 
 
@@ -85,14 +96,15 @@ gap-4
 ">
 
 
-{/* Theme */}
 
 <ThemeToggle />
 
 
 
 
-{/* Cart */}
+
+{/* CART */}
+
 
 <div className="
 relative
@@ -105,19 +117,20 @@ cursor-pointer
 
 <span className="
 absolute
-- top-2
+-top-2
 -right-3
+
 bg-[#D4AF37]
 text-black
+
 text-xs
 font-bold
+
 rounded-full
 px-2
 ">
 
-
 0
-
 
 </span>
 
@@ -128,7 +141,6 @@ px-2
 
 
 
-{/* Notification */}
 
 <Bell
 
@@ -145,7 +157,6 @@ cursor-pointer
 
 
 
-{/* User */}
 
 <UserCircle
 
@@ -164,6 +175,7 @@ cursor-pointer
 
 
 </header>
+
 
 );
 
