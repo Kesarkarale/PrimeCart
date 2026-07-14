@@ -19,10 +19,11 @@ return (
 
 <div className="
 min-h-screen
-bg-[#050505]
-text-white
+bg-gray-50
+text-gray-900
+dark:bg-[#050505]
+dark:text-white
 ">
-
 
 {/* Sidebar */}
 
