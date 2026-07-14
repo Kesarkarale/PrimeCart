@@ -2,7 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { addToCart } from "@/lib/cart";
 
+import {toast} from "sonner";
 import {
   Heart,
   ShoppingCart,
@@ -314,6 +316,28 @@ mt-5
 
 <button
 
+onClick={async()=>{
+
+try{
+
+await addToCart(product);
+
+toast.success(
+"Product added to cart 🛒"
+);
+
+}
+
+catch(error:any){
+
+toast.error(
+error.message || "Please login first"
+);
+
+}
+
+}}
+
 className="
 flex
 items-center
@@ -328,7 +352,6 @@ hover:border-[#D4AF37]
 transition
 text-sm
 "
-
 
 >
 
