@@ -1,77 +1,128 @@
-"use client";
+ "use client";
 
 
 import {
-Heart,
-X
+X,
+Heart
 } from "lucide-react";
 
 
-export default function WishlistPanel(){
+interface WishlistPanelProps {
+close:()=>void;
+}
+
+
+
+export default function WishlistPanel({
+close
+}:WishlistPanelProps){
+
 
 return (
 
-<div className="
+<div
+className="
 fixed
-right-0
-top-0
-h-screen
-w-full
-sm:w-[400px]
-bg-white
-dark:bg-[#0B0B0B]
+inset-0
 z-[100]
+bg-black/50
+backdrop-blur-sm
+flex
+justify-end
+"
+>
+
+
+<div
+className="
+w-full
+max-w-md
+h-full
+bg-white
+dark:bg-[#111827]
+p-6
 shadow-2xl
-">
+"
+>
 
 
-<div className="
+<div
+className="
 flex
 justify-between
 items-center
-p-6
 border-b
+pb-5
 dark:border-white/10
-">
+"
+>
 
 
-<h2 className="
+<h2
+className="
 text-2xl
-font-black
-flex
-gap-2
-items-center
-">
-
-<Heart
-className="text-red-500"
-/>
+font-bold
+"
+>
 
 Wishlist
 
 </h2>
 
 
-<X/>
+
+<button
+onClick={close}
+className="
+h-10
+w-10
+rounded-xl
+border
+flex
+items-center
+justify-center
+"
+>
+
+<X size={20}/>
+
+</button>
 
 
 </div>
 
 
 
-<div className="
-p-6
-text-center
+<div
+className="
+h-[80%]
+flex
+flex-col
+items-center
+justify-center
 text-gray-500
-">
+"
+>
 
-No favourite products yet ❤️
+
+<Heart size={55}/>
+
+
+<p className="mt-4">
+
+Your wishlist is empty
+
+</p>
+
 
 </div>
 
 
 </div>
 
-);
+
+</div>
+
+)
 
 }
