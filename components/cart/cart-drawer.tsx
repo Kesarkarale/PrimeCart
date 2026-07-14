@@ -1,68 +1,85 @@
-"use client";
+ "use client";
 
 import {
   X,
-  ShoppingBag,
-  Trash2,
-  Plus,
-  Minus
+  ShoppingCart
 } from "lucide-react";
 
 
-export default function CartDrawer(){
+interface CartDrawerProps {
+  close: () => void;
+}
+
+
+export default function CartDrawer({
+  close
+}: CartDrawerProps){
+
 
 return (
 
-<div className="
+<div
+className="
 fixed
-right-0
-top-0
-h-screen
+inset-0
+z-50
+bg-black/50
+flex
+justify-end
+"
+>
+
+
+<div
+className="
 w-full
-sm:w-[420px]
+max-w-md
+h-full
 bg-white
-dark:bg-[#0B0B0B]
-z-[100]
+dark:bg-[#111]
 shadow-2xl
-border-l
-border-gray-200
-dark:border-white/10
-">
+p-6
+"
+>
 
 
-{/* HEADER */}
-
-<div className="
+<div
+className="
 flex
 items-center
 justify-between
-p-6
-border-b
-border-gray-200
-dark:border-white/10
-">
+mb-8
+"
+>
 
 
-<h2 className="
+<h2
+className="
 text-2xl
-font-black
-flex
-items-center
-gap-2
-">
+font-bold
+"
+>
 
-<ShoppingBag
-className="text-[#D4AF37]"
-/>
-
-Cart
+Shopping Cart
 
 </h2>
 
 
-<button>
 
-<X/>
+<button
+onClick={close}
+className="
+h-10
+w-10
+rounded-xl
+border
+flex
+items-center
+justify-center
+"
+>
+
+<X size={22}/>
 
 </button>
 
@@ -73,131 +90,28 @@ Cart
 
 
 
-{/* PRODUCT */}
-
-
-<div className="
-p-6
-space-y-5
-">
-
-
-<div className="
-rounded-2xl
-bg-gray-100
-dark:bg-white/5
-p-4
-">
-
-
-<div className="
+<div
+className="
 flex
-gap-4
-">
-
-
-<div className="
-h-20
-w-20
-rounded-xl
-bg-white
-flex
+flex-col
 items-center
 justify-center
-text-4xl
-">
-
-📱
-
-</div>
+h-[70%]
+text-gray-500
+"
+>
 
 
-
-<div className="flex-1">
-
-
-<h3 className="font-bold">
-iPhone 16 Pro Max
-</h3>
+<ShoppingCart size={50}/>
 
 
-<p className="
-text-[#D4AF37]
-font-bold
-mt-1
-">
+<p className="mt-4">
 
-₹1,29,999
+Your cart is empty
 
 </p>
 
 
-
-<div className="
-flex
-items-center
-gap-3
-mt-3
-">
-
-
-<button className="
-h-8
-w-8
-rounded-lg
-bg-black
-text-white
-flex
-items-center
-justify-center
-">
-
-<Minus size={14}/>
-
-</button>
-
-
-<span>
-1
-</span>
-
-
-<button className="
-h-8
-w-8
-rounded-lg
-bg-[#D4AF37]
-text-black
-flex
-items-center
-justify-center
-">
-
-<Plus size={14}/>
-
-</button>
-
-
-</div>
-
-
-</div>
-
-
-
-<button>
-
-<Trash2
-size={18}
-className="text-red-500"
-/>
-
-</button>
-
-
-</div>
-
-
 </div>
 
 
@@ -206,69 +120,8 @@ className="text-red-500"
 
 
 
-
-
-{/* SUMMARY */}
-
-
-<div className="
-absolute
-bottom-0
-w-full
-p-6
-border-t
-border-gray-200
-dark:border-white/10
-bg-white
-dark:bg-[#0B0B0B]
-">
-
-
-<div className="
-flex
-justify-between
-text-lg
-font-bold
-">
-
-
-<span>
-Total
-</span>
-
-
-<span className="text-[#D4AF37]">
-₹1,29,999
-</span>
-
-
 </div>
 
-
-
-
-<button className="
-mt-5
-w-full
-rounded-xl
-bg-[#D4AF37]
-py-4
-font-black
-text-black
-hover:scale-105
-transition
-">
-
-Proceed To Checkout
-
-</button>
-
-
-</div>
-
-
-</div>
-
-);
+)
 
 }
