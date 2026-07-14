@@ -59,6 +59,14 @@ flex-col
 flex-1
 p-5
 md:p-8
+
+bg-gray-50
+dark:bg-[#050505]
+
+min-h-screen
+
+transition-colors
+duration-300
 ">
 
 {children}
