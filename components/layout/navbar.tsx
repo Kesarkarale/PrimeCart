@@ -1,183 +1,86 @@
- "use client";
+"use client";
 
+import Link from "next/link";
+import { useState } from "react";
 
 import {
- Search,
- ShoppingCart,
- Bell,
- UserCircle
+  Search,
+  ShoppingCart,
+  Heart,
+  User,
+  Menu,
 } from "lucide-react";
 
+export default function Navbar() {
+  const [search, setSearch] = useState("");
 
-import ThemeToggle from "@/components/theme-toggle";
+  return (
+    <header className="sticky top-0 z-50 border-b border-gray-200 dark:border-white/10 bg-white/90 dark:bg-[#050505]/90 backdrop-blur-xl">
 
+      <div className="max-w-7xl mx-auto px-5 py-4">
 
-export default function Navbar(){
+        <div className="flex items-center gap-6">
 
+          {/* LOGO */}
 
-return (
+          <Link href="/dashboard">
 
-<header className="
-h-20
-flex
-items-center
-justify-between
-px-5
-md:px-8
+            <h1 className="text-3xl font-black tracking-tight">
 
-bg-white
-text-gray-900
+              Prime
 
-dark:bg-black/60
-dark:text-white
+              <span className="text-[#D4AF37]">
+                Cart
+              </span>
 
-backdrop-blur-xl
-border-b
-border-gray-200
-dark:border-white/10
-">
+            </h1>
 
+          </Link>
 
+          {/* SEARCH */}
 
-{/* SEARCH */}
+          <div className="hidden md:flex flex-1 relative">
 
+            <Search
+              size={18}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
+            />
 
-<div className="
-hidden
-md:flex
-items-center
-gap-3
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search Products..."
+              className="w-full rounded-2xl border border-gray-300 dark:border-white/10 bg-gray-100 dark:bg-[#111827] pl-11 pr-4 py-3 outline-none focus:border-[#D4AF37]"
+            />
 
-bg-gray-100
-dark:bg-white/10
+          </div>
 
-px-5
-py-3
-rounded-xl
-w-96
-">
+          {/* RIGHT */}
 
+          <div className="flex items-center gap-3 ml-auto">
 
-<Search size={20}/>
+            <button className="h-11 w-11 rounded-xl border border-gray-300 dark:border-white/10 hover:border-[#D4AF37] flex items-center justify-center">
+              <Heart size={20} />
+            </button>
 
+            <button className="h-11 w-11 rounded-xl border border-gray-300 dark:border-white/10 hover:border-[#D4AF37] flex items-center justify-center">
+              <ShoppingCart size={20} />
+            </button>
 
-<input
+            <button className="h-11 w-11 rounded-xl border border-gray-300 dark:border-white/10 hover:border-[#D4AF37] flex items-center justify-center">
+              <User size={20} />
+            </button>
 
-placeholder="Search products..."
+            <button className="md:hidden h-11 w-11 rounded-xl border border-gray-300 dark:border-white/10 flex items-center justify-center">
+              <Menu size={22} />
+            </button>
 
-className="
-bg-transparent
-outline-none
-w-full
-text-sm
+          </div>
 
-placeholder:text-gray-500
-dark:placeholder:text-gray-400
-"
+        </div>
 
-/>
+      </div>
 
-
-</div>
-
-
-
-
-
-
-
-{/* RIGHT ICONS */}
-
-
-<div className="
-flex
-items-center
-gap-4
-">
-
-
-
-<ThemeToggle />
-
-
-
-
-
-{/* CART */}
-
-
-<div className="
-relative
-cursor-pointer
-">
-
-
-<ShoppingCart size={25}/>
-
-
-<span className="
-absolute
--top-2
--right-3
-
-bg-[#D4AF37]
-text-black
-
-text-xs
-font-bold
-
-rounded-full
-px-2
-">
-
-0
-
-</span>
-
-
-</div>
-
-
-
-
-
-
-<Bell
-
-size={23}
-
-className="
-text-[#D4AF37]
-cursor-pointer
-"
-
-/>
-
-
-
-
-
-
-<UserCircle
-
-size={30}
-
-className="
-cursor-pointer
-"
-
-/>
-
-
-
-</div>
-
-
-
-</header>
-
-
-);
-
-
+    </header>
+  );
 }
