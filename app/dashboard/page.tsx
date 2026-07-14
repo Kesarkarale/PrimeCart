@@ -3,6 +3,8 @@
 import Hero from "@/components/dashboard/hero";
 import CategorySection from "@/components/dashboard/category-section";
 import FeaturedProducts from "@/components/dashboard/featured-products";
+import TopBar from "@/components/layout/top-bar";
+import Navbar from "@/components/layout/navbar";
 
 export default function DashboardPage() {
   return (
@@ -29,6 +31,10 @@ export default function DashboardPage() {
         space-y-16
       "
       >
+       <TopBar />
+
+<Navbar />
+
         {/* HERO */}
         <div
           className="
