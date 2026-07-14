@@ -3,11 +3,7 @@
 
 import Link from "next/link";
 
-import {
-  FaInstagram,
-  FaFacebook,
-  FaTwitter,
-} from "lucide-react";
+ 
 
 
 export default function Footer(){
