@@ -4,7 +4,7 @@ import Hero from "@/components/dashboard/hero";
 import CategorySection from "@/components/dashboard/category-section";
 import FeaturedProducts from "@/components/dashboard/featured-products";
 import TopBar from "@/components/layout/top-bar";
-import Navbar from "@/components/layout/navbar";
+ 
 import Services from "@/components/dashboard/services";
 import Footer from "@/components/layout/footer";
 
@@ -31,8 +31,7 @@ duration-300
 
 <TopBar />
 
-<Navbar />
-
+ 
 
 <div
 className="
