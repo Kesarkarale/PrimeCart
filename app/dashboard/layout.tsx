@@ -19,10 +19,15 @@ return (
 
 <div className="
 min-h-screen
+
 bg-gray-50
 text-gray-900
+
 dark:bg-[#050505]
 dark:text-white
+
+transition-colors
+duration-300
 ">
 
 {/* Sidebar */}
