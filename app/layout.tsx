@@ -1,49 +1,24 @@
- import type { Metadata } from "next";
-import "./globals.css";
+import type { ReactNode } from "react";
 
-import Providers from "@/components/providers";
+import Sidebar from "@/components/layout/sidebar";
+import Navbar from "@/components/layout/navbar";
 
+export default function DashboardLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return (
+    <div className="min-h-screen bg-[#050505] text-white">
+      <Sidebar />
 
-export const metadata: Metadata = {
+      <div className="md:ml-72 min-h-screen flex flex-col">
+        <Navbar />
 
-title:"PrimeCart",
-
-description:
-"Premium Online Shopping Experience"
-
-};
-
-
-
-export default function RootLayout({
-
-children,
-
-}:Readonly<{
-
-children:React.ReactNode;
-
-}>) {
-
-
-return (
-
-<html lang="en" suppressHydrationWarning>
-
-<body>
-
-
-<Providers>
-
-{children}
-
-</Providers>
-
-
-</body>
-
-</html>
-
-);
-
+        <main className="flex-1 p-6 md:p-8">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
 }
