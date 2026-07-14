@@ -69,7 +69,7 @@ mt-5
 
 
 <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
-<Instagram size={18}/>
+<FaInstagram size={18}/>
 </div>
 
 
@@ -79,7 +79,7 @@ mt-5
 
 
 <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
-<Twitter size={18}/>
+<FaTwitter size={18}/>
 </div>
 
 
