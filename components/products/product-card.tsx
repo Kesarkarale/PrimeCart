@@ -15,7 +15,7 @@ import { motion } from "framer-motion";
 
 interface Product {
 
-  id:number;
+ id:string;
 
   name:string;
 
