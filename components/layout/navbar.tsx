@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import CartDrawer from "@/components/cart/cart-drawer";
+import WishlistPanel from "@/components/wishlist/wishlist-panel";
 
 import {
   Search,
@@ -13,7 +15,9 @@ import {
 
 export default function Navbar() {
   const [search, setSearch] = useState("");
-
+const [cartOpen,setCartOpen]=useState(false);
+const [wishOpen,setWishOpen]=useState(false);
+  
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 dark:border-white/10 bg-white/90 dark:bg-[#050505]/90 backdrop-blur-xl">
 
@@ -59,13 +63,17 @@ export default function Navbar() {
 
           <div className="flex items-center gap-3 ml-auto">
 
-            <button className="h-11 w-11 rounded-xl border border-gray-300 dark:border-white/10 hover:border-[#D4AF37] flex items-center justify-center">
-              <Heart size={20} />
-            </button>
+            <button
+onClick={()=>setWishOpen(true)}
+>
+<Heart/>
+</button>
 
-            <button className="h-11 w-11 rounded-xl border border-gray-300 dark:border-white/10 hover:border-[#D4AF37] flex items-center justify-center">
-              <ShoppingCart size={20} />
-            </button>
+           <button
+onClick={()=>setCartOpen(true)}
+>
+<ShoppingCart/>
+</button>
 
             <button className="h-11 w-11 rounded-xl border border-gray-300 dark:border-white/10 hover:border-[#D4AF37] flex items-center justify-center">
               <User size={20} />
@@ -82,5 +90,15 @@ export default function Navbar() {
       </div>
 
     </header>
+    {
+cartOpen &&
+<CartDrawer/>
+}
+
+
+{
+wishOpen &&
+<WishlistPanel/>
+}
   );
 }
