@@ -1,39 +1,72 @@
-import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 
-import { getServerUser } 
-from "@/lib/auth/auth-server";
+import Sidebar from "@/components/layout/sidebar";
+import Navbar from "@/components/layout/navbar";
 
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
 
 children,
 
 }:{
 
-children:React.ReactNode;
+children:ReactNode;
 
 }){
 
 
-const user = await getServerUser();
-
-
-
-if(!user){
-
-redirect("/login");
-
-}
-
-
-
 return (
 
-<section>
+<div className="
+min-h-screen
+bg-[#050505]
+text-white
+">
+
+
+{/* Sidebar */}
+
+<Sidebar />
+
+
+
+{/* Main Area */}
+
+<div className="
+md:ml-72
+min-h-screen
+flex
+flex-col
+">
+
+
+
+{/* Navbar */}
+
+<Navbar />
+
+
+
+{/* Page Content */}
+
+<main className="
+flex-1
+p-5
+md:p-8
+">
 
 {children}
 
-</section>
+
+</main>
+
+
+
+</div>
+
+
+
+</div>
 
 );
 
