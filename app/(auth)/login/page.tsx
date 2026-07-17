@@ -1205,38 +1205,15 @@ text-gray-500
 Your information is protected
 
 </p>
-
-
-</div>
-
-
-</div>
-
-
-</div>
-
-
-
-
-
 </div>
 </div>
-  
-
-
-
-
 </div>
-
-
-
+</div>
+</div>
 
 </motion.div>
 
-
 </main>
-
-
-)
+);
 
 }
