@@ -152,36 +152,13 @@ lg:block
 ">
 
 <Image
-src="/login-banner.png"
-alt="PrimeCart"
-fill
-priority
-className="
-object-cover
-"
-/>
-
-
-<div className="
-absolute
-inset-0
-bg-black/30
-"/>
-
-
-<div className="
-absolute
-bottom-16
-left-12
-text-white
-max-w-md
-">
-
-
-</div>
-
-
-</div>
+          src="/login-banner.png"
+          alt="Banner"
+          fill
+          priority
+          className="object-cover"
+        />
+      </div>
 
 
 
