@@ -229,92 +229,13 @@ relative
 
 
 <Image
-
-src="/login-banner.png"
-
-alt="PrimeCart"
-
-fill
-
-priority
-
-className="
-object-cover
-"
-
-/>
-
-
-
-<div className="
-absolute
-inset-0
-bg-black/40
-"/>
-
-
-
-
-<div className="
-absolute
-bottom-16
-left-12
-text-white
-max-w-md
-">
-
-
-<h1 className="
-text-5xl
-font-bold
-leading-tight
-">
-
-Join PrimeCart
-<br/>
-
-Premium Shopping
-
-</h1>
-
-
-
-<p className="
-mt-5
-text-lg
-text-white/80
-">
-
-Create your account and
-unlock exclusive products,
-offers and luxury shopping.
-
-</p>
-
-
-
-
-<div className="
-mt-8
-text-[#D4AF37]
-font-semibold
-">
-
-✨ Premium • Secure • Elegant
-
-</div>
-
-
-</div>
-
-
-
-</div>
-
-
-
-
-
+          src="/login-banner.png"
+          alt="Banner"
+          fill
+          priority
+          className="object-cover"
+        />
+      </div>
 
 
 {/* RIGHT REGISTER */}
