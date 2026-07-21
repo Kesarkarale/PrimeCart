@@ -85,134 +85,173 @@ return (
       />
     </div>
     {/* RIGHT SIDE LOGIN */}
-    <div className="flex flex-col justify-center h-full px-12 bg-white">
+    
+  <div className="grid min-h-screen lg:grid-cols-[45%_55%] bg-[#FAF8F3]">
 
-      {/* Logo */}
-      <div className="mb-10">
-        <Image
-          src="/logo.png"
-          alt="PrimeCart"
-          width={220}
-          height={60}
-          priority
-        />
-      </div>
+    <div className="flex items-center justify-center bg-white px-10 lg:px-20">
 
-      {/* Heading */}
-      <div className="mb-8">
-        <h1 className="text-5xl font-bold text-black">
-          Welcome <span className="text-[#D4AF37]">Back ✨</span>
-        </h1>
+      <div className="w-full max-w-lg">
 
-        <p className="mt-4 text-gray-600 text-lg">
-          Sign in to access your orders,
-          wishlist, cart and premium deals.
-        </p>
-      </div>
-
-      {/* FORM */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-
-        {/* Email */}
-        <div>
-          <label className="block mb-2 text-sm font-semibold">
-            Email Address
-          </label>
-
-          <div className="relative">
-            <Mail className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
-
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter your email"
-              className="w-full h-14 pl-12 pr-4 border border-gray-200 rounded-2xl"
-              required
-            />
-          </div>
+        {/* Logo */}
+        <div className="mb-12">
+          <Image
+            src="/logo.png"
+            alt="PrimeCart"
+            width={260}
+            height={70}
+            priority
+          />
         </div>
 
-        {/* Password */}
-        <div>
-          <label className="block mb-2 text-sm font-semibold">
-            Password
-          </label>
+        {/* Heading */}
+        <div className="mb-10">
+          <h1 className="text-6xl font-bold text-black leading-tight">
+            Welcome{" "}
+            <span className="text-[#D4AF37]">
+              Back ✨
+            </span>
+          </h1>
 
-          <div className="relative">
-            <Lock className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
-
-            <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              className="w-full h-14 pl-12 pr-12 border border-gray-200 rounded-2xl"
-              required
-            />
-
-            <button
-              type="button"
-              onClick={() =>
-                setShowPassword(!showPassword)
-              }
-              className="absolute right-4 top-4"
-            >
-              {showPassword ? (
-                <EyeOff size={20} />
-              ) : (
-                <Eye size={20} />
-              )}
-            </button>
-          </div>
+          <p className="mt-6 text-gray-600 text-2xl leading-relaxed">
+            Sign in to access your orders,
+            wishlist, cart and premium deals.
+          </p>
         </div>
 
-        <div className="flex justify-end">
-          <Link
-            href="/forgot-password"
-            className="text-[#D4AF37]"
-          >
-            Forgot Password?
-          </Link>
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full h-14 rounded-2xl bg-gradient-to-r from-[#B8860B] to-[#D4AF37] text-white font-semibold"
+        {/* Form */}
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6"
         >
-          {loading ? "Signing In..." : "Sign In"}
+
+          {/* Email */}
+          <div>
+            <label className="block mb-3 text-xl font-semibold text-gray-900">
+              Email Address
+            </label>
+
+            <div className="relative">
+              <Mail
+                size={24}
+                className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Enter your email"
+                required
+                className="w-full h-16 rounded-2xl border border-gray-300 bg-white pl-14 pr-4 text-lg outline-none focus:border-[#D4AF37]"
+              />
+            </div>
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block mb-3 text-xl font-semibold text-gray-900">
+              Password
+            </label>
+
+            <div className="relative">
+              <Lock
+                size={24}
+                className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+
+              <input
+                type={
+                  showPassword
+                    ? "text"
+                    : "password"
+                }
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+                required
+                className="w-full h-16 rounded-2xl border border-gray-300 bg-white pl-14 pr-14 text-lg outline-none focus:border-[#D4AF37]"
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPassword(!showPassword)
+                }
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500"
+              >
+                {showPassword ? (
+                  <EyeOff size={24} />
+                ) : (
+                  <Eye size={24} />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Forgot Password */}
+          <div className="flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="text-[#D4AF37] text-lg font-medium hover:underline"
+            >
+              Forgot Password?
+            </Link>
+          </div>
+
+          {/* Login Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full h-16 rounded-2xl bg-gradient-to-r from-[#C58B00] to-[#E5B62C] text-white text-2xl font-semibold flex items-center justify-center gap-3 hover:opacity-90 transition"
+          >
+            {loading ? (
+              "Signing In..."
+            ) : (
+              <>
+                Sign In
+                <ArrowRight size={24} />
+              </>
+            )}
+          </button>
+
+        </form>
+
+        {/* Divider */}
+        <div className="flex items-center my-8">
+          <div className="flex-1 border-t border-gray-300" />
+          <span className="px-5 text-gray-500 text-lg">
+            OR
+          </span>
+          <div className="flex-1 border-t border-gray-300" />
+        </div>
+
+        {/* Google */}
+        <button
+          type="button"
+          className="w-full h-16 rounded-2xl border border-gray-300 bg-white flex items-center justify-center gap-4 text-xl font-medium hover:bg-gray-50 transition"
+        >
+          <FcGoogle size={30} />
+          Continue with Google
         </button>
 
-      </form>
+        {/* Register */}
+        <p className="mt-10 text-lg text-gray-600">
+          Don&apos;t have an account?
 
-      {/* Divider */}
-      <div className="flex items-center my-8">
-        <div className="flex-1 border-t" />
-        <span className="px-4 text-gray-500">
-          OR
-        </span>
-        <div className="flex-1 border-t" />
+          <Link
+            href="/register"
+            className="ml-2 text-[#D4AF37] font-semibold hover:underline"
+          >
+            Create Account →
+          </Link>
+        </p>
+
       </div>
-
-      {/* Google */}
-      <button className="w-full h-14 border rounded-2xl flex items-center justify-center gap-3">
-        <FcGoogle size={24} />
-        Continue with Google
-      </button>
-
-      <p className="mt-8 text-center text-gray-600">
-        Don't have an account?
-        <Link
-          href="/register"
-          className="ml-2 text-[#D4AF37] font-semibold"
-        >
-          Create Account →
-        </Link>
-      </p>
     </div>
+
+     
 
   </div>
 );
