@@ -1,11 +1,6 @@
  "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-
-import CartDrawer from "@/components/cart/cart-drawer";
-import WishlistPanel from "@/components/wishlist/wishlist-panel";
-
 import {
   Search,
   ShoppingCart,
@@ -14,165 +9,103 @@ import {
   Menu,
 } from "lucide-react";
 
-
 export default function Navbar() {
+  return (
+    <header className="sticky top-0 z-50 w-full border-b border-[#D4AF37]/20 bg-white/95 backdrop-blur">
+      <div className="max-w-7xl mx-auto px-5">
 
-const [search,setSearch] = useState("");
+        {/* Top Row */}
+        <div className="h-20 flex items-center justify-between gap-6">
 
-const [cartOpen,setCartOpen] = useState(false);
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-[#D4AF37] flex items-center justify-center text-white text-2xl font-black">
+              P
+            </div>
 
-const [wishOpen,setWishOpen] = useState(false);
+            <div>
+              <h2 className="text-2xl font-black tracking-wide">
+                PrimeCart
+              </h2>
+              <p className="text-xs text-gray-500">
+                Premium Shopping
+              </p>
+            </div>
+          </Link>
 
+          {/* Search */}
+          <div className="hidden lg:flex flex-1 max-w-3xl">
 
+            <button className="px-5 bg-gray-100 border rounded-l-2xl text-sm font-semibold">
+              All
+            </button>
 
-return (
+            <input
+              placeholder="Search products..."
+              className="flex-1 border-y outline-none px-5 h-14"
+            />
 
-<>
+            <button className="w-16 bg-[#D4AF37] rounded-r-2xl flex items-center justify-center text-white hover:bg-black transition">
+              <Search size={20} />
+            </button>
 
-<header className="sticky top-0 z-50 border-b border-gray-200 dark:border-white/10 bg-white/90 dark:bg-[#050505]/90 backdrop-blur-xl">
+          </div>
 
+          {/* Right */}
+          <div className="flex items-center gap-4">
 
-<div className="max-w-7xl mx-auto px-5 py-4">
+            <button className="w-12 h-12 rounded-2xl bg-gray-100 hover:bg-[#D4AF37] hover:text-white transition flex items-center justify-center">
+              <Heart size={20} />
+            </button>
 
+            <button className="w-12 h-12 rounded-2xl bg-gray-100 hover:bg-[#D4AF37] hover:text-white transition flex items-center justify-center">
+              <ShoppingCart size={20} />
+            </button>
 
-<div className="flex items-center gap-6">
+            <button className="flex items-center gap-3 bg-[#111827] text-white px-5 h-12 rounded-2xl hover:bg-[#D4AF37] transition">
+              <User size={18} />
+              Account
+            </button>
 
+            <button className="lg:hidden w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
+              <Menu />
+            </button>
 
-{/* LOGO */}
+          </div>
 
-<Link href="/dashboard">
+        </div>
 
-<h1 className="text-3xl font-black tracking-tight">
+        {/* Bottom Menu */}
+        <div className="hidden lg:flex items-center gap-8 h-14 text-sm font-semibold">
 
-Prime
+          <Link href="#">Home</Link>
 
-<span className="text-[#D4AF37]">
-Cart
-</span>
+          <Link href="#">Electronics</Link>
 
-</h1>
+          <Link href="#">Fashion</Link>
 
-</Link>
+          <Link href="#">Mobiles</Link>
 
+          <Link href="#">Beauty</Link>
 
+          <Link href="#">Home</Link>
 
-{/* SEARCH */}
+          <Link href="#">Kitchen</Link>
 
-<div className="hidden md:flex flex-1 relative">
+          <Link href="#">Sports</Link>
 
+          <Link href="#">Deals</Link>
 
-<Search
-size={18}
-className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
-/>
+          <Link
+            href="#"
+            className="ml-auto bg-[#D4AF37] text-white px-5 py-2 rounded-full"
+          >
+            Today's Offer
+          </Link>
 
+        </div>
 
-<input
-
-value={search}
-
-onChange={(e)=>setSearch(e.target.value)}
-
-placeholder="Search Products..."
-
-className="w-full rounded-2xl border border-gray-300 dark:border-white/10 bg-gray-100 dark:bg-[#111827] pl-11 pr-4 py-3 outline-none focus:border-[#D4AF37]"
-
-/>
-
-
-</div>
-
-
-
-
-{/* RIGHT */}
-
-<div className="flex items-center gap-3 ml-auto">
-
-
-<button
-onClick={()=>setWishOpen(true)}
-className="h-11 w-11 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 flex items-center justify-center"
->
-
-<Heart size={21}/>
-
-</button>
-
-
-
-<button
-onClick={()=>setCartOpen(true)}
-className="h-11 w-11 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 flex items-center justify-center"
->
-
-<ShoppingCart size={21}/>
-
-</button>
-
-
-
-
-<button 
-className="h-11 w-11 rounded-xl border border-gray-300 dark:border-white/10 hover:border-[#D4AF37] flex items-center justify-center"
->
-
-<User size={20}/>
-
-</button>
-
-
-
-
-<button 
-className="md:hidden h-11 w-11 rounded-xl border border-gray-300 dark:border-white/10 flex items-center justify-center"
->
-
-<Menu size={22}/>
-
-</button>
-
-
-</div>
-
-
-</div>
-
-
-</div>
-
-
-</header>
-
-
-
-
-{/* DRAWERS */}
-
-{
-cartOpen &&
-
-<CartDrawer 
-close={()=>setCartOpen(false)}
-/>
-
-}
-
-
-
-{
-wishOpen &&
-
-<WishlistPanel
-close={()=>setWishOpen(false)}
-/>
-
-}
-
-
-
-</>
-
-);
-
+      </div>
+    </header>
+  );
 }
