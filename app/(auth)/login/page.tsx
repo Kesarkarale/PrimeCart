@@ -73,182 +73,47 @@ export default function LoginPage() {
   };
 
 return (
-  <div className="h-screen overflow-hidden grid lg:grid-cols-[42%_58%] bg-[#FAF8F3]">
+  <div className="h-screen bg-[#F8F5EF] flex items-center justify-center p-6">
 
-    {/* LEFT SIDE */}
-    <div className="flex items-center justify-center px-10 lg:px-14 bg-white">
+    {/* Main Container */}
+    <div className="w-full max-w-7xl h-[90vh] bg-white rounded-[40px] shadow-2xl overflow-hidden grid lg:grid-cols-[42%_58%]">
 
-      <div className="w-full max-w-md">
+      {/* LEFT LOGIN */}
+      <div className="flex items-center justify-center p-10">
+        <div className="w-full max-w-sm">
 
-        {/* Logo */}
-        <div className="mb-8">
+          {/* Logo */}
           <Image
             src="/logo.png"
             alt="PrimeCart"
-            width={220}
-            height={60}
-            priority
+            width={180}
+            height={50}
           />
-        </div>
 
-        {/* Heading */}
-        <div className="mb-8">
-          <h1 className="text-5xl font-bold text-black leading-tight">
-            Welcome{" "}
-            <span className="text-[#D4AF37]">
-              Back ✨
-            </span>
+          <h1 className="mt-8 text-4xl font-bold">
+            Welcome <span className="text-[#D4AF37]">Back ✨</span>
           </h1>
 
-          <p className="mt-4 text-gray-600 text-lg leading-relaxed">
-            Sign in to access your orders,
-            wishlist, cart and premium deals.
+          <p className="mt-3 text-gray-500">
+            Sign in to continue your premium shopping experience.
           </p>
+
+          {/* Form */}
+          {/* Tujha existing form ithe paste kar */}
         </div>
-
-        {/* FORM */}
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-5"
-        >
-
-          {/* Email */}
-          <div>
-            <label className="block mb-2 text-base font-semibold text-gray-900">
-              Email Address
-            </label>
-
-            <div className="relative">
-              <Mail
-                size={20}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Enter your email"
-                required
-                className="w-full h-14 rounded-2xl border border-gray-300 bg-white pl-12 pr-4 text-base outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20"
-              />
-            </div>
-          </div>
-
-          {/* Password */}
-          <div>
-            <label className="block mb-2 text-base font-semibold text-gray-900">
-              Password
-            </label>
-
-            <div className="relative">
-              <Lock
-                size={20}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-
-              <input
-                type={
-                  showPassword
-                    ? "text"
-                    : "password"
-                }
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Enter your password"
-                required
-                className="w-full h-14 rounded-2xl border border-gray-300 bg-white pl-12 pr-12 text-base outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20"
-              />
-
-              <button
-                type="button"
-                onClick={() =>
-                  setShowPassword(!showPassword)
-                }
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
-              >
-                {showPassword ? (
-                  <EyeOff size={20} />
-                ) : (
-                  <Eye size={20} />
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Forgot Password */}
-          <div className="flex justify-end">
-            <Link
-              href="/forgot-password"
-              className="text-[#D4AF37] font-medium hover:underline"
-            >
-              Forgot Password?
-            </Link>
-          </div>
-
-          {/* Login Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full h-14 rounded-2xl bg-gradient-to-r from-[#B8860B] to-[#D4AF37] text-white font-semibold text-lg flex items-center justify-center gap-2 hover:opacity-90 transition"
-          >
-            {loading ? (
-              "Signing In..."
-            ) : (
-              <>
-                Sign In
-                <ArrowRight size={18} />
-              </>
-            )}
-          </button>
-
-        </form>
-
-        {/* Divider */}
-        <div className="flex items-center my-6">
-          <div className="flex-1 border-t border-gray-300" />
-          <span className="px-4 text-gray-500">
-            OR
-          </span>
-          <div className="flex-1 border-t border-gray-300" />
-        </div>
-
-        {/* Google Login */}
-        <button
-          type="button"
-          className="w-full h-14 rounded-2xl border border-gray-300 bg-white flex items-center justify-center gap-3 text-base font-medium hover:bg-gray-50 transition"
-        >
-          <FcGoogle size={24} />
-          Continue with Google
-        </button>
-
-        {/* Register */}
-        <p className="mt-6 text-gray-600">
-          Don&apos;t have an account?
-
-          <Link
-            href="/register"
-            className="ml-2 text-[#D4AF37] font-semibold hover:underline"
-          >
-            Create Account →
-          </Link>
-        </p>
-
       </div>
 
-    </div>
+      {/* RIGHT BANNER */}
+      <div className="relative">
+        <Image
+          src="/login-banner.png"
+          alt="Banner"
+          fill
+          priority
+          className="object-cover"
+        />
+      </div>
 
-    {/* RIGHT SIDE BANNER */}
-    <div className="relative hidden lg:block h-screen">
-      <Image
-        src="/login-banner.png"
-        alt="PrimeCart Banner"
-        fill
-        priority
-        className="object-cover"
-      />
     </div>
 
   </div>
