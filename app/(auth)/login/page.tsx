@@ -73,55 +73,55 @@ export default function LoginPage() {
   };
 
 return (
-  <div className="grid min-h-screen lg:grid-cols-[45%_55%] bg-[#FAF8F3]">
+  <div className="h-screen overflow-hidden grid lg:grid-cols-[42%_58%] bg-[#FAF8F3]">
 
     {/* LEFT SIDE */}
-    <div className="flex items-center justify-center bg-white px-10 lg:px-20">
+    <div className="flex items-center justify-center px-10 lg:px-14 bg-white">
 
-      <div className="w-full max-w-lg">
+      <div className="w-full max-w-md">
 
         {/* Logo */}
-        <div className="mb-12">
+        <div className="mb-8">
           <Image
             src="/logo.png"
             alt="PrimeCart"
-            width={260}
-            height={70}
+            width={220}
+            height={60}
             priority
           />
         </div>
 
         {/* Heading */}
-        <div className="mb-10">
-          <h1 className="text-6xl font-bold text-black leading-tight">
+        <div className="mb-8">
+          <h1 className="text-5xl font-bold text-black leading-tight">
             Welcome{" "}
             <span className="text-[#D4AF37]">
               Back ✨
             </span>
           </h1>
 
-          <p className="mt-6 text-gray-600 text-2xl leading-relaxed">
+          <p className="mt-4 text-gray-600 text-lg leading-relaxed">
             Sign in to access your orders,
             wishlist, cart and premium deals.
           </p>
         </div>
 
-        {/* Form */}
+        {/* FORM */}
         <form
           onSubmit={handleSubmit}
-          className="space-y-6"
+          className="space-y-5"
         >
 
           {/* Email */}
           <div>
-            <label className="block mb-3 text-xl font-semibold text-gray-900">
+            <label className="block mb-2 text-base font-semibold text-gray-900">
               Email Address
             </label>
 
             <div className="relative">
               <Mail
-                size={24}
-                className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"
+                size={20}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
               />
 
               <input
@@ -131,21 +131,21 @@ return (
                 onChange={handleChange}
                 placeholder="Enter your email"
                 required
-                className="w-full h-16 rounded-2xl border border-gray-300 bg-white pl-14 pr-4 text-lg outline-none focus:border-[#D4AF37]"
+                className="w-full h-14 rounded-2xl border border-gray-300 bg-white pl-12 pr-4 text-base outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20"
               />
             </div>
           </div>
 
           {/* Password */}
           <div>
-            <label className="block mb-3 text-xl font-semibold text-gray-900">
+            <label className="block mb-2 text-base font-semibold text-gray-900">
               Password
             </label>
 
             <div className="relative">
               <Lock
-                size={24}
-                className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"
+                size={20}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
               />
 
               <input
@@ -159,7 +159,7 @@ return (
                 onChange={handleChange}
                 placeholder="Enter your password"
                 required
-                className="w-full h-16 rounded-2xl border border-gray-300 bg-white pl-14 pr-14 text-lg outline-none focus:border-[#D4AF37]"
+                className="w-full h-14 rounded-2xl border border-gray-300 bg-white pl-12 pr-12 text-base outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20"
               />
 
               <button
@@ -167,12 +167,12 @@ return (
                 onClick={() =>
                   setShowPassword(!showPassword)
                 }
-                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
               >
                 {showPassword ? (
-                  <EyeOff size={24} />
+                  <EyeOff size={20} />
                 ) : (
-                  <Eye size={24} />
+                  <Eye size={20} />
                 )}
               </button>
             </div>
@@ -182,7 +182,7 @@ return (
           <div className="flex justify-end">
             <Link
               href="/forgot-password"
-              className="text-[#D4AF37] text-lg font-medium hover:underline"
+              className="text-[#D4AF37] font-medium hover:underline"
             >
               Forgot Password?
             </Link>
@@ -192,14 +192,14 @@ return (
           <button
             type="submit"
             disabled={loading}
-            className="w-full h-16 rounded-2xl bg-gradient-to-r from-[#C58B00] to-[#E5B62C] text-white text-2xl font-semibold flex items-center justify-center gap-3 hover:opacity-90 transition"
+            className="w-full h-14 rounded-2xl bg-gradient-to-r from-[#B8860B] to-[#D4AF37] text-white font-semibold text-lg flex items-center justify-center gap-2 hover:opacity-90 transition"
           >
             {loading ? (
               "Signing In..."
             ) : (
               <>
                 Sign In
-                <ArrowRight size={24} />
+                <ArrowRight size={18} />
               </>
             )}
           </button>
@@ -207,25 +207,25 @@ return (
         </form>
 
         {/* Divider */}
-        <div className="flex items-center my-8">
+        <div className="flex items-center my-6">
           <div className="flex-1 border-t border-gray-300" />
-          <span className="px-5 text-gray-500 text-lg">
+          <span className="px-4 text-gray-500">
             OR
           </span>
           <div className="flex-1 border-t border-gray-300" />
         </div>
 
-        {/* Google */}
+        {/* Google Login */}
         <button
           type="button"
-          className="w-full h-16 rounded-2xl border border-gray-300 bg-white flex items-center justify-center gap-4 text-xl font-medium hover:bg-gray-50 transition"
+          className="w-full h-14 rounded-2xl border border-gray-300 bg-white flex items-center justify-center gap-3 text-base font-medium hover:bg-gray-50 transition"
         >
-          <FcGoogle size={30} />
+          <FcGoogle size={24} />
           Continue with Google
         </button>
 
         {/* Register */}
-        <p className="mt-10 text-lg text-gray-600">
+        <p className="mt-6 text-gray-600">
           Don&apos;t have an account?
 
           <Link
@@ -237,10 +237,11 @@ return (
         </p>
 
       </div>
+
     </div>
 
     {/* RIGHT SIDE BANNER */}
-    <div className="relative hidden lg:block">
+    <div className="relative hidden lg:block h-screen">
       <Image
         src="/login-banner.png"
         alt="PrimeCart Banner"
