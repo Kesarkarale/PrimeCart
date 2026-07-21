@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import LuxuryBanner from "@/components/LuxuryBanner";
+ 
 
 import {
   Eye,
@@ -79,7 +79,7 @@ export default function LoginPage() {
       <div className="grid lg:grid-cols-2 min-h-screen">
 
         {/* LEFT SIDE */}
-        <LuxuryBanner />
+      
 
         {/* RIGHT SIDE */}
         <div className="flex items-center justify-center p-8">
