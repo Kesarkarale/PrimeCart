@@ -80,7 +80,7 @@ return (
       {/* Logo */}
       <div className="mb-10">
         <Image
-          src="/logo.png"
+          src="/public/logo.png"
           alt="PrimeCart"
           width={220}
           height={60}
