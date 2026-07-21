@@ -4,12 +4,14 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
 import {
   Eye,
   EyeOff,
   Mail,
   Lock,
   ArrowRight,
+  Loader2,
 } from "lucide-react";
 
 import { FcGoogle } from "react-icons/fc";
@@ -27,6 +29,7 @@ export default function LoginPage() {
     remember: false,
   });
 
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -34,315 +37,590 @@ export default function LoginPage() {
 
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : value,
     }));
   };
+
 
   const handleSubmit = async (
     e: React.FormEvent
   ) => {
     e.preventDefault();
 
+    if (!formData.email || !formData.password) {
+      toast.error("Please fill all fields");
+      return;
+    }
+
+
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
 
-      const data = await res.json();
+      const res = await fetch(
+        "/api/auth/login",
+        {
+          method: "POST",
+          headers:{
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            email:
+              formData.email,
+            password:
+              formData.password,
+          }),
+        }
+      );
 
-      if (res.ok) {
-        toast.success("Login Successful ✨");
+
+      const data =
+        await res.json();
+
+
+      if(res.ok){
+
+        toast.success(
+          "Welcome back to PrimeCart ✨"
+        );
+
         router.push("/dashboard");
-      } else {
-        toast.error(data.message);
+
+      }else{
+
+        toast.error(
+          data.message ||
+          "Invalid credentials"
+        );
+
       }
-    } catch {
-      toast.error("Something went wrong");
-    } finally {
+
+
+    } catch(error){
+
+      toast.error(
+        "Something went wrong"
+      );
+
+    } finally{
+
       setLoading(false);
+
     }
+
   };
 
-return (
-  <div className="h-screen bg-gradient-to-br from-[#f8f5ef] via-[#f6f2ea] to-[#efe7d8] flex items-center justify-center p-5">
 
-    <div className="w-full max-w-[1450px] h-[90vh] bg-white rounded-[40px] shadow-[0_25px_80px_rgba(0,0,0,0.08)] overflow-hidden grid lg:grid-cols-[45%_55%]">
+  return (
 
-      {/* LEFT BANNER */}
-      <div className="relative hidden lg:block">
-        <Image
-          src="/login-banner.png"
-          alt="PrimeCart Banner"
-          fill
-          priority
-          className="object-cover"
-        />
-      </div>
+<div className="
+min-h-screen
+bg-gradient-to-br
+from-[#f8f3e8]
+via-[#fff]
+to-[#eee2c8]
+flex
+items-center
+justify-center
+p-4
+">
 
-      {/* RIGHT LOGIN */}
-      <div className="flex items-center justify-center bg-white">
 
-        <div className="w-full max-w-lg px-10">
+<div className="
+w-full
+max-w-[1400px]
+min-h-[850px]
+bg-white
+rounded-[40px]
+shadow-2xl
+overflow-hidden
+grid
+lg:grid-cols-2
+">
 
-          {/* Logo */}
-          <div className="mb-8">
-            <Image
-              src="/logo.png"
-              alt="PrimeCart"
-              width={180}
-              height={50}
-              priority
-            />
-          </div>
 
-          {/* Heading */}
-          <div className="mb-8">
+{/* LEFT IMAGE */}
 
-            <h1 className="text-5xl font-bold text-[#111827] leading-tight">
-              Welcome{" "}
-              <span className="text-[#D4AF37]">
-                Back ✨
-              </span>
-            </h1>
+<div className="
+relative
+hidden
+lg:block
+">
 
-            <p className="mt-4 text-gray-500 text-lg">
-              Sign in to access your orders,
-              wishlist, cart and premium deals.
-            </p>
+<Image
+src="/login-banner.png"
+alt="PrimeCart"
+fill
+priority
+className="
+object-cover
+"
+/>
 
-          </div>
 
-          {/* FORM */}
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-5"
-          >
+<div className="
+absolute
+inset-0
+bg-black/30
+"/>
 
-            {/* EMAIL */}
-            <div>
 
-              <label className="block mb-2 text-sm font-semibold text-gray-700">
-                Email Address
-              </label>
+<div className="
+absolute
+bottom-16
+left-12
+text-white
+max-w-md
+">
 
-              <div className="relative">
 
-                <Mail
-                  size={20}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                />
+<h2 className="
+text-5xl
+font-bold
+leading-tight
+">
+Luxury Shopping
+<br/>
+Made Simple
+</h2>
 
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Enter your email"
-                  required
-                  className="
-                  w-full
-                  h-14
-                  pl-12
-                  pr-4
-                  rounded-2xl
-                  border
-                  border-gray-200
-                  bg-[#fafafa]
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-[#D4AF37]/20
-                  focus:border-[#D4AF37]
-                  transition
-                  "
-                />
-              </div>
 
-            </div>
+<p className="
+mt-5
+text-lg
+text-white/80
+">
+Discover premium products,
+exclusive offers and seamless
+shopping experience.
+</p>
 
-            {/* PASSWORD */}
-            <div>
 
-              <label className="block mb-2 text-sm font-semibold text-gray-700">
-                Password
-              </label>
+</div>
 
-              <div className="relative">
 
-                <Lock
-                  size={20}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                />
+</div>
 
-                <input
-                  type={
-                    showPassword
-                      ? "text"
-                      : "password"
-                  }
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Enter your password"
-                  required
-                  className="
-                  w-full
-                  h-14
-                  pl-12
-                  pr-12
-                  rounded-2xl
-                  border
-                  border-gray-200
-                  bg-[#fafafa]
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-[#D4AF37]/20
-                  focus:border-[#D4AF37]
-                  transition
-                  "
-                />
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowPassword(!showPassword)
-                  }
-                  className="
-                  absolute
-                  right-4
-                  top-1/2
-                  -translate-y-1/2
-                  text-gray-400
-                  "
-                >
-                  {showPassword ? (
-                    <EyeOff size={20} />
-                  ) : (
-                    <Eye size={20} />
-                  )}
-                </button>
 
-              </div>
 
-            </div>
+{/* RIGHT SIDE */}
 
-            {/* FORGOT */}
-            <div className="flex justify-end">
-              <Link
-                href="/forgot-password"
-                className="
-                text-[#D4AF37]
-                font-medium
-                hover:underline
-                "
-              >
-                Forgot Password?
-              </Link>
-            </div>
 
-            {/* LOGIN BUTTON */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="
-              w-full
-              h-14
-              rounded-2xl
-              bg-gradient-to-r
-              from-[#B8860B]
-              to-[#D4AF37]
-              text-white
-              font-semibold
-              text-lg
-              flex
-              items-center
-              justify-center
-              gap-2
-              hover:scale-[1.01]
-              transition-all
-              duration-300
-              "
-            >
-              {loading ? (
-                "Signing In..."
-              ) : (
-                <>
-                  Sign In
-                  <ArrowRight size={20} />
-                </>
-              )}
-            </button>
+<div className="
+flex
+items-center
+justify-center
+px-6
+py-10
+">
 
-          </form>
 
-          {/* DIVIDER */}
-          <div className="flex items-center my-7">
+<div className="
+w-full
+max-w-md
+">
 
-            <div className="flex-1 border-t border-gray-200" />
 
-            <span className="px-4 text-gray-400 text-sm">
-              OR
-            </span>
+{/* LOGO */}
 
-            <div className="flex-1 border-t border-gray-200" />
+<div className="
+mb-10
+">
 
-          </div>
+<Image
+src="/logo.png"
+alt="PrimeCart"
+width={180}
+height={50}
+priority
+/>
 
-          {/* GOOGLE */}
-          <button
-            type="button"
-            className="
-            w-full
-            h-14
-            rounded-2xl
-            border
-            border-gray-200
-            flex
-            items-center
-            justify-center
-            gap-3
-            font-medium
-            hover:bg-gray-50
-            transition
-            "
-          >
-            <FcGoogle size={24} />
-            Continue with Google
-          </button>
+</div>
 
-          {/* REGISTER */}
-          <p className="mt-7 text-center text-gray-500">
 
-            Don&apos;t have an account?
 
-            <Link
-              href="/register"
-              className="
-              ml-2
-              text-[#D4AF37]
-              font-semibold
-              hover:underline
-              "
-            >
-              Create Account →
-            </Link>
 
-          </p>
+<h1 className="
+text-5xl
+font-bold
+text-gray-900
+">
 
-        </div>
+Welcome
 
-      </div>
+<span className="
+text-[#D4AF37]
+">
+ Back ✨
+</span>
 
-    </div>
+</h1>
 
-  </div>
-);
+
+<p className="
+mt-4
+text-gray-500
+text-lg
+">
+Login to manage your orders,
+wishlist and premium deals.
+</p>
+
+
+
+
+<form
+onSubmit={handleSubmit}
+className="
+mt-10
+space-y-6
+"
+>
+
+
+
+{/* EMAIL */}
+
+<div>
+
+<label className="
+text-sm
+font-semibold
+text-gray-700
+">
+Email Address
+</label>
+
+
+<div className="
+relative
+mt-2
+">
+
+
+<Mail
+className="
+absolute
+left-4
+top-1/2
+-translate-y-1/2
+text-gray-400
+"
+size={20}
+/>
+
+
+<input
+type="email"
+name="email"
+value={formData.email}
+onChange={handleChange}
+placeholder="Enter your email"
+className="
+w-full
+h-14
+rounded-2xl
+border
+border-gray-200
+bg-gray-50
+pl-12
+pr-4
+outline-none
+focus:border-[#D4AF37]
+focus:ring-4
+focus:ring-[#D4AF37]/10
+transition
+"
+/>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+{/* PASSWORD */}
+
+
+<div>
+
+
+<label className="
+text-sm
+font-semibold
+text-gray-700
+">
+Password
+</label>
+
+
+<div className="
+relative
+mt-2
+">
+
+
+<Lock
+className="
+absolute
+left-4
+top-1/2
+-translate-y-1/2
+text-gray-400
+"
+size={20}
+/>
+
+
+<input
+type={
+showPassword
+?"text"
+:"password"
+}
+name="password"
+value={formData.password}
+onChange={handleChange}
+placeholder="Enter your password"
+className="
+w-full
+h-14
+rounded-2xl
+border
+border-gray-200
+bg-gray-50
+pl-12
+pr-12
+outline-none
+focus:border-[#D4AF37]
+focus:ring-4
+focus:ring-[#D4AF37]/10
+transition
+"
+/>
+
+
+
+<button
+type="button"
+onClick={()=>
+setShowPassword(!showPassword)
+}
+className="
+absolute
+right-4
+top-1/2
+-translate-y-1/2
+text-gray-400
+hover:text-gray-700
+"
+>
+
+{
+showPassword
+?
+<EyeOff size={20}/>
+:
+<Eye size={20}/>
+}
+
+</button>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div className="
+flex
+justify-end
+">
+
+
+<Link
+href="/forgot-password"
+className="
+text-[#D4AF37]
+font-medium
+hover:underline
+"
+>
+Forgot Password?
+</Link>
+
+
+</div>
+
+
+
+
+
+<button
+disabled={loading}
+className="
+w-full
+h-14
+rounded-2xl
+bg-gradient-to-r
+from-[#B8860B]
+to-[#D4AF37]
+text-white
+font-semibold
+text-lg
+flex
+items-center
+justify-center
+gap-3
+shadow-lg
+hover:shadow-xl
+hover:scale-[1.02]
+transition
+disabled:opacity-70
+"
+>
+
+
+{
+loading
+?
+<>
+<Loader2
+className="
+animate-spin
+"
+/>
+Signing In...
+</>
+:
+<>
+Sign In
+<ArrowRight size={20}/>
+</>
+}
+
+
+</button>
+
+
+
+</form>
+
+
+
+
+
+{/* DIVIDER */}
+
+<div className="
+flex
+items-center
+gap-4
+my-8
+">
+
+<div className="
+flex-1
+border-t
+"/>
+
+
+<span className="
+text-gray-400
+text-sm
+">
+OR
+</span>
+
+
+<div className="
+flex-1
+border-t
+"/>
+
+</div>
+
+
+
+
+
+<button
+className="
+w-full
+h-14
+rounded-2xl
+border
+border-gray-200
+flex
+items-center
+justify-center
+gap-3
+font-medium
+hover:bg-gray-50
+transition
+"
+>
+
+<FcGoogle size={25}/>
+
+Continue with Google
+
+</button>
+
+
+
+
+
+<p className="
+text-center
+text-gray-500
+mt-8
+">
+
+
+Don't have an account?
+
+
+<Link
+href="/register"
+className="
+ml-2
+text-[#D4AF37]
+font-semibold
+hover:underline
+"
+>
+Create Account →
+</Link>
+
+
+</p>
+
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+  );
 }
