@@ -178,16 +178,6 @@ max-w-md
 ">
 
 
-<h2 className="
-text-5xl
-font-bold
-leading-tight
-">
-Luxury Shopping
-<br/>
-Made Simple
-</h2>
-
 
 <p className="
 mt-5
