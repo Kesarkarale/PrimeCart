@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
+import LuxuryBanner from "@/components/LuxuryBanner";
 
 import {
   Eye,
@@ -17,220 +18,307 @@ import {
 import { FcGoogle } from "react-icons/fc";
 import { toast } from "sonner";
 
+import { createClient } from "@/lib/supabase/client";
+
+
 export default function LoginPage() {
-  const router = useRouter();
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    remember: false,
-  });
 
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const { name, value, type, checked } = e.target;
+const supabase = createClient();
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        type === "checkbox"
-          ? checked
-          : value,
-    }));
-  };
+const router = useRouter();
 
 
-  const handleSubmit = async (
-    e: React.FormEvent
-  ) => {
-    e.preventDefault();
 
-    if (!formData.email || !formData.password) {
-      toast.error("Please fill all fields");
-      return;
-    }
+const [showPassword,setShowPassword] =
+useState(false);
 
 
-    setLoading(true);
-
-    try {
-
-      const res = await fetch(
-        "/api/auth/login",
-        {
-          method: "POST",
-          headers:{
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            email:
-              formData.email,
-            password:
-              formData.password,
-          }),
-        }
-      );
+const [loading,setLoading] =
+useState(false);
 
 
-      const data =
-        await res.json();
+
+const [formData,setFormData] = useState({
+
+email:"",
+password:"",
+remember:false,
+
+});
 
 
-      if(res.ok){
-
-        toast.success(
-          "Welcome back to PrimeCart ✨"
-        );
-
-        router.push("/dashboard");
-
-      }else{
-
-        toast.error(
-          data.message ||
-          "Invalid credentials"
-        );
-
-      }
 
 
-    } catch(error){
 
-      toast.error(
-        "Something went wrong"
-      );
-
-    } finally{
-
-      setLoading(false);
-
-    }
-
-  };
+const handleChange = (
+e:React.ChangeEvent<HTMLInputElement>
+)=>{
 
 
-  return (
+const {
+name,
+value,
+type,
+checked
+}=e.target;
 
-<div className="
+
+
+setFormData(prev=>({
+
+...prev,
+
+[name]:
+type==="checkbox"
+?
+checked
+:
+value
+
+}));
+
+};
+
+
+
+
+
+
+
+async function login(
+e:React.FormEvent
+){
+
+
+e.preventDefault();
+
+
+
+const {
+email,
+password,
+remember
+}=formData;
+
+
+
+
+if(!email || !password){
+
+toast.error(
+"Please fill all fields"
+);
+
+return;
+
+}
+
+
+
+
+
+try{
+
+
+setLoading(true);
+
+
+
+const {
+error
+}= await supabase.auth.signInWithPassword({
+
+email,
+
+password,
+
+});
+
+
+
+
+
+if(error){
+
+toast.error(
+error.message
+);
+
+return;
+
+}
+
+
+
+
+
+if(remember){
+
+localStorage.setItem(
+"rememberEmail",
+email
+);
+
+}
+
+
+
+toast.success(
+"Login Successful ✨"
+);
+
+
+
+router.push(
+"/dashboard"
+);
+
+
+
+}
+
+
+
+catch{
+
+
+toast.error(
+"Something went wrong"
+);
+
+
+}
+
+
+finally{
+
+setLoading(false);
+
+}
+
+
+
+}
+
+
+
+
+
+
+
+
+
+return (
+
+
+<main className="
 min-h-screen
-bg-gradient-to-br
-from-[#f8f3e8]
-via-[#fff]
-to-[#eee2c8]
-flex
-items-center
-justify-center
-p-4
+bg-[#f8f5ef]
 ">
 
 
 <div className="
-w-full
-max-w-[1400px]
-min-h-[850px]
-bg-white
-rounded-[40px]
-shadow-2xl
-overflow-hidden
 grid
 lg:grid-cols-2
+min-h-screen
 ">
 
 
-{/* LEFT IMAGE */}
 
-<div className="
-relative
-hidden
-lg:block
-">
 
-<Image
-          src="/login-banner.png"
-          alt="Banner"
-          fill
-          priority
-          className="object-cover"
-        />
-      </div>
+
+{/* LEFT */}
+
+<LuxuryBanner />
 
 
 
 
-{/* RIGHT SIDE */}
+
+
+
+{/* RIGHT */}
+
 
 
 <div className="
 flex
 items-center
 justify-center
-px-6
-py-10
+p-8
 ">
+
+
+
 
 
 <div className="
 w-full
 max-w-md
+bg-white
+rounded-[32px]
+shadow-xl
+p-8
 ">
 
 
-{/* LOGO */}
-
-<div className="
-mb-10
-">
-
-<Image
-src="/logo.png"
-alt="PrimeCart"
-width={180}
-height={50}
-priority
-/>
-
-</div>
 
 
 
-
-<h1 className="
-text-5xl
-font-bold
-text-gray-900
-">
-
-Welcome
-
-<span className="
-text-[#D4AF37]
-">
- Back ✨
-</span>
-
-</h1>
 
 
 <p className="
-mt-4
-text-gray-500
-text-lg
+text-[#B68B2C]
+uppercase
+tracking-[5px]
+text-sm
+font-semibold
 ">
-Login to manage your orders,
-wishlist and premium deals.
+
+Welcome Back
+
 </p>
 
 
 
 
+
+
+<h1 className="
+mt-4
+text-4xl
+font-black
+text-gray-900
+">
+
+Login To PrimeCart
+
+</h1>
+
+
+
+
+
+
+<p className="
+mt-3
+text-gray-500
+">
+
+Continue your luxury shopping journey
+
+</p>
+
+
+
+
+
+
+
+
 <form
-onSubmit={handleSubmit}
+onSubmit={login}
 className="
 mt-10
 space-y-6
@@ -239,17 +327,28 @@ space-y-6
 
 
 
+
+
+
+
 {/* EMAIL */}
 
+
+
 <div>
+
 
 <label className="
 text-sm
 font-semibold
 text-gray-700
 ">
+
 Email Address
+
 </label>
+
+
 
 
 <div className="
@@ -259,6 +358,9 @@ mt-2
 
 
 <Mail
+
+size={20}
+
 className="
 absolute
 left-4
@@ -266,16 +368,24 @@ top-1/2
 -translate-y-1/2
 text-gray-400
 "
-size={20}
+
 />
 
 
+
+
 <input
+
 type="email"
+
 name="email"
+
 value={formData.email}
+
 onChange={handleChange}
+
 placeholder="Enter your email"
+
 className="
 w-full
 h-14
@@ -284,13 +394,12 @@ border
 border-gray-200
 bg-gray-50
 pl-12
-pr-4
 outline-none
 focus:border-[#D4AF37]
-focus:ring-4
-focus:ring-[#D4AF37]/10
-transition
+focus:ring-2
+focus:ring-[#D4AF37]/20
 "
+
 />
 
 
@@ -303,7 +412,11 @@ transition
 
 
 
+
+
+
 {/* PASSWORD */}
+
 
 
 <div>
@@ -314,8 +427,11 @@ text-sm
 font-semibold
 text-gray-700
 ">
+
 Password
+
 </label>
+
 
 
 <div className="
@@ -325,6 +441,9 @@ mt-2
 
 
 <Lock
+
+size={20}
+
 className="
 absolute
 left-4
@@ -332,20 +451,31 @@ top-1/2
 -translate-y-1/2
 text-gray-400
 "
-size={20}
+
 />
 
 
+
+
+
 <input
+
 type={
 showPassword
-?"text"
-:"password"
+?
+"text"
+:
+"password"
 }
+
 name="password"
+
 value={formData.password}
+
 onChange={handleChange}
-placeholder="Enter your password"
+
+placeholder="Enter password"
+
 className="
 w-full
 h-14
@@ -357,118 +487,196 @@ pl-12
 pr-12
 outline-none
 focus:border-[#D4AF37]
-focus:ring-4
-focus:ring-[#D4AF37]/10
-transition
+focus:ring-2
+focus:ring-[#D4AF37]/20
 "
+
 />
 
 
 
+
+
+
 <button
+
 type="button"
-onClick={()=>
-setShowPassword(!showPassword)
-}
+
+onClick={()=>setShowPassword(!showPassword)}
+
 className="
 absolute
 right-4
 top-1/2
 -translate-y-1/2
-text-gray-400
-hover:text-gray-700
+text-gray-500
 "
+
 >
 
+
 {
+
 showPassword
+
 ?
+
 <EyeOff size={20}/>
+
 :
+
 <Eye size={20}/>
+
 }
+
 
 </button>
 
 
-</div>
-
 
 </div>
 
 
+</div>
+
+
+
+
+
+
+
+
+
+{/* REMEMBER */}
 
 
 
 <div className="
 flex
-justify-end
+justify-between
+items-center
+text-sm
 ">
 
 
-<Link
-href="/forgot-password"
+<label className="
+flex
+items-center
+gap-2
+text-gray-600
+">
+
+
+<input
+
+type="checkbox"
+
+name="remember"
+
+checked={formData.remember}
+
+onChange={handleChange}
+
 className="
-text-[#D4AF37]
-font-medium
+accent-[#D4AF37]
+"
+
+/>
+
+
+Remember me
+
+
+</label>
+
+
+
+
+
+
+<Link
+
+href="/forgot-password"
+
+className="
+text-[#B68B2C]
+font-semibold
 hover:underline
 "
 >
+
 Forgot Password?
+
 </Link>
 
 
+
 </div>
+
+
+
+
 
 
 
 
 
 <button
+
 disabled={loading}
+
 className="
 w-full
 h-14
 rounded-2xl
-bg-gradient-to-r
-from-[#B8860B]
-to-[#D4AF37]
+bg-[#D4AF37]
 text-white
-font-semibold
+font-bold
 text-lg
 flex
 items-center
 justify-center
-gap-3
-shadow-lg
-hover:shadow-xl
-hover:scale-[1.02]
+gap-2
+hover:bg-[#b89225]
 transition
-disabled:opacity-70
 "
+
 >
 
 
 {
+
 loading
+
 ?
+
 <>
+
 <Loader2
-className="
-animate-spin
-"
+className="animate-spin"
 />
-Signing In...
+
+Logging in...
+
 </>
+
 :
+
 <>
-Sign In
+
+Login Now
+
 <ArrowRight size={20}/>
+
 </>
+
 }
 
 
 </button>
+
+
+
 
 
 
@@ -478,7 +686,9 @@ Sign In
 
 
 
-{/* DIVIDER */}
+
+
+
 
 <div className="
 flex
@@ -487,24 +697,33 @@ gap-4
 my-8
 ">
 
+
 <div className="
+h-px
+bg-gray-200
 flex-1
-border-t
 "/>
+
 
 
 <span className="
 text-gray-400
 text-sm
 ">
+
 OR
+
 </span>
 
 
+
+
 <div className="
+h-px
+bg-gray-200
 flex-1
-border-t
 "/>
+
 
 </div>
 
@@ -512,7 +731,12 @@ border-t
 
 
 
+
+
+
+
 <button
+
 className="
 w-full
 h-14
@@ -523,15 +747,18 @@ flex
 items-center
 justify-center
 gap-3
-font-medium
+font-semibold
 hover:bg-gray-50
 transition
 "
+
 >
 
-<FcGoogle size={25}/>
 
-Continue with Google
+<FcGoogle size={24}/>
+
+Continue With Google
+
 
 </button>
 
@@ -539,10 +766,14 @@ Continue with Google
 
 
 
+
+
+
+
 <p className="
 text-center
-text-gray-500
 mt-8
+text-gray-500
 ">
 
 
@@ -550,22 +781,91 @@ Don't have an account?
 
 
 <Link
+
 href="/register"
+
 className="
 ml-2
-text-[#D4AF37]
-font-semibold
+text-[#B68B2C]
+font-bold
 hover:underline
 "
+
 >
-Create Account →
+
+Create Account
+
 </Link>
+
 
 
 </p>
 
 
 
+
+
+
+<div className="
+mt-10
+p-5
+rounded-3xl
+bg-[#faf8f3]
+border
+border-[#D4AF37]/20
+">
+
+
+<div className="
+flex
+items-center
+gap-3
+">
+
+
+<div className="
+w-10
+h-10
+rounded-xl
+bg-[#D4AF37]/20
+flex
+items-center
+justify-center
+">
+
+
+<Lock
+className="text-[#B68B2C]"
+/>
+
+
+</div>
+
+
+
+<div>
+
+
+<h4 className="
+font-bold
+text-gray-900
+">
+
+Secure Shopping
+
+</h4>
+
+
+<p className="
+text-sm
+text-gray-500
+">
+
+Your information is protected
+
+</p>
+
+
 </div>
 
 
@@ -575,7 +875,24 @@ Create Account →
 </div>
 
 
+
+
+
+
 </div>
 
-  );
+
+
+</div>
+
+
+
+</div>
+
+
+
+</main>
+
+);
+
 }
