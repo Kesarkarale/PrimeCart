@@ -2,28 +2,28 @@
 
 import Link from "next/link";
 import {
-  Facebook,
-  Instagram,
-  Twitter,
-  Youtube,
   Mail,
   Phone,
   MapPin,
+  Globe,
+  ShieldCheck,
+  Truck,
+  CreditCard,
 } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="mt-20 bg-[#111827] text-white">
-
+    <footer className="bg-[#111827] text-white mt-20">
       <div className="max-w-7xl mx-auto px-6 py-16">
 
-        <div className="grid gap-10 lg:grid-cols-4">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
 
           {/* Logo */}
           <div>
+
             <div className="flex items-center gap-3">
 
-              <div className="w-12 h-12 rounded-2xl bg-[#D4AF37] flex items-center justify-center text-2xl font-black">
+              <div className="w-12 h-12 rounded-2xl bg-[#D4AF37] flex items-center justify-center text-2xl font-bold">
                 P
               </div>
 
@@ -33,53 +33,55 @@ export default function Footer() {
                 </h2>
 
                 <p className="text-gray-400 text-sm">
-                  Premium Shopping Store
+                  Premium Shopping
                 </p>
+
               </div>
 
             </div>
 
             <p className="mt-6 text-gray-400 leading-7">
-              Discover premium products with the best prices,
-              secure payments and fast delivery all over India.
+              Discover premium quality products at the best prices with
+              secure payments, fast delivery and trusted customer support.
             </p>
 
             <div className="flex gap-4 mt-8">
 
-              <button className="w-11 h-11 rounded-xl bg-white/10 hover:bg-[#D4AF37] transition flex items-center justify-center">
-                <Facebook size={20} />
-              </button>
+              <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center hover:bg-[#D4AF37] transition">
+                <Globe size={20} />
+              </div>
 
-              <button className="w-11 h-11 rounded-xl bg-white/10 hover:bg-[#D4AF37] transition flex items-center justify-center">
-                <Instagram size={20} />
-              </button>
+              <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center hover:bg-[#D4AF37] transition">
+                <ShieldCheck size={20} />
+              </div>
 
-              <button className="w-11 h-11 rounded-xl bg-white/10 hover:bg-[#D4AF37] transition flex items-center justify-center">
-                <Twitter size={20} />
-              </button>
+              <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center hover:bg-[#D4AF37] transition">
+                <Truck size={20} />
+              </div>
 
-              <button className="w-11 h-11 rounded-xl bg-white/10 hover:bg-[#D4AF37] transition flex items-center justify-center">
-                <Youtube size={20} />
-              </button>
+              <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center hover:bg-[#D4AF37] transition">
+                <CreditCard size={20} />
+              </div>
 
             </div>
 
           </div>
 
           {/* Quick Links */}
+
           <div>
 
             <h3 className="text-xl font-bold mb-6">
               Quick Links
             </h3>
 
-            <div className="space-y-4">
+            <div className="space-y-4 text-gray-400">
 
               <Link href="/" className="block hover:text-[#D4AF37]">
                 Home
               </Link>
 
-              <Link href="#" className="block hover:text-[#D4AF37]">
+              <Link href="/dashboard" className="block hover:text-[#D4AF37]">
                 Shop
               </Link>
 
@@ -100,55 +102,77 @@ export default function Footer() {
           </div>
 
           {/* Categories */}
+
           <div>
 
             <h3 className="text-xl font-bold mb-6">
               Categories
             </h3>
 
-            <div className="space-y-4">
+            <div className="space-y-4 text-gray-400">
 
               <p>Electronics</p>
+
               <p>Fashion</p>
+
               <p>Mobiles</p>
+
               <p>Furniture</p>
-              <p>Watches</p>
+
               <p>Accessories</p>
+
+              <p>Beauty</p>
 
             </div>
 
           </div>
 
           {/* Contact */}
+
           <div>
 
             <h3 className="text-xl font-bold mb-6">
-              Contact
+              Contact Us
             </h3>
 
-            <div className="space-y-5">
+            <div className="space-y-5 text-gray-400">
 
-              <div className="flex gap-3">
+              <div className="flex items-center gap-3">
 
-                <MapPin className="text-[#D4AF37]" />
+                <MapPin
+                  size={18}
+                  className="text-[#D4AF37]"
+                />
 
-                <span>Mumbai, Maharashtra, India</span>
-
-              </div>
-
-              <div className="flex gap-3">
-
-                <Phone className="text-[#D4AF37]" />
-
-                <span>+91 98765 43210</span>
+                <span>
+                  Mumbai, Maharashtra, India
+                </span>
 
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex items-center gap-3">
 
-                <Mail className="text-[#D4AF37]" />
+                <Phone
+                  size={18}
+                  className="text-[#D4AF37]"
+                />
 
-                <span>support@primecart.com</span>
+                <span>
+                  +91 98765 43210
+                </span>
+
+              </div>
+
+              <div className="flex items-center gap-3">
+
+                <Mail
+                  size={18}
+                  className="text-[#D4AF37]"
+                />
+
+                <span>
+                  support@primecart.com
+                </span>
 
               </div>
 
@@ -168,13 +192,19 @@ export default function Footer() {
             © 2026 PrimeCart. All Rights Reserved.
           </p>
 
-          <div className="flex gap-6 mt-4 md:mt-0 text-sm text-gray-400">
+          <div className="flex gap-6 mt-4 md:mt-0 text-gray-400 text-sm">
 
-            <Link href="#">Privacy Policy</Link>
+            <Link href="#">
+              Privacy Policy
+            </Link>
 
-            <Link href="#">Terms & Conditions</Link>
+            <Link href="#">
+              Terms
+            </Link>
 
-            <Link href="#">Refund Policy</Link>
+            <Link href="#">
+              Refund Policy
+            </Link>
 
           </div>
 
