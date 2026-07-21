@@ -74,8 +74,17 @@ export default function LoginPage() {
 
 return (
   <div className="grid min-h-screen lg:grid-cols-2 bg-[#FAF8F3]">
-
-    {/* LEFT SIDE LOGIN */}
+ {/* LEFT SIDE BANNER */}
+    <div className="relative hidden lg:block">
+      <Image
+        src="/login-banner.png"
+        alt="PrimeCart Banner"
+        fill
+        priority
+        className="object-cover"
+      />
+    </div>
+    {/* RIGHT SIDE LOGIN */}
     <div className="flex flex-col justify-center h-full px-12 bg-white">
 
       {/* Logo */}
@@ -203,17 +212,6 @@ return (
           Create Account →
         </Link>
       </p>
-    </div>
-
-    {/* RIGHT SIDE BANNER */}
-    <div className="relative hidden lg:block">
-      <Image
-        src="/login-banner.png"
-        alt="PrimeCart Banner"
-        fill
-        priority
-        className="object-cover"
-      />
     </div>
 
   </div>
