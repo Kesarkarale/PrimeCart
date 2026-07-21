@@ -1,44 +1,108 @@
 "use client";
 
 import Link from "next/link";
-import {
+import { 
   Search,
   Heart,
   ShoppingCart,
   User,
-  Menu,
   ChevronDown,
+  Menu,
+  X
 } from "lucide-react";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-export default function Navbar() {
 
-const menu = [
-  "Home",
-  "Categories",
-  "Deals",
-  "New Arrivals",
-  "Best Sellers",
-  "Electronics",
-  "Fashion",
-  "Home & Living",
-  "Beauty",
-  "More"
+export default function Navbar(){
+
+const router = useRouter();
+
+const [openCategory,setOpenCategory] = useState(false);
+const [mobile,setMobile] = useState(false);
+const [search,setSearch] = useState("");
+
+
+
+const categories=[
+ "Electronics",
+ "Fashion",
+ "Mobiles",
+ "Beauty",
+ "Home & Living",
+ "Kitchen",
+ "Sports"
 ];
 
 
-return (
+const nav=[
+ {
+  name:"Home",
+  link:"/"
+ },
+ {
+  name:"Categories",
+  link:"/categories"
+ },
+ {
+  name:"Deals",
+  link:"/deals"
+ },
+ {
+  name:"New Arrivals",
+  link:"/products/new"
+ },
+ {
+  name:"Best Sellers",
+  link:"/products/best"
+ },
+ {
+  name:"Electronics",
+  link:"/category/electronics"
+ },
+ {
+  name:"Fashion",
+  link:"/category/fashion"
+ },
+ {
+  name:"Home & Living",
+  link:"/category/home"
+ },
+ {
+  name:"Beauty",
+  link:"/category/beauty"
+ }
+];
+
+
+
+
+function handleSearch(){
+
+if(search.trim()){
+
+router.push(`/search?q=${search}`);
+
+}
+
+}
+
+
+
+return(
+
 <header className="
 bg-white
 border-b
-border-gray-200
 sticky
 top-0
 z-50
 ">
 
 
-{/* TOP NAV */}
+{/* MAIN NAV */}
+
 
 <div className="
 max-w-[1400px]
@@ -51,58 +115,39 @@ gap-8
 ">
 
 
+
 {/* LOGO */}
 
 <Link
 href="/"
-className="
-flex
-items-center
-gap-3
-min-w-[210px]
-"
+className="min-w-[210px]"
 >
 
-<div
-className="
-text-[#D4AF37]
-text-5xl
-"
->
-🛒
-</div>
-
-
-<div>
-
-<h1
-className="
+<h1 className="
 text-3xl
 font-black
-tracking-tight
-text-black
-"
->
-Prime<span className="text-[#D4AF37]">
+">
+
+Prime
+<span className="
+text-[#D4AF37]
+">
 Cart
 </span>
+
 </h1>
 
 
-<p
-className="
-text-[11px]
+<p className="
+text-xs
 text-gray-500
-font-medium
-"
->
+">
 Shop More. Pay Less.
 </p>
 
-
-</div>
-
 </Link>
+
+
 
 
 
@@ -111,39 +156,111 @@ Shop More. Pay Less.
 {/* SEARCH */}
 
 
-<div
-className="
-flex
+<div className="
+hidden
+lg:flex
 flex-1
-h-[42px]
-"
->
+h-11
+">
+
+
+<div className="relative">
 
 
 <button
+
+onClick={()=>setOpenCategory(!openCategory)}
+
 className="
+h-11
 px-5
-bg-gray-50
 border
-border-gray-200
 rounded-l-xl
+bg-gray-50
 flex
 items-center
 gap-2
 text-sm
-font-medium
-"
->
+font-semibold
+">
 
 All Categories
 
 <ChevronDown size={16}/>
 
+
 </button>
 
 
 
+{
+openCategory &&
+
+<div className="
+absolute
+top-12
+left-0
+bg-white
+shadow-xl
+rounded-xl
+w-56
+border
+p-3
+z-50
+">
+
+{
+categories.map(cat=>(
+
+<Link
+
+key={cat}
+
+href={`/category/${cat.toLowerCase().replaceAll(" ","-")}`}
+
+className="
+block
+px-4
+py-3
+rounded-lg
+hover:bg-[#D4AF37]
+hover:text-white
+"
+
+>
+
+{cat}
+
+</Link>
+
+))
+}
+
+
+</div>
+
+}
+
+
+
+</div>
+
+
+
+
+
 <input
+
+value={search}
+
+onChange={(e)=>setSearch(e.target.value)}
+
+onKeyDown={(e)=>{
+
+if(e.key==="Enter")
+handleSearch()
+
+}}
 
 placeholder="
 Search for products, brands and more...
@@ -152,205 +269,109 @@ Search for products, brands and more...
 className="
 flex-1
 border-y
-border-gray-200
 px-5
 outline-none
 text-sm
 "
-
 />
 
 
 
+
+
 <button
+
+onClick={handleSearch}
+
 className="
 w-12
 bg-[#D4AF37]
 text-white
 rounded-r-xl
 flex
-items-center
 justify-center
+items-center
 hover:bg-black
 transition
-"
->
+">
 
 <Search size={20}/>
 
 </button>
 
 
+
 </div>
 
 
 
 
 
-{/* RIGHT MENU */}
 
 
-<div
+
+
+{/* RIGHT */}
+
+
+<div className="
+flex
+items-center
+gap-6
+">
+
+
+
+
+
+<Link
+href="/login"
 className="
 flex
 items-center
-gap-7
+gap-2
 "
 >
 
-
-
-{/* ACCOUNT */}
-
-<div
-className="
-flex
-items-center
-gap-3
-cursor-pointer
-"
->
-
-<User size={25}/>
+<User/>
 
 <div>
 
-<p
-className="
-text-sm
-font-semibold
-"
->
+<p className="text-sm font-semibold">
 Account
 </p>
 
-
-<p
-className="
-text-xs
-text-gray-500
-"
->
+<p className="text-xs text-gray-500">
 Sign in / Register
 </p>
 
 
 </div>
 
-
-</div>
-
+</Link>
 
 
 
 
 
-{/* WISHLIST */}
-
-<div
-className="
-flex
-items-center
-gap-2
-relative
-"
+<Link
+href="/wishlist"
+className="relative"
 >
 
-<Heart size={27}/>
-
-
-<div>
-
-<p
-className="
-text-sm
-font-semibold
-"
->
-Wishlist
-</p>
-
-</div>
-
+<Heart size={26}/>
 
 <span
 className="
 absolute
 -top-2
-right-[-8px]
+-right-2
 bg-[#D4AF37]
 text-white
-text-[10px]
-rounded-full
-w-5
-h-5
-flex
-items-center
-justify-center
-"
->
-0
-</span>
-
-
-</div>
-
-
-
-
-
-
-
-{/* CART */}
-
-
-<div
-className="
-flex
-items-center
-gap-2
-relative
-"
->
-
-<ShoppingCart size={28}/>
-
-
-<div>
-
-<p
-className="
-text-sm
-font-semibold
-"
->
-Cart
-</p>
-
-<p
-className="
 text-xs
-text-gray-500
-"
->
-₹0.00
-</p>
-
-
-</div>
-
-
-<span
-className="
-absolute
--top-2
-right-[-8px]
-bg-[#D4AF37]
-text-white
-text-[10px]
-rounded-full
 w-5
 h-5
+rounded-full
 flex
 items-center
 justify-center
@@ -360,15 +381,7 @@ justify-center
 </span>
 
 
-</div>
-
-
-
-
-</div>
-
-
-</div>
+</Link>
 
 
 
@@ -376,46 +389,111 @@ justify-center
 
 
 
-
-{/* SECOND NAV */}
-
-
-<div
-className="
-border-t
-border-gray-100
-"
+<Link
+href="/cart"
+className="relative"
 >
 
+<ShoppingCart size={27}/>
 
-<div
+
+<span
 className="
-max-w-[1400px]
-mx-auto
-px-6
-h-[55px]
+absolute
+-top-2
+-right-2
+bg-[#D4AF37]
+text-white
+text-xs
+w-5
+h-5
+rounded-full
 flex
 items-center
-gap-8
+justify-center
 "
 >
+0
+</span>
+
+
+</Link>
+
+
 
 
 <button
+
+onClick={()=>setMobile(!mobile)}
+
 className="
-bg-[#D4AF37]
-text-white
-px-8
-h-10
-rounded-lg
-flex
-items-center
-gap-3
-font-semibold
+lg:hidden
 "
 >
 
-<Menu size={20}/>
+{
+mobile?
+<X/>:
+<Menu/>
+}
+
+
+</button>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* SECOND MENU */}
+
+
+<div className="
+border-t
+">
+
+
+<div className="
+max-w-[1400px]
+mx-auto
+px-6
+h-14
+flex
+items-center
+gap-8
+overflow-x-auto
+">
+
+
+
+<button
+
+onClick={()=>setOpenCategory(!openCategory)}
+
+className="
+bg-[#D4AF37]
+text-white
+px-7
+py-2
+rounded-lg
+font-semibold
+flex
+items-center
+gap-2
+"
+>
+
+<Menu size={18}/>
 
 All Categories
 
@@ -424,51 +502,31 @@ All Categories
 
 
 
-
 {
-menu.map((item,index)=>(
+nav.map((item,index)=>(
 
 <Link
-key={item}
-href="#"
+
+key={item.name}
+
+href={item.link}
+
 className={`
 text-sm
 font-semibold
-h-full
-flex
-items-center
-relative
+whitespace-nowrap
 
-${index===0
-?
+${index===0?
 "text-[#D4AF37]"
 :
 "text-gray-800"
 }
 
 `}
+
 >
 
-
-{item}
-
-
-{
-index===0 &&
-
-<span
-className="
-absolute
-bottom-0
-left-0
-w-full
-h-[3px]
-bg-[#D4AF37]
-"
-/>
-
-}
-
+{item.name}
 
 </Link>
 
@@ -476,15 +534,65 @@ bg-[#D4AF37]
 }
 
 
-
 </div>
 
 
 </div>
+
+
+
+
+
+
+
+
+
+{/* MOBILE */}
+
+{
+mobile &&
+
+<div className="
+lg:hidden
+p-5
+border-t
+bg-white
+">
+
+{
+nav.map(item=>(
+
+<Link
+
+key={item.name}
+
+href={item.link}
+
+className="
+block
+py-3
+font-semibold
+"
+
+>
+
+{item.name}
+
+</Link>
+
+))
+}
+
+
+</div>
+
+}
 
 
 
 </header>
+
 )
+
 
 }
