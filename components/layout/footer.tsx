@@ -1,416 +1,187 @@
- "use client";
+"use client";
 
 import Link from "next/link";
-
 import {
-  FaInstagram,
-  FaFacebook,
-  FaTwitter,
-} from "react-icons/fa";
+  Facebook,
+  Instagram,
+  Twitter,
+  Youtube,
+  Mail,
+  Phone,
+  MapPin,
+} from "lucide-react";
 
+export default function Footer() {
+  return (
+    <footer className="mt-20 bg-[#111827] text-white">
 
-export default function Footer(){
+      <div className="max-w-7xl mx-auto px-6 py-16">
 
-return (
+        <div className="grid gap-10 lg:grid-cols-4">
 
-<footer
-className="
-mt-20
-bg-[#050505]
-text-white
-rounded-t-3xl
-"
->
+          {/* Logo */}
+          <div>
+            <div className="flex items-center gap-3">
 
+              <div className="w-12 h-12 rounded-2xl bg-[#D4AF37] flex items-center justify-center text-2xl font-black">
+                P
+              </div>
 
-<div
-className="
-max-w-7xl
-mx-auto
-px-5
-py-12
-grid
-md:grid-cols-4
-gap-10
-"
->
+              <div>
+                <h2 className="text-2xl font-bold">
+                  PrimeCart
+                </h2>
 
+                <p className="text-gray-400 text-sm">
+                  Premium Shopping Store
+                </p>
+              </div>
 
-{/* BRAND */}
+            </div>
 
-<div>
+            <p className="mt-6 text-gray-400 leading-7">
+              Discover premium products with the best prices,
+              secure payments and fast delivery all over India.
+            </p>
 
+            <div className="flex gap-4 mt-8">
 
-<h2
-className="
-text-3xl
-font-black
-"
->
+              <button className="w-11 h-11 rounded-xl bg-white/10 hover:bg-[#D4AF37] transition flex items-center justify-center">
+                <Facebook size={20} />
+              </button>
 
-Prime
+              <button className="w-11 h-11 rounded-xl bg-white/10 hover:bg-[#D4AF37] transition flex items-center justify-center">
+                <Instagram size={20} />
+              </button>
 
-<span className="text-[#D4AF37]">
-Cart
-</span>
+              <button className="w-11 h-11 rounded-xl bg-white/10 hover:bg-[#D4AF37] transition flex items-center justify-center">
+                <Twitter size={20} />
+              </button>
 
-</h2>
+              <button className="w-11 h-11 rounded-xl bg-white/10 hover:bg-[#D4AF37] transition flex items-center justify-center">
+                <Youtube size={20} />
+              </button>
 
+            </div>
 
+          </div>
 
-<p
-className="
-mt-4
-text-gray-400
-"
->
+          {/* Quick Links */}
+          <div>
 
-Premium online shopping marketplace for luxury products.
+            <h3 className="text-xl font-bold mb-6">
+              Quick Links
+            </h3>
 
-</p>
+            <div className="space-y-4">
 
+              <Link href="/" className="block hover:text-[#D4AF37]">
+                Home
+              </Link>
 
+              <Link href="#" className="block hover:text-[#D4AF37]">
+                Shop
+              </Link>
 
+              <Link href="#" className="block hover:text-[#D4AF37]">
+                Categories
+              </Link>
 
-{/* SOCIAL ICONS */}
+              <Link href="#" className="block hover:text-[#D4AF37]">
+                Deals
+              </Link>
 
-<div
-className="
-flex
-gap-4
-mt-5
-"
->
+              <Link href="#" className="block hover:text-[#D4AF37]">
+                Contact
+              </Link>
 
+            </div>
 
-<div
-className="
-h-10
-w-10
-rounded-full
-bg-white/10
-flex
-items-center
-justify-center
-hover:bg-[#D4AF37]
-transition
-cursor-pointer
-"
->
+          </div>
 
-<FaInstagram size={18}/>
+          {/* Categories */}
+          <div>
 
-</div>
+            <h3 className="text-xl font-bold mb-6">
+              Categories
+            </h3>
 
+            <div className="space-y-4">
 
+              <p>Electronics</p>
+              <p>Fashion</p>
+              <p>Mobiles</p>
+              <p>Furniture</p>
+              <p>Watches</p>
+              <p>Accessories</p>
 
+            </div>
 
-<div
-className="
-h-10
-w-10
-rounded-full
-bg-white/10
-flex
-items-center
-justify-center
-hover:bg-[#D4AF37]
-transition
-cursor-pointer
-"
->
+          </div>
 
-<FaFacebook size={18}/>
+          {/* Contact */}
+          <div>
 
-</div>
+            <h3 className="text-xl font-bold mb-6">
+              Contact
+            </h3>
 
+            <div className="space-y-5">
 
+              <div className="flex gap-3">
 
+                <MapPin className="text-[#D4AF37]" />
 
-<div
-className="
-h-10
-w-10
-rounded-full
-bg-white/10
-flex
-items-center
-justify-center
-hover:bg-[#D4AF37]
-transition
-cursor-pointer
-"
->
+                <span>Mumbai, Maharashtra, India</span>
 
-<FaTwitter size={18}/>
+              </div>
 
-</div>
+              <div className="flex gap-3">
 
+                <Phone className="text-[#D4AF37]" />
 
-</div>
+                <span>+91 98765 43210</span>
 
+              </div>
 
-</div>
+              <div className="flex gap-3">
 
+                <Mail className="text-[#D4AF37]" />
 
+                <span>support@primecart.com</span>
 
+              </div>
 
+            </div>
 
-{/* QUICK LINKS */}
+          </div>
 
-<div>
+        </div>
 
+      </div>
 
-<h3
-className="
-font-bold
-text-lg
-"
->
+      <div className="border-t border-white/10">
 
-Quick Links
+        <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between">
 
-</h3>
+          <p className="text-gray-400 text-sm">
+            © 2026 PrimeCart. All Rights Reserved.
+          </p>
 
+          <div className="flex gap-6 mt-4 md:mt-0 text-sm text-gray-400">
 
+            <Link href="#">Privacy Policy</Link>
 
-<ul
-className="
-mt-4
-space-y-3
-text-gray-400
-"
->
+            <Link href="#">Terms & Conditions</Link>
 
+            <Link href="#">Refund Policy</Link>
 
-<li>
+          </div>
 
-<Link
-href="/dashboard"
-className="hover:text-[#D4AF37]"
->
+        </div>
 
-Home
+      </div>
 
-</Link>
-
-</li>
-
-
-
-<li>
-
-<Link
-href="/products"
-className="hover:text-[#D4AF37]"
->
-
-Products
-
-</Link>
-
-</li>
-
-
-
-<li>
-
-<Link
-href="/categories"
-className="hover:text-[#D4AF37]"
->
-
-Categories
-
-</Link>
-
-</li>
-
-
-
-<li>
-
-<Link
-href="/orders"
-className="hover:text-[#D4AF37]"
->
-
-Orders
-
-</Link>
-
-</li>
-
-
-</ul>
-
-
-</div>
-
-
-
-
-
-
-
-{/* CUSTOMER SERVICE */}
-
-<div>
-
-
-<h3
-className="
-font-bold
-text-lg
-"
->
-
-Customer Service
-
-</h3>
-
-
-
-<ul
-className="
-mt-4
-space-y-3
-text-gray-400
-"
->
-
-
-<li className="hover:text-[#D4AF37] cursor-pointer">
-
-Help Center
-
-</li>
-
-
-
-<li className="hover:text-[#D4AF37] cursor-pointer">
-
-Returns
-
-</li>
-
-
-
-<li className="hover:text-[#D4AF37] cursor-pointer">
-
-Shipping Policy
-
-</li>
-
-
-
-<li className="hover:text-[#D4AF37] cursor-pointer">
-
-Privacy Policy
-
-</li>
-
-
-</ul>
-
-
-</div>
-
-
-
-
-
-
-
-{/* CONTACT */}
-
-<div>
-
-
-<h3
-className="
-font-bold
-text-lg
-"
->
-
-Contact
-
-</h3>
-
-
-
-<p
-className="
-mt-4
-text-gray-400
-"
->
-
-support@primecart.com
-
-</p>
-
-
-
-<p
-className="
-mt-2
-text-gray-400
-"
->
-
-+91 9876543210
-
-</p>
-
-
-
-<p
-className="
-mt-2
-text-gray-400
-"
->
-
-Mumbai, Maharashtra
-
-</p>
-
-
-</div>
-
-
-
-</div>
-
-
-
-
-
-
-
-{/* COPYRIGHT */}
-
-<div
-className="
-border-t
-border-white/10
-py-5
-text-center
-text-gray-400
-text-sm
-"
->
-
-© 2026 PrimeCart. All Rights Reserved.
-
-</div>
-
-
-
-</footer>
-
-)
-
+    </footer>
+  );
 }
