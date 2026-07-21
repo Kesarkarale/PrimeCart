@@ -75,364 +75,109 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f8f5ef]">
-      <div className="grid lg:grid-cols-2 min-h-screen">
+    <div className="grid min-h-screen lg:grid-cols-2 bg-[#FAF8F3]">
+  <div>
+    {/* Left Login Form */}
+  </div>
 
-        {/* LEFT SIDE */}
+  <div className="relative hidden lg:block">
+    <Image
+      src="/login-banner.png"
+      alt="PrimeCart Banner"
+      fill
+      className="object-cover"
+    />
+  </div>
+</div>
       
 
         {/* RIGHT SIDE */}
-        <div className="flex items-center justify-center p-8">
+       <div className="flex flex-col justify-center h-full px-12 bg-white">
+  {/* Logo */}
+  <div className="mb-10">
+    <Image
+      src="/logo.png"
+      alt="PrimeCart"
+      width={220}
+      height={60}
+      priority
+    />
+  </div>
 
-          <div
-            className="
-            w-full
-            max-w-md
-            bg-white
-            rounded-[32px]
-            shadow-xl
-            p-8
-            "
-          >
-            <p
-              className="
-              text-[#B68B2C]
-              uppercase
-              tracking-[5px]
-              text-sm
-              font-semibold
-              "
-            >
-              Welcome Back
-            </p>
+  {/* Heading */}
+  <div className="mb-8">
+    <h1 className="text-5xl font-bold text-black leading-tight">
+      Welcome <span className="text-[#D4AF37]">Back ✨</span>
+    </h1>
 
-            <h1
-              className="
-              mt-4
-              text-4xl
-              font-black
-              text-gray-900
-              "
-            >
-              Login To PrimeCart
-            </h1>
+    <p className="mt-4 text-gray-600 text-lg max-w-md">
+      Sign in to access your orders,
+      wishlist, cart and premium deals.
+    </p>
+  </div>
 
-            <p className="mt-3 text-gray-500">
-              Continue your luxury shopping journey
-            </p>
+  {/* Form */}
+  <form className="space-y-6">
+    <div>
+      <label className="block mb-2 text-sm font-semibold text-gray-700">
+        Email Address
+      </label>
 
-            <form
-              onSubmit={handleSubmit}
-              className="mt-10 space-y-6"
-            >
+      <input
+        type="email"
+        placeholder="Enter your email"
+        className="w-full h-14 px-5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+      />
+    </div>
 
-              {/* EMAIL */}
+    <div>
+      <label className="block mb-2 text-sm font-semibold text-gray-700">
+        Password
+      </label>
 
-              <div>
-                <label className="text-sm font-semibold text-gray-700">
-                  Email Address
-                </label>
+      <input
+        type="password"
+        placeholder="Enter your password"
+        className="w-full h-14 px-5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+      />
+    </div>
 
-                <div className="relative mt-2">
-                  <Mail
-                    size={20}
-                    className="
-                    absolute
-                    left-4
-                    top-1/2
-                    -translate-y-1/2
-                    text-gray-400
-                    "
-                  />
+    <div className="flex justify-end">
+      <button
+        type="button"
+        className="text-[#D4AF37] font-medium hover:underline"
+      >
+        Forgot Password?
+      </button>
+    </div>
 
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="Enter your email"
-                    required
-                    className="
-                    w-full
-                    h-14
-                    rounded-2xl
-                    border
-                    border-gray-200
-                    bg-gray-50
-                    pl-12
-                    pr-4
-                    outline-none
-                    focus:border-[#D4AF37]
-                    focus:ring-2
-                    focus:ring-[#D4AF37]/20
-                    "
-                  />
-                </div>
-              </div>
+    <button
+      type="submit"
+      className="w-full h-14 rounded-2xl bg-gradient-to-r from-[#B8860B] to-[#D4AF37] text-white font-semibold text-lg hover:scale-[1.02] transition"
+    >
+      Sign In →
+    </button>
+  </form>
 
-              {/* PASSWORD */}
+  {/* Divider */}
+  <div className="flex items-center my-8">
+    <div className="flex-1 border-t"></div>
+    <span className="px-4 text-gray-500">OR</span>
+    <div className="flex-1 border-t"></div>
+  </div>
 
-              <div>
-                <label className="text-sm font-semibold text-gray-700">
-                  Password
-                </label>
+  {/* Google */}
+  <button className="w-full h-14 border border-gray-200 rounded-2xl font-medium hover:bg-gray-50 transition">
+    Continue with Google
+  </button>
 
-                <div className="relative mt-2">
-
-                  <Lock
-                    size={20}
-                    className="
-                    absolute
-                    left-4
-                    top-1/2
-                    -translate-y-1/2
-                    text-gray-400
-                    "
-                  />
-
-                  <input
-                    type={
-                      showPassword
-                        ? "text"
-                        : "password"
-                    }
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="Enter password"
-                    required
-                    className="
-                    w-full
-                    h-14
-                    rounded-2xl
-                    border
-                    border-gray-200
-                    bg-gray-50
-                    pl-12
-                    pr-12
-                    outline-none
-                    focus:border-[#D4AF37]
-                    focus:ring-2
-                    focus:ring-[#D4AF37]/20
-                    "
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setShowPassword(!showPassword)
-                    }
-                    className="
-                    absolute
-                    right-4
-                    top-1/2
-                    -translate-y-1/2
-                    text-gray-500
-                    "
-                  >
-                    {showPassword ? (
-                      <EyeOff size={20} />
-                    ) : (
-                      <Eye size={20} />
-                    )}
-                  </button>
-
-                </div>
-              </div>
-
-                            {/* REMEMBER + FORGOT */}
-
-              <div
-                className="
-                flex
-                items-center
-                justify-between
-                text-sm
-                "
-              >
-                <label
-                  className="
-                  flex
-                  items-center
-                  gap-2
-                  text-gray-600
-                  "
-                >
-                  <input
-                    type="checkbox"
-                    name="remember"
-                    checked={formData.remember}
-                    onChange={handleChange}
-                    className="
-                    w-4
-                    h-4
-                    accent-[#D4AF37]
-                    "
-                  />
-
-                  Remember me
-                </label>
-
-                <button
-                  type="button"
-                  className="
-                  text-[#B68B2C]
-                  font-semibold
-                  hover:underline
-                  "
-                >
-                  Forgot Password?
-                </button>
-              </div>
-
-              {/* LOGIN BUTTON */}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="
-                w-full
-                h-14
-                rounded-2xl
-                bg-[#D4AF37]
-                text-white
-                font-bold
-                text-lg
-                flex
-                items-center
-                justify-center
-                gap-2
-                hover:bg-[#b89225]
-                transition
-                "
-              >
-                {loading ? (
-                  "Logging in..."
-                ) : (
-                  <>
-                    Login Now
-                    <ArrowRight size={20} />
-                  </>
-                )}
-              </button>
-
-            </form>
-
-            {/* DIVIDER */}
-
-            <div
-              className="
-              flex
-              items-center
-              gap-4
-              my-8
-              "
-            >
-              <div className="h-px bg-gray-200 flex-1" />
-
-              <span className="text-gray-400 text-sm">
-                OR
-              </span>
-
-              <div className="h-px bg-gray-200 flex-1" />
-            </div>
-
-            {/* GOOGLE LOGIN */}
-
-            <button
-              className="
-              w-full
-              h-14
-              rounded-2xl
-              border
-              border-gray-200
-              flex
-              items-center
-              justify-center
-              gap-3
-              font-semibold
-              text-gray-700
-              hover:bg-gray-50
-              transition
-              "
-            >
-              <FcGoogle size={24} />
-              Continue With Google
-            </button>
-
-            {/* REGISTER */}
-
-            <p
-              className="
-              text-center
-              mt-8
-              text-gray-500
-              "
-            >
-              Don't have an account?
-
-              <Link
-                href="/register"
-                className="
-                ml-2
-                text-[#B68B2C]
-                font-bold
-                hover:underline
-                "
-              >
-                Create Account
-              </Link>
-            </p>
-
-            {/* SECURITY BOX */}
-
-            <div
-              className="
-              mt-10
-              p-5
-              rounded-3xl
-              bg-[#faf8f3]
-              border
-              border-[#D4AF37]/20
-              "
-            >
-              <div
-                className="
-                flex
-                items-center
-                gap-3
-                "
-              >
-                <div
-                  className="
-                  w-10
-                  h-10
-                  rounded-xl
-                  bg-[#D4AF37]/20
-                  flex
-                  items-center
-                  justify-center
-                  "
-                >
-                  <Lock className="text-[#B68B2C]" />
-                </div>
-
-                <div>
-                  <h4 className="font-bold text-gray-900">
-                    Secure Shopping
-                  </h4>
-
-                  <p className="text-sm text-gray-500">
-                    Your information is protected
-                  </p>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-      </div>
-    </main>
+  {/* Register */}
+  <p className="mt-8 text-center text-gray-600">
+    Don't have an account?
+    <span className="ml-2 text-[#D4AF37] font-semibold cursor-pointer">
+      Create Account →
+    </span>
+  </p>
+</div>
   );
 }
