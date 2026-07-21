@@ -178,18 +178,6 @@ max-w-md
 ">
 
 
-
-<p className="
-mt-5
-text-lg
-text-white/80
-">
-Discover premium products,
-exclusive offers and seamless
-shopping experience.
-</p>
-
-
 </div>
 
 
