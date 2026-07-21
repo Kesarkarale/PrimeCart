@@ -9,7 +9,7 @@ import TopBar from "@/components/layout/top-bar";
 import Services from "@/components/dashboard/services";
 import Footer from "@/components/layout/footer";
 
-
+import FlashSale from "@/components/dashboard/flash-sale";
 export default function DashboardPage() {
 
 return (
@@ -60,6 +60,7 @@ shadow-[0_15px_50px_rgba(212,175,55,0.15)]
 
 </div>
 
+<FlashSale />
 
 
 
