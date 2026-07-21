@@ -73,151 +73,276 @@ export default function LoginPage() {
   };
 
 return (
-  <div className="h-screen bg-[#F8F5EF] flex items-center justify-center p-6">
+  <div className="h-screen bg-gradient-to-br from-[#f8f5ef] via-[#f6f2ea] to-[#efe7d8] flex items-center justify-center p-5">
 
-    {/* Main Container */}
-    <div className="w-full max-w-7xl h-[90vh] bg-white rounded-[40px] shadow-2xl overflow-hidden grid lg:grid-cols-[42%_58%]">
-   {/* LEFT BANNER */}
-      <div className="relative">
+    <div className="w-full max-w-[1450px] h-[90vh] bg-white rounded-[40px] shadow-[0_25px_80px_rgba(0,0,0,0.08)] overflow-hidden grid lg:grid-cols-[45%_55%]">
+
+      {/* LEFT BANNER */}
+      <div className="relative hidden lg:block">
         <Image
           src="/login-banner.png"
-          alt="Banner"
+          alt="PrimeCart Banner"
           fill
           priority
           className="object-cover"
         />
       </div>
-{/* RIGHT SIDE LOGIN */}
-    <div className="flex flex-col justify-center h-full px-12 bg-white">
 
-      {/* Logo */}
-      <div className="mb-10">
-        <Image
-          src="/logo.png"
-          alt="PrimeCart"
-          width={220}
-          height={60}
-          priority
-        />
-      </div>
+      {/* RIGHT LOGIN */}
+      <div className="flex items-center justify-center bg-white">
 
-      {/* Heading */}
-      <div className="mb-8">
-        <h1 className="text-5xl font-bold text-black">
-          Welcome <span className="text-[#D4AF37]">Back ✨</span>
-        </h1>
+        <div className="w-full max-w-lg px-10">
 
-        <p className="mt-4 text-gray-600 text-lg">
-          Sign in to access your orders,
-          wishlist, cart and premium deals.
-        </p>
-      </div>
-
-      {/* FORM */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-
-        {/* Email */}
-        <div>
-          <label className="block mb-2 text-sm font-semibold">
-            Email Address
-          </label>
-
-          <div className="relative">
-            <Mail className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
-
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter your email"
-              className="w-full h-14 pl-12 pr-4 border border-gray-200 rounded-2xl"
-              required
+          {/* Logo */}
+          <div className="mb-8">
+            <Image
+              src="/logo.png"
+              alt="PrimeCart"
+              width={180}
+              height={50}
+              priority
             />
           </div>
-        </div>
 
-        {/* Password */}
-        <div>
-          <label className="block mb-2 text-sm font-semibold">
-            Password
-          </label>
+          {/* Heading */}
+          <div className="mb-8">
 
-          <div className="relative">
-            <Lock className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
+            <h1 className="text-5xl font-bold text-[#111827] leading-tight">
+              Welcome{" "}
+              <span className="text-[#D4AF37]">
+                Back ✨
+              </span>
+            </h1>
 
-            <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              className="w-full h-14 pl-12 pr-12 border border-gray-200 rounded-2xl"
-              required
-            />
+            <p className="mt-4 text-gray-500 text-lg">
+              Sign in to access your orders,
+              wishlist, cart and premium deals.
+            </p>
 
+          </div>
+
+          {/* FORM */}
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-5"
+          >
+
+            {/* EMAIL */}
+            <div>
+
+              <label className="block mb-2 text-sm font-semibold text-gray-700">
+                Email Address
+              </label>
+
+              <div className="relative">
+
+                <Mail
+                  size={20}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Enter your email"
+                  required
+                  className="
+                  w-full
+                  h-14
+                  pl-12
+                  pr-4
+                  rounded-2xl
+                  border
+                  border-gray-200
+                  bg-[#fafafa]
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-[#D4AF37]/20
+                  focus:border-[#D4AF37]
+                  transition
+                  "
+                />
+              </div>
+
+            </div>
+
+            {/* PASSWORD */}
+            <div>
+
+              <label className="block mb-2 text-sm font-semibold text-gray-700">
+                Password
+              </label>
+
+              <div className="relative">
+
+                <Lock
+                  size={20}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+
+                <input
+                  type={
+                    showPassword
+                      ? "text"
+                      : "password"
+                  }
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Enter your password"
+                  required
+                  className="
+                  w-full
+                  h-14
+                  pl-12
+                  pr-12
+                  rounded-2xl
+                  border
+                  border-gray-200
+                  bg-[#fafafa]
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-[#D4AF37]/20
+                  focus:border-[#D4AF37]
+                  transition
+                  "
+                />
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowPassword(!showPassword)
+                  }
+                  className="
+                  absolute
+                  right-4
+                  top-1/2
+                  -translate-y-1/2
+                  text-gray-400
+                  "
+                >
+                  {showPassword ? (
+                    <EyeOff size={20} />
+                  ) : (
+                    <Eye size={20} />
+                  )}
+                </button>
+
+              </div>
+
+            </div>
+
+            {/* FORGOT */}
+            <div className="flex justify-end">
+              <Link
+                href="/forgot-password"
+                className="
+                text-[#D4AF37]
+                font-medium
+                hover:underline
+                "
+              >
+                Forgot Password?
+              </Link>
+            </div>
+
+            {/* LOGIN BUTTON */}
             <button
-              type="button"
-              onClick={() =>
-                setShowPassword(!showPassword)
-              }
-              className="absolute right-4 top-4"
+              type="submit"
+              disabled={loading}
+              className="
+              w-full
+              h-14
+              rounded-2xl
+              bg-gradient-to-r
+              from-[#B8860B]
+              to-[#D4AF37]
+              text-white
+              font-semibold
+              text-lg
+              flex
+              items-center
+              justify-center
+              gap-2
+              hover:scale-[1.01]
+              transition-all
+              duration-300
+              "
             >
-              {showPassword ? (
-                <EyeOff size={20} />
+              {loading ? (
+                "Signing In..."
               ) : (
-                <Eye size={20} />
+                <>
+                  Sign In
+                  <ArrowRight size={20} />
+                </>
               )}
             </button>
+
+          </form>
+
+          {/* DIVIDER */}
+          <div className="flex items-center my-7">
+
+            <div className="flex-1 border-t border-gray-200" />
+
+            <span className="px-4 text-gray-400 text-sm">
+              OR
+            </span>
+
+            <div className="flex-1 border-t border-gray-200" />
+
           </div>
-        </div>
 
-        <div className="flex justify-end">
-          <Link
-            href="/forgot-password"
-            className="text-[#D4AF37]"
+          {/* GOOGLE */}
+          <button
+            type="button"
+            className="
+            w-full
+            h-14
+            rounded-2xl
+            border
+            border-gray-200
+            flex
+            items-center
+            justify-center
+            gap-3
+            font-medium
+            hover:bg-gray-50
+            transition
+            "
           >
-            Forgot Password?
-          </Link>
+            <FcGoogle size={24} />
+            Continue with Google
+          </button>
+
+          {/* REGISTER */}
+          <p className="mt-7 text-center text-gray-500">
+
+            Don&apos;t have an account?
+
+            <Link
+              href="/register"
+              className="
+              ml-2
+              text-[#D4AF37]
+              font-semibold
+              hover:underline
+              "
+            >
+              Create Account →
+            </Link>
+
+          </p>
+
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full h-14 rounded-2xl bg-gradient-to-r from-[#B8860B] to-[#D4AF37] text-white font-semibold"
-        >
-          {loading ? "Signing In..." : "Sign In"}
-        </button>
-
-      </form>
-
-      {/* Divider */}
-      <div className="flex items-center my-8">
-        <div className="flex-1 border-t" />
-        <span className="px-4 text-gray-500">
-          OR
-        </span>
-        <div className="flex-1 border-t" />
       </div>
 
-      {/* Google */}
-      <button className="w-full h-14 border rounded-2xl flex items-center justify-center gap-3">
-        <FcGoogle size={24} />
-        Continue with Google
-      </button>
-
-      <p className="mt-8 text-center text-gray-600">
-        Don't have an account?
-        <Link
-          href="/register"
-          className="ml-2 text-[#D4AF37] font-semibold"
-        >
-          Create Account →
-        </Link>
-      </p>
     </div>
 
-  </div>
   </div>
 );
 }
