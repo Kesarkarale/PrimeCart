@@ -7,164 +7,56 @@ import {
   Headphones,
 } from "lucide-react";
 
-import { motion } from "framer-motion";
-
-
 const services = [
-
-{
-icon:Truck,
-title:"Free Delivery",
-description:"Fast & safe delivery across India"
-},
-
-{
-icon:ShieldCheck,
-title:"Secure Payment",
-description:"100% protected transactions"
-},
-
-{
-icon:RotateCcw,
-title:"Easy Returns",
-description:"7 days hassle free returns"
-},
-
-{
-icon:Headphones,
-title:"24/7 Support",
-description:"Always here to help you"
-}
-
+  {
+    icon: Truck,
+    title: "Free Shipping",
+    desc: "Free delivery on all orders over ₹999",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Secure Payment",
+    desc: "100% secure payment protection",
+  },
+  {
+    icon: RotateCcw,
+    title: "Easy Returns",
+    desc: "7 days easy return policy",
+  },
+  {
+    icon: Headphones,
+    title: "24/7 Support",
+    desc: "Always here to help you",
+  },
 ];
 
+export default function Services() {
+  return (
+    <section className="py-12">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {services.map((service, index) => {
+          const Icon = service.icon;
 
+          return (
+            <div
+              key={index}
+              className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm hover:shadow-xl hover:border-[#D4AF37] transition-all duration-300 text-center"
+            >
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-[#FFF6DA] flex items-center justify-center">
+                <Icon className="text-[#D4AF37]" size={30} />
+              </div>
 
-export default function Services(){
+              <h3 className="mt-5 text-xl font-bold">
+                {service.title}
+              </h3>
 
-return (
-
-<section className="mt-16">
-
-
-<div className="
-grid
-sm:grid-cols-2
-lg:grid-cols-4
-gap-6
-">
-
-
-{
-services.map((item,index)=>{
-
-const Icon=item.icon;
-
-
-return (
-
-<motion.div
-
-key={item.title}
-
-initial={{
-opacity:0,
-y:30
-}}
-
-whileInView={{
-opacity:1,
-y:0
-}}
-
-transition={{
-delay:index*0.1
-}}
-
-viewport={{
-once:true
-}}
-
-
-className="
-rounded-3xl
-border
-border-gray-200
-dark:border-white/10
-bg-white
-dark:bg-[#111827]
-p-6
-text-center
-hover:-translate-y-2
-transition
-shadow-sm
-hover:shadow-xl
-"
-
->
-
-
-<div className="
-mx-auto
-h-16
-w-16
-rounded-2xl
-bg-[#D4AF37]
-text-black
-flex
-items-center
-justify-center
-">
-
-
-<Icon size={30}/>
-
-
-</div>
-
-
-
-<h3 className="
-mt-5
-font-bold
-text-lg
-text-gray-900
-dark:text-white
-">
-
-{item.title}
-
-</h3>
-
-
-<p className="
-mt-2
-text-sm
-text-gray-500
-dark:text-gray-400
-">
-
-{item.description}
-
-</p>
-
-
-
-</motion.div>
-
-
-)
-
-})
-
-}
-
-
-</div>
-
-
-</section>
-
-)
-
+              <p className="mt-2 text-gray-500 text-sm">
+                {service.desc}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
 }
