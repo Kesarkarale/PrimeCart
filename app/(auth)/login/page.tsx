@@ -73,7 +73,8 @@ export default function LoginPage() {
   };
 
 return (
-  <div className="grid min-h-screen lg:grid-cols-2 bg-[#FAF8F3]">
+ <div className="grid min-h-screen lg:grid-cols-[45%_55%] bg-[#FAF8F3]">
+   
  {/* LEFT SIDE BANNER */}
     <div className="relative hidden lg:block">
       <Image
@@ -85,8 +86,6 @@ return (
       />
     </div>
     {/* RIGHT SIDE LOGIN */}
-    
-  <div className="grid min-h-screen lg:grid-cols-[45%_55%] bg-[#FAF8F3]">
 
     <div className="flex items-center justify-center bg-white px-10 lg:px-20">
 
