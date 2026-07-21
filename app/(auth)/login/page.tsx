@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import LuxuryBanner from "@/components/LuxuryBanner";
+import Image from "next/image";
 
 import {
   Eye,
@@ -15,8 +15,8 @@ import {
   Loader2,
 } from "lucide-react";
 
-import { FcGoogle } from "react-icons/fc";
 import { toast } from "sonner";
+import { FcGoogle } from "react-icons/fc";
 
 import { createClient } from "@/lib/supabase/client";
 
@@ -30,6 +30,16 @@ const router = useRouter();
 
 
 
+const [formData,setFormData] = useState({
+
+email:"",
+password:"",
+remember:false
+
+});
+
+
+
 const [showPassword,setShowPassword] =
 useState(false);
 
@@ -37,15 +47,6 @@ useState(false);
 const [loading,setLoading] =
 useState(false);
 
-
-
-const [formData,setFormData] = useState({
-
-email:"",
-password:"",
-remember:false,
-
-});
 
 
 
@@ -94,13 +95,11 @@ e:React.FormEvent
 e.preventDefault();
 
 
-
 const {
 email,
 password,
 remember
 }=formData;
-
 
 
 
@@ -116,8 +115,6 @@ return;
 
 
 
-
-
 try{
 
 
@@ -125,30 +122,24 @@ setLoading(true);
 
 
 
-const {
-error
-}= await supabase.auth.signInWithPassword({
+const {error}=await supabase.auth.signInWithPassword({
 
 email,
 
-password,
+password
 
 });
 
 
 
 
-
 if(error){
 
-toast.error(
-error.message
-);
+toast.error(error.message);
 
 return;
 
 }
-
 
 
 
@@ -164,32 +155,28 @@ email
 
 
 
+
 toast.success(
 "Login Successful ✨"
 );
 
 
 
-router.push(
-"/dashboard"
-);
+router.push("/dashboard");
 
 
 
 }
-
-
 
 catch{
 
 
 toast.error(
-"Something went wrong"
+"Login failed"
 );
 
 
 }
-
 
 finally{
 
@@ -198,9 +185,7 @@ setLoading(false);
 }
 
 
-
 }
-
 
 
 
@@ -211,34 +196,78 @@ setLoading(false);
 
 return (
 
-
-<main className="
+<div className="
 min-h-screen
-bg-[#f8f5ef]
+bg-gradient-to-br
+from-[#f8f5ef]
+via-[#ffffff]
+to-[#efe5cf]
+flex
+items-center
+justify-center
+p-5
 ">
+
+
+
 
 
 <div className="
+w-full
+max-w-[1400px]
+min-h-[850px]
+bg-white
+rounded-[40px]
+shadow-2xl
+overflow-hidden
 grid
 lg:grid-cols-2
-min-h-screen
 ">
 
 
 
 
 
-{/* LEFT */}
-
-<LuxuryBanner />
 
 
+{/* LEFT BANNER */}
+
+
+<div className="
+hidden
+lg:block
+relative
+">
+
+
+<Image
+
+src="/login-banner.png"
+
+alt="Banner"
+
+fill
+
+priority
+
+className="
+object-cover
+"
+
+/>
+
+
+</div>
 
 
 
 
 
-{/* RIGHT */}
+
+
+
+
+{/* RIGHT LOGIN */}
 
 
 
@@ -246,7 +275,8 @@ min-h-screen
 flex
 items-center
 justify-center
-p-8
+px-6
+py-10
 ">
 
 
@@ -256,10 +286,6 @@ p-8
 <div className="
 w-full
 max-w-md
-bg-white
-rounded-[32px]
-shadow-xl
-p-8
 ">
 
 
@@ -268,17 +294,31 @@ p-8
 
 
 
-<p className="
-text-[#B68B2C]
-uppercase
-tracking-[5px]
-text-sm
-font-semibold
+{/* LOGO */}
+
+
+<div className="
+mb-8
 ">
 
-Welcome Back
 
-</p>
+<Image
+
+src="/logo.png"
+
+alt="PrimeCart"
+
+width={180}
+
+height={50}
+
+priority
+
+/>
+
+
+</div>
+
 
 
 
@@ -286,16 +326,25 @@ Welcome Back
 
 
 <h1 className="
-mt-4
 text-4xl
-font-black
+font-bold
 text-gray-900
 ">
 
-Login To PrimeCart
+
+Welcome
+
+
+<span className="
+text-[#D4AF37]
+">
+
+ Back ✨
+
+</span>
+
 
 </h1>
-
 
 
 
@@ -306,7 +355,9 @@ mt-3
 text-gray-500
 ">
 
-Continue your luxury shopping journey
+
+Continue your premium shopping journey.
+
 
 </p>
 
@@ -318,12 +369,18 @@ Continue your luxury shopping journey
 
 
 <form
+
 onSubmit={login}
+
 className="
-mt-10
-space-y-6
+mt-8
+space-y-5
 "
+
 >
+
+
+
 
 
 
@@ -335,25 +392,8 @@ space-y-6
 
 
 
-<div>
-
-
-<label className="
-text-sm
-font-semibold
-text-gray-700
-">
-
-Email Address
-
-</label>
-
-
-
-
 <div className="
 relative
-mt-2
 ">
 
 
@@ -384,20 +424,21 @@ value={formData.email}
 
 onChange={handleChange}
 
-placeholder="Enter your email"
+placeholder="Email Address"
 
 className="
 w-full
 h-14
 rounded-2xl
+bg-gray-50
 border
 border-gray-200
-bg-gray-50
 pl-12
 outline-none
 focus:border-[#D4AF37]
-focus:ring-2
-focus:ring-[#D4AF37]/20
+focus:ring-4
+focus:ring-[#D4AF37]/10
+transition
 "
 
 />
@@ -405,8 +446,6 @@ focus:ring-[#D4AF37]/20
 
 </div>
 
-
-</div>
 
 
 
@@ -419,24 +458,8 @@ focus:ring-[#D4AF37]/20
 
 
 
-<div>
-
-
-<label className="
-text-sm
-font-semibold
-text-gray-700
-">
-
-Password
-
-</label>
-
-
-
 <div className="
 relative
-mt-2
 ">
 
 
@@ -474,24 +497,26 @@ value={formData.password}
 
 onChange={handleChange}
 
-placeholder="Enter password"
+placeholder="Password"
 
 className="
 w-full
 h-14
 rounded-2xl
+bg-gray-50
 border
 border-gray-200
-bg-gray-50
 pl-12
 pr-12
 outline-none
 focus:border-[#D4AF37]
-focus:ring-2
-focus:ring-[#D4AF37]/20
+focus:ring-4
+focus:ring-[#D4AF37]/10
+transition
 "
 
 />
+
 
 
 
@@ -509,7 +534,7 @@ absolute
 right-4
 top-1/2
 -translate-y-1/2
-text-gray-500
+text-gray-400
 "
 
 >
@@ -532,9 +557,6 @@ showPassword
 
 </button>
 
-
-
-</div>
 
 
 </div>
@@ -593,22 +615,21 @@ Remember me
 
 
 
-
 <Link
 
 href="/forgot-password"
 
 className="
-text-[#B68B2C]
+text-[#D4AF37]
 font-semibold
 hover:underline
 "
+
 >
 
 Forgot Password?
 
 </Link>
-
 
 
 </div>
@@ -629,16 +650,20 @@ className="
 w-full
 h-14
 rounded-2xl
-bg-[#D4AF37]
+bg-gradient-to-r
+from-[#B8860B]
+to-[#D4AF37]
 text-white
-font-bold
+font-semibold
 text-lg
 flex
 items-center
 justify-center
-gap-2
-hover:bg-[#b89225]
+gap-3
+shadow-lg
+hover:scale-[1.02]
 transition
+disabled:opacity-70
 "
 
 >
@@ -660,6 +685,7 @@ Logging in...
 
 </>
 
+
 :
 
 <>
@@ -669,6 +695,7 @@ Login Now
 <ArrowRight size={20}/>
 
 </>
+
 
 }
 
@@ -689,7 +716,6 @@ Login Now
 
 
 
-
 <div className="
 flex
 items-center
@@ -699,9 +725,9 @@ my-8
 
 
 <div className="
+flex-1
 h-px
 bg-gray-200
-flex-1
 "/>
 
 
@@ -717,11 +743,10 @@ OR
 
 
 
-
 <div className="
+flex-1
 h-px
 bg-gray-200
-flex-1
 "/>
 
 
@@ -769,11 +794,10 @@ Continue With Google
 
 
 
-
 <p className="
 text-center
-mt-8
 text-gray-500
+mt-8
 ">
 
 
@@ -786,19 +810,18 @@ href="/register"
 
 className="
 ml-2
-text-[#B68B2C]
-font-bold
+text-[#D4AF37]
+font-semibold
 hover:underline
 "
 
 >
 
-Create Account
+Create Account →
 
 </Link>
 
 
-
 </p>
 
 
@@ -806,74 +829,12 @@ Create Account
 
 
 
-<div className="
-mt-10
-p-5
-rounded-3xl
-bg-[#faf8f3]
-border
-border-[#D4AF37]/20
-">
-
-
-<div className="
-flex
-items-center
-gap-3
-">
-
-
-<div className="
-w-10
-h-10
-rounded-xl
-bg-[#D4AF37]/20
-flex
-items-center
-justify-center
-">
-
-
-<Lock
-className="text-[#B68B2C]"
-/>
-
 
 </div>
 
 
 
-<div>
-
-
-<h4 className="
-font-bold
-text-gray-900
-">
-
-Secure Shopping
-
-</h4>
-
-
-<p className="
-text-sm
-text-gray-500
-">
-
-Your information is protected
-
-</p>
-
-
 </div>
-
-
-</div>
-
-
-</div>
-
 
 
 
@@ -885,13 +846,6 @@ Your information is protected
 
 </div>
 
-
-
-</div>
-
-
-
-</main>
 
 );
 
