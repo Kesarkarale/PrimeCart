@@ -73,20 +73,9 @@ export default function LoginPage() {
   };
 
 return (
- <div className="grid min-h-screen lg:grid-cols-[45%_55%] bg-[#FAF8F3]">
-   
- {/* LEFT SIDE BANNER */}
-    <div className="relative hidden lg:block">
-      <Image
-        src="/login-banner.png"
-        alt="PrimeCart Banner"
-        fill
-        priority
-        className="object-cover"
-      />
-    </div>
-    {/* RIGHT SIDE LOGIN */}
+  <div className="grid min-h-screen lg:grid-cols-[45%_55%] bg-[#FAF8F3]">
 
+    {/* LEFT SIDE */}
     <div className="flex items-center justify-center bg-white px-10 lg:px-20">
 
       <div className="w-full max-w-lg">
@@ -250,7 +239,16 @@ return (
       </div>
     </div>
 
-     
+    {/* RIGHT SIDE BANNER */}
+    <div className="relative hidden lg:block">
+      <Image
+        src="/login-banner.png"
+        alt="PrimeCart Banner"
+        fill
+        priority
+        className="object-cover"
+      />
+    </div>
 
   </div>
 );
