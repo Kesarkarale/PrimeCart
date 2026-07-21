@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -80,7 +81,7 @@ return (
       {/* Logo */}
       <div className="mb-10">
         <Image
-          src="/public/logo.png"
+          src="/logo.png"
           alt="PrimeCart"
           width={220}
           height={60}
