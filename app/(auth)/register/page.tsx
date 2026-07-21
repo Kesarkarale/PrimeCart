@@ -1,40 +1,58 @@
- "use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import Image from "next/image";
+
 import {
   Eye,
   EyeOff,
-  ShoppingBag,
+  User,
+  Mail,
+  Lock,
   ArrowRight,
-  Sparkles
+  Loader2,
 } from "lucide-react";
 
 import { toast } from "sonner";
-import { motion } from "framer-motion";
-
 import { createClient } from "@/lib/supabase/client";
 
 
-
-export default function RegisterPage(){
-
-
-const supabase=createClient();
-
-const router=useRouter();
+export default function RegisterPage() {
 
 
-const [name,setName]=useState("");
-const [email,setEmail]=useState("");
-const [password,setPassword]=useState("");
-const [confirmPassword,setConfirmPassword]=useState("");
+const supabase = createClient();
 
-const [show,setShow]=useState(false);
+const router = useRouter();
 
-const [loading,setLoading]=useState(false);
+
+const [formData,setFormData] = useState({
+name:"",
+email:"",
+password:"",
+confirmPassword:""
+});
+
+
+const [showPassword,setShowPassword] = useState(false);
+const [showConfirm,setShowConfirm] = useState(false);
+
+const [loading,setLoading] = useState(false);
+
+
+
+const handleChange = (
+e:React.ChangeEvent<HTMLInputElement>
+)=>{
+
+setFormData(prev=>({
+...prev,
+[e.target.name]:e.target.value
+}));
+
+};
 
 
 
@@ -43,21 +61,50 @@ const [loading,setLoading]=useState(false);
 async function register(){
 
 
-if(!name || !email || !password){
+const {
+name,
+email,
+password,
+confirmPassword
+}=formData;
 
-toast.error("Please fill all fields");
+
+
+if(!name || !email || !password || !confirmPassword){
+
+toast.error(
+"Please fill all fields"
+);
+
 return;
 
 }
+
+
+
+if(password.length < 6){
+
+toast.error(
+"Password must be at least 6 characters"
+);
+
+return;
+
+}
+
 
 
 
 if(password !== confirmPassword){
 
-toast.error("Passwords do not match");
+toast.error(
+"Passwords do not match"
+);
+
 return;
 
 }
+
 
 
 
@@ -79,9 +126,7 @@ password,
 options:{
 
 data:{
-
-name:name
-
+name
 }
 
 }
@@ -90,9 +135,11 @@ name:name
 
 
 
+
 if(error){
 
 toast.error(error.message);
+
 return;
 
 }
@@ -104,16 +151,20 @@ toast.success(
 );
 
 
+
 router.push("/login");
+
 
 
 }
 
 catch{
 
+
 toast.error(
 "Registration failed"
 );
+
 
 }
 
@@ -130,176 +181,135 @@ setLoading(false);
 
 
 
+
+
 return (
 
-<main className="
+
+<div className="
 min-h-screen
 bg-gradient-to-br
-from-[#050505]
-via-[#111827]
-to-[#F8F1E7]
+from-[#f8f5ef]
+via-[#ffffff]
+to-[#efe5cf]
 flex
 items-center
 justify-center
 p-5
-relative
-overflow-hidden
 ">
 
+
+
+
+
+<div className="
+w-full
+max-w-[1400px]
+min-h-[850px]
+bg-white
+rounded-[40px]
+shadow-2xl
+overflow-hidden
+grid
+lg:grid-cols-2
+">
+
+
+
+
+
+{/* LEFT BANNER */}
+
+
+<div className="
+hidden
+lg:block
+relative
+">
+
+
+<Image
+
+src="/login-banner.png"
+
+alt="PrimeCart"
+
+fill
+
+priority
+
+className="
+object-cover
+"
+
+/>
+
+
+
+<div className="
+absolute
+inset-0
+bg-black/40
+"/>
 
 
 
 
 <div className="
 absolute
-w-[600px]
-h-[600px]
-bg-[#D4AF37]
-opacity-20
-blur-[180px]
-rounded-full
-">
-
-</div>
-
-
-
-
-
-
-<div className="
-relative
-max-w-6xl
-w-full
-grid
-md:grid-cols-2
-gap-10
-items-center
-">
-
-
-
-
-
-
-{/* LEFT SIDE */}
-
-
-
-<motion.div
-
-initial={{
-opacity:0,
-x:-50
-}}
-
-animate={{
-opacity:1,
-x:0
-}}
-
-className="
-hidden
-md:block
+bottom-16
+left-12
 text-white
-"
-
->
-
-
-<div className="
-flex
-items-center
-gap-3
-mb-8
+max-w-md
 ">
-
-
-<div className="
-bg-gradient-to-br
-from-yellow-300
-to-yellow-700
-text-black
-p-4
-rounded-2xl
-">
-
-<ShoppingBag size={40}/>
-
-</div>
-
 
 
 <h1 className="
 text-5xl
 font-bold
+leading-tight
 ">
 
-PrimeCart
+Join PrimeCart
+<br/>
+
+Premium Shopping
 
 </h1>
 
 
-</div>
-
-
-
-
-
-<h2 className="
-text-4xl
-font-semibold
-leading-tight
-">
-
-
-Create Your
-<br/>
-Premium Account
-
-
-</h2>
-
-
 
 <p className="
-text-gray-300
 mt-5
 text-lg
-max-w-md
+text-white/80
 ">
 
-
-Join PrimeCart and experience
-luxury shopping with exclusive
-products and offers.
+Create your account and
+unlock exclusive products,
+offers and luxury shopping.
 
 </p>
 
 
 
 
-
 <div className="
-flex
-gap-3
-items-center
 mt-8
 text-[#D4AF37]
+font-semibold
 ">
 
+✨ Premium • Secure • Elegant
 
-<Sparkles/>
-
-
-Premium • Secure • Elegant
+</div>
 
 
 </div>
 
 
 
-</motion.div>
+</div>
 
 
 
@@ -307,102 +317,84 @@ Premium • Secure • Elegant
 
 
 
-
-
-{/* REGISTER CARD */}
-
-
-
-<motion.div
-
-
-initial={{
-opacity:0,
-y:50
-}}
-
-animate={{
-opacity:1,
-y:0
-}}
-
-
-className="
-bg-white/10
-backdrop-blur-3xl
-border
-border-white/20
-rounded-3xl
-p-8
-shadow-2xl
-w-full
-max-w-md
-mx-auto
-"
-
->
-
+{/* RIGHT REGISTER */}
 
 
 
 <div className="
 flex
+items-center
 justify-center
-mb-6
+px-6
+py-10
 ">
+
 
 
 <div className="
-bg-gradient-to-br
-from-yellow-300
-to-yellow-700
-text-black
-p-5
-rounded-2xl
-shadow-xl
+w-full
+max-w-md
 ">
 
 
-<ShoppingBag size={38}/>
 
+
+
+{/* LOGO */}
+
+
+<div className="
+mb-8
+">
+
+<Image
+
+src="/logo.png"
+
+alt="PrimeCart"
+
+width={180}
+
+height={50}
+
+priority
+
+/>
 
 </div>
-
-
-</div>
-
 
 
 
 
 
 <h1 className="
-text-3xl
+text-4xl
 font-bold
-text-center
-text-white
+text-gray-900
 ">
 
 
-Create Account
+Create
+
+<span className="
+text-[#D4AF37]
+">
+
+ Account ✨
+
+</span>
 
 
 </h1>
 
 
 
-
-
 <p className="
-text-gray-300
-text-center
-mt-2
-mb-8
+mt-3
+text-gray-500
 ">
 
-
-Join PrimeCart Premium Shopping
-
+Start your premium shopping journey.
 
 </p>
 
@@ -411,75 +403,75 @@ Join PrimeCart Premium Shopping
 
 
 
+<div className="
+mt-8
+space-y-5
+">
+
+
+
+
+
+
+{/* NAME */}
+
+
+<div className="
+relative
+">
+
+<User
+
+className="
+absolute
+left-4
+top-1/2
+-translate-y-1/2
+text-gray-400
+"
+
+size={20}
+
+/>
+
 
 <input
+
+name="name"
 
 placeholder="Full Name"
 
-value={name}
+value={formData.name}
 
-onChange={
-e=>setName(e.target.value)
-}
-
+onChange={handleChange}
 
 className="
 w-full
-bg-black/40
+h-14
+rounded-2xl
+bg-gray-50
 border
-border-white/20
-text-white
-placeholder-gray-400
-rounded-xl
-px-4
-py-3
-mb-4
+border-gray-200
+pl-12
 outline-none
 focus:border-[#D4AF37]
+focus:ring-4
+focus:ring-[#D4AF37]/10
 transition
 "
 
 />
 
 
+</div>
 
 
 
 
-<input
-
-type="email"
-
-placeholder="Email Address"
-
-value={email}
-
-onChange={
-e=>setEmail(e.target.value)
-}
-
-
-className="
-w-full
-bg-black/40
-border
-border-white/20
-text-white
-placeholder-gray-400
-rounded-xl
-px-4
-py-3
-mb-4
-outline-none
-focus:border-[#D4AF37]
-transition
-"
-
-/>
 
 
 
-
+{/* EMAIL */}
 
 
 <div className="
@@ -487,40 +479,119 @@ relative
 ">
 
 
+<Mail
+
+className="
+absolute
+left-4
+top-1/2
+-translate-y-1/2
+text-gray-400
+"
+
+size={20}
+
+/>
+
+
+
 <input
 
-type={
-show?"text":"password"
-}
+name="email"
 
+type="email"
 
-placeholder="Password"
+placeholder="Email Address"
 
-value={password}
+value={formData.email}
 
-onChange={
-e=>setPassword(e.target.value)
-}
-
+onChange={handleChange}
 
 className="
 w-full
-bg-black/40
+h-14
+rounded-2xl
+bg-gray-50
 border
-border-white/20
-text-white
-placeholder-gray-400
-rounded-xl
-px-4
-py-3
-pr-12
-mb-4
+border-gray-200
+pl-12
 outline-none
 focus:border-[#D4AF37]
+focus:ring-4
+focus:ring-[#D4AF37]/10
 transition
 "
 
 />
+
+
+</div>
+
+
+
+
+
+
+
+{/* PASSWORD */}
+
+
+<div className="
+relative
+">
+
+
+<Lock
+
+className="
+absolute
+left-4
+top-1/2
+-translate-y-1/2
+text-gray-400
+"
+
+size={20}
+
+/>
+
+
+<input
+
+name="password"
+
+type={
+showPassword
+?
+"text"
+:
+"password"
+}
+
+placeholder="Password"
+
+value={formData.password}
+
+onChange={handleChange}
+
+className="
+w-full
+h-14
+rounded-2xl
+bg-gray-50
+border
+border-gray-200
+pl-12
+pr-12
+outline-none
+focus:border-[#D4AF37]
+focus:ring-4
+focus:ring-[#D4AF37]/10
+transition
+"
+
+/>
+
 
 
 
@@ -528,12 +599,13 @@ transition
 
 type="button"
 
-onClick={()=>setShow(!show)}
+onClick={()=>setShowPassword(!showPassword)}
 
 className="
 absolute
 right-4
-top-3
+top-1/2
+-translate-y-1/2
 text-gray-400
 "
 
@@ -541,7 +613,7 @@ text-gray-400
 
 {
 
-show?
+showPassword ?
 
 <EyeOff size={20}/>
 
@@ -563,35 +635,105 @@ show?
 
 
 
+{/* CONFIRM */}
+
+
+<div className="
+relative
+">
+
+
+<Lock
+
+className="
+absolute
+left-4
+top-1/2
+-translate-y-1/2
+text-gray-400
+"
+
+size={20}
+
+/>
+
+
 <input
 
-type="password"
+name="confirmPassword"
+
+type={
+showConfirm
+?
+"text"
+:
+"password"
+}
 
 placeholder="Confirm Password"
 
-value={confirmPassword}
+value={formData.confirmPassword}
 
-onChange={
-e=>setConfirmPassword(e.target.value)
-}
-
+onChange={handleChange}
 
 className="
 w-full
-bg-black/40
+h-14
+rounded-2xl
+bg-gray-50
 border
-border-white/20
-text-white
-placeholder-gray-400
-rounded-xl
-px-4
-py-3
+border-gray-200
+pl-12
+pr-12
 outline-none
 focus:border-[#D4AF37]
+focus:ring-4
+focus:ring-[#D4AF37]/10
 transition
 "
 
 />
+
+
+
+
+
+<button
+
+type="button"
+
+onClick={()=>setShowConfirm(!showConfirm)}
+
+className="
+absolute
+right-4
+top-1/2
+-translate-y-1/2
+text-gray-400
+"
+
+>
+
+
+{
+
+showConfirm ?
+
+<EyeOff size={20}/>
+
+:
+
+<Eye size={20}/>
+
+}
+
+
+</button>
+
+
+</div>
+
+
 
 
 
@@ -605,25 +747,24 @@ onClick={register}
 
 disabled={loading}
 
-
 className="
-mt-6
 w-full
+h-14
+rounded-2xl
 bg-gradient-to-r
-from-yellow-300
-via-yellow-500
-to-yellow-700
-text-black
-font-bold
-py-3
-rounded-xl
+from-[#B8860B]
+to-[#D4AF37]
+text-white
+font-semibold
+text-lg
 flex
-justify-center
 items-center
-gap-2
-hover:scale-105
-transition
+justify-center
+gap-3
 shadow-lg
+hover:scale-[1.02]
+transition
+disabled:opacity-70
 "
 
 >
@@ -631,9 +772,15 @@ shadow-lg
 
 {
 
-loading?
+loading ?
 
-"Creating Account..."
+<>
+
+<Loader2 className="animate-spin"/>
+
+Creating...
+
+</>
 
 :
 
@@ -641,7 +788,7 @@ loading?
 
 Create Account
 
-<ArrowRight size={18}/>
+<ArrowRight size={20}/>
 
 </>
 
@@ -655,10 +802,19 @@ Create Account
 
 
 
+
+</div>
+
+
+
+
+
+
+
 <p className="
 text-center
-text-gray-300
-mt-7
+text-gray-500
+mt-8
 ">
 
 
@@ -670,15 +826,15 @@ Already have an account?
 href="/login"
 
 className="
+ml-2
 text-[#D4AF37]
 font-semibold
-ml-2
 hover:underline
 "
 
 >
 
-Login
+Login →
 
 </Link>
 
@@ -689,14 +845,18 @@ Login
 
 
 
-
-</motion.div>
+</div>
 
 
 </div>
 
 
-</main>
+
+</div>
+
+
+</div>
+
 
 );
 
