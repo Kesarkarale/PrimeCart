@@ -210,7 +210,7 @@ return (
         Create Account
       </Link>
     </p>
-
+  </div>
   </div>
 </div>
     );
