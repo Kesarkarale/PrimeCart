@@ -25,7 +25,7 @@ export default function Hero() {
 
   return (
     <section className="w-full">
-<div className="relative h-[220px] sm:h-[300px] md:h-[380px] lg:h-[460px] xl:h-[520px] rounded-[30px] overflow-hidden shadow-xl">  
+<div className="relative h-[180px] sm:h-[240px] md:h-[300px] lg:h-[360px] xl:h-[400px] rounded-[30px] overflow-hidden shadow-xl">
   {banners.map((banner, index) => (
           <Image
             key={banner}
