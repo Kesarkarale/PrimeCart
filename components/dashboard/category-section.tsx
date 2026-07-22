@@ -1,99 +1,72 @@
 "use client";
 
 import {
-  Laptop,
-  Smartphone,
-  Shirt,
-  Watch,
-  Armchair,
-  Gamepad2,
   Headphones,
-  Camera,
+  Shirt,
+  Sofa,
+  Sparkles,
+  Smartphone,
+  WashingMachine,
+  Footprints,
+  Watch,
+  ShoppingBag,
+  Baby,
+  Grid2X2,
 } from "lucide-react";
 
 const categories = [
-  { name: "Electronics", icon: Laptop },
-  { name: "Mobiles", icon: Smartphone },
+  { name: "Electronics", icon: Headphones },
   { name: "Fashion", icon: Shirt },
-  { name: "Furniture", icon: Armchair },
+  { name: "Home & Living", icon: Sofa },
+  { name: "Beauty", icon: Sparkles },
+  { name: "Mobiles", icon: Smartphone },
+  { name: "Appliances", icon: WashingMachine },
+  { name: "Footwear", icon: Footprints },
   { name: "Watches", icon: Watch },
-  { name: "Gaming", icon: Gamepad2 },
-  { name: "Audio", icon: Headphones },
-  { name: "Camera", icon: Camera },
+  { name: "Bags", icon: ShoppingBag },
+  { name: "Toys & Baby", icon: Baby },
+  { name: "View All", icon: Grid2X2 },
 ];
 
 export default function CategorySection() {
   return (
-    <section className="py-12">
-
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-3xl font-bold">
-          Shop by Category
-        </h2>
-
-        <button className="text-[#D4AF37] font-semibold hover:underline">
-          View All →
-        </button>
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-6">
-
-        {categories.map((item, index) => {
+    <section className="py-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-11 gap-4">
+        {categories.map((item, i) => {
           const Icon = item.icon;
 
           return (
             <button
-              key={index}
+              key={i}
               className="
-              group
-              flex
-              flex-col
-              items-center
-              transition-all
-              hover:-translate-y-2
-              "
-            >
-
-              <div
-                className="
-                w-24
-                h-24
-                rounded-full
-                bg-[#FFF8E5]
+                bg-white
+                rounded-2xl
                 border
-                border-[#D4AF37]/20
+                border-gray-200
+                h-28
                 flex
+                flex-col
                 items-center
                 justify-center
                 shadow-sm
-                group-hover:bg-[#D4AF37]
-                group-hover:shadow-xl
+                hover:shadow-lg
+                hover:border-[#D4AF37]
                 transition-all
                 duration-300
-                "
-              >
+              "
+            >
+              <Icon
+                size={34}
+                className="text-[#C99718] stroke-[1.5]"
+              />
 
-                <Icon
-                  size={34}
-                  className="
-                  text-[#D4AF37]
-                  group-hover:text-white
-                  transition
-                  "
-                />
-
-              </div>
-
-              <span className="mt-4 font-semibold text-gray-800 group-hover:text-[#D4AF37]">
+              <span className="mt-3 text-sm font-medium text-gray-800 text-center px-1">
                 {item.name}
               </span>
-
             </button>
           );
         })}
-
       </div>
-
     </section>
   );
 }
