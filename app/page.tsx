@@ -225,10 +225,10 @@ export default function HomePage() {
           src="/hero-product.png"
           alt="PrimeCart Hero"
           className="
-          w-full
-          max-w-[850px]
-          object-contain
-          "
+         w-full
+         max-w-[1100px]
+        object-contain
+        scale-125"
         />
 
       </div>
