@@ -85,119 +85,104 @@ export default function HomePage() {
 
       {/* ================= HERO ================= */}
 
-      <section className="relative py-24">
-        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+     <section className="max-w-7xl mx-auto px-6 py-20">
+  <div className="grid lg:grid-cols-2 gap-12 items-center">
 
-          {/* Left Content */}
-          <div>
+    {/* LEFT IMAGE */}
+    <div className="relative">
+      <img
+        src="/hero-product.png"
+        alt="PrimeCart Hero"
+        className="w-full h-auto object-contain"
+      />
+    </div>
 
-            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-[#D4AF37]/30 bg-white text-[#D4AF37] font-medium">
-              <Sparkles size={18} />
-              Premium Shopping Experience
-            </div>
+    {/* RIGHT CONTENT */}
+    <div>
 
-            <h1 className="mt-8 text-6xl lg:text-7xl font-bold leading-tight text-black">
-              Shop More.
-              <br />
-              <span className="text-[#D4AF37]">
-                Pay Less.
-              </span>
-            </h1>
+      <div className="
+      inline-flex
+      items-center
+      px-5
+      py-2
+      rounded-full
+      border
+      border-[#D4AF37]/30
+      text-[#D4AF37]
+      font-medium
+      ">
+        🔥 Super Sale is Live!
+      </div>
 
-            <p className="mt-8 text-xl text-gray-600 max-w-xl leading-relaxed">
-              Discover premium fashion, electronics,
-              beauty products and luxury collections
-              with unbeatable offers and lightning-fast delivery.
-            </p>
+      <h1 className="
+      mt-8
+      text-6xl
+      lg:text-7xl
+      font-bold
+      leading-tight
+      text-black
+      ">
+        Shop More.
+        <br />
+        <span className="text-[#D4AF37]">
+          Pay Less.
+        </span>
+      </h1>
 
-            <div className="flex flex-wrap gap-4 mt-10">
+      <p className="
+      mt-6
+      text-xl
+      text-gray-600
+      max-w-xl
+      ">
+        Discover the best products at unbeatable prices.
+        Your one-stop destination for all your shopping needs.
+      </p>
 
-              <Link
-                href="/register"
-                className="px-8 py-4 rounded-2xl bg-[#D4AF37] text-white font-semibold flex items-center gap-2 hover:scale-105 transition"
-              >
-                Shop Now
-                <ArrowRight size={18} />
-              </Link>
+      <div className="flex gap-4 mt-8">
 
-              <button className="px-8 py-4 rounded-2xl border border-gray-300 bg-white hover:border-[#D4AF37] transition">
-                Explore Deals
-              </button>
+        <button className="
+        bg-[#D4AF37]
+        text-white
+        px-8
+        py-4
+        rounded-2xl
+        font-semibold
+        ">
+          Shop Now
+        </button>
 
-            </div>
+        <button className="
+        border
+        border-gray-300
+        px-8
+        py-4
+        rounded-2xl
+        bg-white
+        ">
+          Explore Deals
+        </button>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 mt-14">
+      </div>
 
-              <div>
-                <h3 className="text-3xl font-bold text-black">
-                  50K+
-                </h3>
-                <p className="text-gray-500">
-                  Customers
-                </p>
-              </div>
+      <div className="flex items-center gap-4 mt-10">
 
-              <div>
-                <h3 className="text-3xl font-bold text-black">
-                  15K+
-                </h3>
-                <p className="text-gray-500">
-                  Products
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-3xl font-bold text-black">
-                  4.9★
-                </h3>
-                <p className="text-gray-500">
-                  Rating
-                </p>
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* Right Hero Design */}
-
-          <div className="relative h-[650px] flex items-center justify-center">
-
-            <div className="absolute w-[550px] h-[550px] rounded-full border-2 border-[#D4AF37]/20"></div>
-
-            <div className="absolute w-[420px] h-[420px] rounded-full bg-[#D4AF37]/10"></div>
-
-            {/* Main Product */}
-            <div className="absolute z-20 w-[280px] h-[360px] rounded-[40px] bg-white shadow-2xl border border-[#eee] flex items-center justify-center text-[120px]">
-              👜
-            </div>
-
-            {/* Left Card */}
-            <div className="absolute left-0 bottom-24 w-[180px] h-[220px] bg-white rounded-[30px] shadow-xl flex items-center justify-center text-7xl">
-              🌸
-            </div>
-
-            {/* Right Card */}
-            <div className="absolute right-0 top-24 w-[180px] h-[180px] bg-white rounded-full shadow-xl flex items-center justify-center text-7xl">
-              ⌚
-            </div>
-
-            {/* Floating Badge */}
-            <div className="absolute top-10 left-20 bg-white rounded-2xl shadow-lg px-5 py-3">
-              <p className="text-sm text-gray-500">
-                Special Offer
-              </p>
-
-              <h4 className="font-bold text-[#D4AF37]">
-                Up to 70% OFF
-              </h4>
-            </div>
-
-          </div>
-
+        <div className="flex -space-x-3">
+          <div className="w-10 h-10 rounded-full bg-gray-300 border-2 border-white"></div>
+          <div className="w-10 h-10 rounded-full bg-gray-400 border-2 border-white"></div>
+          <div className="w-10 h-10 rounded-full bg-gray-500 border-2 border-white"></div>
         </div>
-      </section>
+
+        <p className="text-gray-600">
+          Join <span className="text-[#D4AF37] font-bold">10,000+</span> Happy Customers
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>
       {/* ================= FEATURES BAR ================= */}
 
 <section className="max-w-7xl mx-auto px-6 py-8">
