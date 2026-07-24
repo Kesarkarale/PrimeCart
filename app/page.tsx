@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   ShoppingBag,
   Menu,
@@ -143,9 +144,10 @@ export default function HomePage() {
       text-6xl
       lg:text-7xl
       font-bold
+      font-serif
       leading-tight
       text-black
-      ">
+        ">
         Shop More.
         <br />
         <span className="text-[#D4AF37]">
@@ -206,11 +208,13 @@ export default function HomePage() {
     </div>
      {/* Left IMAGE */}
     <div className="relative">
-      <img
-        src="/hero-product.png"
-        alt="PrimeCart Hero"
-        className="w-full h-auto object-contain"
-      />
+      <Image
+  src="/hero-product.png"
+  alt="PrimeCart Hero"
+  width={800}
+  height={700}
+  className="w-full max-w-[750px] mx-auto object-contain"
+/>
     </div>
 
   </div>
@@ -219,372 +223,82 @@ export default function HomePage() {
       {/* ================= FEATURES BAR ================= */}
 
 <section className="max-w-7xl mx-auto px-6 py-8">
-  <div className="grid md:grid-cols-4 gap-5">
+  <div className="bg-white rounded-[30px] border border-[#ece7db] shadow-sm grid md:grid-cols-4 overflow-hidden">
 
-    <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#eee]">
-      <div className="text-4xl mb-3">🚚</div>
-      <h3 className="font-bold text-lg">Free Delivery</h3>
-      <p className="text-gray-500 text-sm mt-2">
-        Free shipping on all orders
-      </p>
-    </div>
-
-    <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#eee]">
-      <div className="text-4xl mb-3">🔒</div>
-      <h3 className="font-bold text-lg">Secure Payment</h3>
-      <p className="text-gray-500 text-sm mt-2">
-        100% secure transactions
-      </p>
-    </div>
-
-    <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#eee]">
-      <div className="text-4xl mb-3">⭐</div>
-      <h3 className="font-bold text-lg">Premium Quality</h3>
-      <p className="text-gray-500 text-sm mt-2">
-        Trusted premium products
-      </p>
-    </div>
-
-    <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#eee]">
-      <div className="text-4xl mb-3">💬</div>
-      <h3 className="font-bold text-lg">24/7 Support</h3>
-      <p className="text-gray-500 text-sm mt-2">
-        Dedicated customer support
-      </p>
-    </div>
-
-  </div>
-</section>
-
-{/* ================= CATEGORIES ================= */}
-<section className="py-16">
-
-  <div className="text-center mb-10">
-    <h2 className="text-5xl font-bold text-black">
-      Shop By Categories
-    </h2>
-
-    <div className="w-16 h-1 bg-[#D4AF37] mx-auto mt-3 rounded-full" />
-  </div>
-
-  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
-
-    {categories.map((category) => (
-
-      <div
-        key={category.name}
-        className="
-        bg-white
-        rounded-3xl
-        border
-        border-[#eee]
-        overflow-hidden
-        shadow-sm
-        hover:shadow-xl
-        hover:-translate-y-1
-        transition-all
-        duration-300
-        "
-      >
-
-        <div className="h-40 bg-[#faf8f3] relative">
-
-          <img
-            src={category.image}
-            alt={category.name}
-            className="
-            w-full
-            h-full
-            object-contain
-            p-4
-            "
-          />
-
-        </div>
-
-        <div className="p-4">
-
-          <h3 className="font-semibold text-lg text-black">
-            {category.name}
-          </h3>
-
-          <p className="text-gray-500 text-sm mt-1">
-            {category.products}
-          </p>
-
-        </div>
-
+    <div className="p-8 flex gap-4 items-center border-r border-[#ece7db]">
+      <div className="text-4xl">🚚</div>
+      <div>
+        <h3 className="font-semibold">Free Delivery</h3>
+        <p className="text-gray-500 text-sm">On orders above ₹499</p>
       </div>
+    </div>
 
-    ))}
+    <div className="p-8 flex gap-4 items-center border-r border-[#ece7db]">
+      <div className="text-4xl">🛡️</div>
+      <div>
+        <h3 className="font-semibold">Secure Payment</h3>
+        <p className="text-gray-500 text-sm">100% secure payment</p>
+      </div>
+    </div>
+
+    <div className="p-8 flex gap-4 items-center border-r border-[#ece7db]">
+      <div className="text-4xl">🏆</div>
+      <div>
+        <h3 className="font-semibold">Best Quality</h3>
+        <p className="text-gray-500 text-sm">Top quality products</p>
+      </div>
+    </div>
+
+    <div className="p-8 flex gap-4 items-center">
+      <div className="text-4xl">🎧</div>
+      <div>
+        <h3 className="font-semibold">24/7 Support</h3>
+        <p className="text-gray-500 text-sm">Dedicated support</p>
+      </div>
+    </div>
 
   </div>
-
-  <div className="flex justify-center mt-10">
-
-    <button
-      className="
-      bg-[#D4AF37]
-      text-white
-      px-10
-      py-4
-      rounded-2xl
-      font-medium
-      hover:bg-[#c69f2f]
-      transition
-      "
-    >
-      View All Categories →
-    </button>
-
-  </div>
-
 </section>
       
-{/* ================= REVIEWS ================= */}
-
-<section className="max-w-7xl mx-auto px-6 py-20">
-
-  <div className="text-center mb-14">
-
-    <span className="text-[#D4AF37] font-semibold">
-      TESTIMONIALS
-    </span>
-
-    <h2 className="text-5xl font-bold mt-3">
-      What Customers Say
-    </h2>
-
+      {/* ================= CATEGORIES ================= */} 
+      
+      <section className="max-w-7xl mx-auto px-6 py-16">
+        <div className="text-center mb-10"> 
+          <h2 className="text-5xl font-bold text-black"> 
+            Shop By Categories 
+          </h2> 
+          <div className="w-16 h-1 bg-[#D4AF37] mx-auto mt-3 rounded-full" />
+        </div> 
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5"> 
+          {categories.map((category) => ( 
+  
+  <div key={category.name}
+    
+    className=" bg-white rounded-3xl border border-[#eee] overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 " > 
+    <div className="h-40 bg-[#faf8f3] relative"> 
+      <img src={category.image}
+        alt={category.name}
+        className=" w-full h-full object-contain p-4 " /> 
+    </div> 
+    <div className="p-4"> 
+      <h3 className="font-semibold text-lg text-black"> 
+        {category.name} </h3>
+      <p className="text-gray-500 text-sm mt-1"> 
+        {category.products}
+      </p> 
+    </div> 
   </div>
-
-  <div className="grid md:grid-cols-3 gap-8">
-
-    {[
-      {
-        name: "Sarah Johnson",
-        review:
-          "Amazing shopping experience and fast delivery."
-      },
-      {
-        name: "David Smith",
-        review:
-          "Premium quality products and great support."
-      },
-      {
-        name: "Emma Wilson",
-        review:
-          "Best online shopping platform I have used."
-      }
-    ].map((item) => (
-
-      <div
-        key={item.name}
-        className="
-        bg-white
-        rounded-[30px]
-        p-8
-        border
-        border-[#eee]
-        shadow-sm
-        "
-      >
-
-        <div className="text-yellow-500 text-2xl">
-          ⭐⭐⭐⭐⭐
+))}
         </div>
-
-        <p className="
-        text-gray-600
-        mt-5
-        leading-relaxed
-        ">
-          {item.review}
-        </p>
-
-        <div className="mt-6">
-
-          <h4 className="font-bold">
-            {item.name}
-          </h4>
-
-          <p className="text-sm text-gray-500">
-            Verified Customer
-          </p>
-
-        </div>
-
-      </div>
-
-    ))}
-
-  </div>
-
-</section>
-
-{/* ================= NEWSLETTER ================= */}
-
-<section className="max-w-7xl mx-auto px-6 py-20">
-
-  <div className="
-  bg-white
-  border
-  border-[#eee]
-  rounded-[40px]
-  p-10
-  lg:p-16
-  text-center
-  shadow-sm
-  ">
-
-    <h2 className="
-    text-5xl
-    font-bold
-    ">
-      Stay Updated
-    </h2>
-
-    <p className="
-    text-gray-500
-    mt-4
-    ">
-      Subscribe for offers, updates and new arrivals.
-    </p>
-
-    <div className="
-    max-w-xl
-    mx-auto
-    mt-8
-    flex
-    flex-col
-    md:flex-row
-    gap-4
-    ">
-
-      <input
-        type="email"
-        placeholder="Enter your email"
-        className="
-        flex-1
-        px-6
-        py-4
-        rounded-2xl
-        border
-        border-gray-300
-        outline-none
-        "
-      />
-
-      <button className="
-      bg-[#D4AF37]
-      text-white
-      px-8
-      py-4
-      rounded-2xl
-      font-semibold
-      ">
-        Subscribe
-      </button>
-
-    </div>
-
-  </div>
-
-</section>
-
-{/* ================= FOOTER ================= */}
-
-<footer className="
-bg-white
-border-t
-border-[#eee]
-mt-10
-">
-
-  <div className="
-  max-w-7xl
-  mx-auto
-  px-6
-  py-16
-  grid
-  md:grid-cols-4
-  gap-10
-  ">
-
-    <div>
-
-      <h2 className="
-      text-3xl
-      font-bold
-      ">
-        Prime
-        <span className="text-[#D4AF37]">
-          Cart
-        </span>
-      </h2>
-
-      <p className="
-      text-gray-500
-      mt-4
-      ">
-        Premium shopping experience for everyone.
-      </p>
-
-    </div>
-
-    <div>
-
-      <h3 className="font-bold mb-4">
-        Company
-      </h3>
-
-      <ul className="space-y-3 text-gray-500">
-        <li>About Us</li>
-        <li>Careers</li>
-        <li>Contact</li>
-      </ul>
-
-    </div>
-
-    <div>
-
-      <h3 className="font-bold mb-4">
-        Support
-      </h3>
-
-      <ul className="space-y-3 text-gray-500">
-        <li>Help Center</li>
-        <li>Returns</li>
-        <li>Privacy Policy</li>
-      </ul>
-
-    </div>
-
-    <div>
-
-      <h3 className="font-bold mb-4">
-        Follow Us
-      </h3>
-
-      <ul className="space-y-3 text-gray-500">
-        <li>Instagram</li>
-        <li>Facebook</li>
-        <li>Twitter</li>
-      </ul>
-
-    </div>
-
-  </div>
-
-  <div className="
-  border-t
-  border-[#eee]
-  py-6
-  text-center
-  text-gray-500
-  ">
-    © 2026 PrimeCart. All Rights Reserved.
-  </div>
-
+        <div className="flex justify-center mt-10">
+          <button className=" bg-[#D4AF37] text-white px-10 py-4 rounded-2xl font-medium hover:bg-[#c69f2f] transition " > 
+          View All Categories →
+        </button> 
+        </div> 
+      </section>
+ 
+<footer className="py-10 text-center text-gray-500">
+  © 2026 PrimeCart. All Rights Reserved.
 </footer>
     </main>
   );
