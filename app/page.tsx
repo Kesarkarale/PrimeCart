@@ -88,16 +88,7 @@ export default function HomePage() {
      <section className="max-w-7xl mx-auto px-6 py-20">
   <div className="grid lg:grid-cols-2 gap-12 items-center">
 
-    {/* Right IMAGE */}
-    <div className="relative">
-      <img
-        src="/hero-product.png"
-        alt="PrimeCart Hero"
-        className="w-full h-auto object-contain"
-      />
-    </div>
-
-    {/* Left CONTENT */}
+    {/* Right CONTENT */}
     <div>
 
       <div className="
@@ -182,6 +173,15 @@ export default function HomePage() {
     </div>
 
   </div>
+       
+       {/* Left IMAGE */}
+    <div className="relative">
+      <img
+        src="/hero-product.png"
+        alt="PrimeCart Hero"
+        className="w-full h-auto object-contain"
+      />
+    </div>
 </section>
       {/* ================= FEATURES BAR ================= */}
 
