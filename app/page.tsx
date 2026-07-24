@@ -119,76 +119,124 @@ export default function HomePage() {
 
       {/* ================= HERO ================= */}
 
-     <section className="bg-[#faf8f3]">
-  <div className="max-w-7xl mx-auto px-6 py-10 grid lg:grid-cols-2 gap-10 items-center">
+     <section className="max-w-7xl mx-auto px-6 py-10">
 
-    {/* LEFT CONTENT */}
-    <div>
-      <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-[#D4AF37]/30 text-[#D4AF37]">
-        🔥 Super Sale is Live!
-      </div>
+  <div
+    className="
+    bg-white
+    rounded-[40px]
+    border
+    border-[#ece7db]
+    shadow-lg
+    overflow-hidden
+    "
+  >
 
-      <h1 className="
-      mt-8
-      text-[72px]
-      lg:text-[88px]
-      leading-[0.95]
-      font-bold
-      font-serif
-      text-black
-      ">
-        Shop More.
-        <br />
-        <span className="text-[#D4AF37]">
-          Pay Less.
-        </span>
-      </h1>
+    <div className="grid lg:grid-cols-2 gap-10 items-center p-8 lg:p-14">
 
-      <p className="mt-6 text-xl text-gray-600 max-w-xl">
-        Discover the best products at unbeatable prices.
-        Your one-stop destination for all your needs.
-      </p>
+      {/* LEFT CONTENT */}
+      <div>
 
-      <div className="flex gap-4 mt-8">
-        <button className="bg-[#D4AF37] text-white px-8 py-4 rounded-2xl font-semibold">
-          Shop Now
-        </button>
-
-        <button className="border border-gray-300 px-8 py-4 rounded-2xl bg-white">
-          Explore Deals
-        </button>
-      </div>
-
-      <div className="flex items-center gap-4 mt-10">
-        <div className="flex -space-x-3">
-          <div className="w-10 h-10 rounded-full bg-gray-300 border-2 border-white" />
-          <div className="w-10 h-10 rounded-full bg-gray-400 border-2 border-white" />
-          <div className="w-10 h-10 rounded-full bg-gray-500 border-2 border-white" />
+        <div className="
+        inline-flex
+        items-center
+        gap-2
+        px-5
+        py-2
+        rounded-full
+        border
+        border-[#D4AF37]/30
+        text-[#D4AF37]
+        font-medium
+        ">
+          🔥 Super Sale is Live!
         </div>
 
-        <p className="text-gray-600">
-          Join <span className="text-[#D4AF37] font-bold">10,000+</span> Happy Customers
+        <h1
+          className="
+          mt-8
+          text-[60px]
+          lg:text-[85px]
+          leading-[0.95]
+          font-bold
+          font-serif
+          text-black
+          "
+        >
+          Shop More.
+          <br />
+          <span className="text-[#D4AF37]">
+            Pay Less.
+          </span>
+        </h1>
+
+        <p className="mt-6 text-xl text-gray-600 max-w-xl">
+          Discover the best products at unbeatable prices.
+          Your one-stop destination for all your needs.
         </p>
+
+        <div className="flex flex-wrap gap-4 mt-8">
+
+          <button className="
+          bg-[#D4AF37]
+          text-white
+          px-8
+          py-4
+          rounded-2xl
+          font-semibold
+          ">
+            Shop Now
+          </button>
+
+          <button className="
+          bg-white
+          border
+          border-gray-300
+          px-8
+          py-4
+          rounded-2xl
+          ">
+            Explore Deals
+          </button>
+
+        </div>
+
+        <div className="flex items-center gap-4 mt-10">
+
+          <div className="flex -space-x-3">
+            <div className="w-10 h-10 rounded-full bg-gray-300 border-2 border-white"></div>
+            <div className="w-10 h-10 rounded-full bg-gray-400 border-2 border-white"></div>
+            <div className="w-10 h-10 rounded-full bg-gray-500 border-2 border-white"></div>
+          </div>
+
+          <p className="text-gray-600">
+            Join <span className="text-[#D4AF37] font-bold">10,000+</span> Happy Customers
+          </p>
+
+        </div>
+
       </div>
-    </div>
 
-    {/* RIGHT IMAGE */}
-    <div className="relative flex justify-center">
+      {/* RIGHT IMAGE */}
 
-      <img
-        src="/hero-product.png"
-        alt="Hero"
-        className="
-        w-full
-        max-w-[850px]
-        object-contain
-        scale-125
-        "
-      />
+      <div className="flex justify-center">
+
+        <img
+          src="/hero-product.png"
+          alt="PrimeCart Hero"
+          className="
+          w-full
+          max-w-[850px]
+          object-contain
+          "
+        />
+
+      </div>
 
     </div>
 
   </div>
+
 </section>
       
       {/* ================= FEATURES BAR ================= */}
