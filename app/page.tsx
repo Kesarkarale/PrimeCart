@@ -119,35 +119,24 @@ export default function HomePage() {
 
       {/* ================= HERO ================= */}
 
-     <section className="max-w-7xl mx-auto px-6 py-20">
-  <div className="grid lg:grid-cols-2 gap-12 items-center">
+     <section className="bg-[#faf8f3]">
+  <div className="max-w-7xl mx-auto px-6 py-10 grid lg:grid-cols-2 gap-10 items-center">
 
-    {/* Right CONTENT */}
+    {/* LEFT CONTENT */}
     <div>
-
-      <div className="
-      inline-flex
-      items-center
-      px-5
-      py-2
-      rounded-full
-      border
-      border-[#D4AF37]/30
-      text-[#D4AF37]
-      font-medium
-      ">
+      <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-[#D4AF37]/30 text-[#D4AF37]">
         🔥 Super Sale is Live!
       </div>
 
       <h1 className="
       mt-8
-      text-6xl
-      lg:text-7xl
+      text-[72px]
+      lg:text-[88px]
+      leading-[0.95]
       font-bold
       font-serif
-      leading-tight
       text-black
-        ">
+      ">
         Shop More.
         <br />
         <span className="text-[#D4AF37]">
@@ -155,71 +144,53 @@ export default function HomePage() {
         </span>
       </h1>
 
-      <p className="
-      mt-6
-      text-xl
-      text-gray-600
-      max-w-xl
-      ">
+      <p className="mt-6 text-xl text-gray-600 max-w-xl">
         Discover the best products at unbeatable prices.
-        Your one-stop destination for all your shopping needs.
+        Your one-stop destination for all your needs.
       </p>
 
       <div className="flex gap-4 mt-8">
-
-        <button className="
-        bg-[#D4AF37]
-        text-white
-        px-8
-        py-4
-        rounded-2xl
-        font-semibold
-        ">
+        <button className="bg-[#D4AF37] text-white px-8 py-4 rounded-2xl font-semibold">
           Shop Now
         </button>
 
-        <button className="
-        border
-        border-gray-300
-        px-8
-        py-4
-        rounded-2xl
-        bg-white
-        ">
+        <button className="border border-gray-300 px-8 py-4 rounded-2xl bg-white">
           Explore Deals
         </button>
-
       </div>
 
       <div className="flex items-center gap-4 mt-10">
-
         <div className="flex -space-x-3">
-          <div className="w-10 h-10 rounded-full bg-gray-300 border-2 border-white"></div>
-          <div className="w-10 h-10 rounded-full bg-gray-400 border-2 border-white"></div>
-          <div className="w-10 h-10 rounded-full bg-gray-500 border-2 border-white"></div>
+          <div className="w-10 h-10 rounded-full bg-gray-300 border-2 border-white" />
+          <div className="w-10 h-10 rounded-full bg-gray-400 border-2 border-white" />
+          <div className="w-10 h-10 rounded-full bg-gray-500 border-2 border-white" />
         </div>
 
         <p className="text-gray-600">
           Join <span className="text-[#D4AF37] font-bold">10,000+</span> Happy Customers
         </p>
-
       </div>
-
     </div>
-     {/* Left IMAGE */}
-    <div className="relative">
-      <Image
-  src="/hero-product.png"
-  alt="PrimeCart Hero"
-  width={800}
-  height={700}
-  className="w-full max-w-[750px] mx-auto object-contain"
-/>
+
+    {/* RIGHT IMAGE */}
+    <div className="relative flex justify-center">
+
+      <img
+        src="/hero-product.png"
+        alt="Hero"
+        className="
+        w-full
+        max-w-[850px]
+        object-contain
+        scale-125
+        "
+      />
+
     </div>
 
   </div>
-       
 </section>
+      
       {/* ================= FEATURES BAR ================= */}
 
 <section className="max-w-7xl mx-auto px-6 py-8">
