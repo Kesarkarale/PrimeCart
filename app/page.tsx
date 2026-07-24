@@ -11,6 +11,39 @@ import {
   Sparkles,
 } from "lucide-react";
 
+const categories = [
+  {
+    name: "Electronics",
+    products: "2500+ Products",
+    image: "/categories/electronics.png",
+  },
+  {
+    name: "Fashion",
+    products: "1800+ Products",
+    image: "/categories/fashion.png",
+  },
+  {
+    name: "Watches",
+    products: "1200+ Products",
+    image: "/categories/watch.png",
+  },
+  {
+    name: "Beauty",
+    products: "800+ Products",
+    image: "/categories/perfume.png",
+  },
+  {
+    name: "Home & Living",
+    products: "1500+ Products",
+    image: "/categories/home.png",
+  },
+  {
+    name: "Gaming",
+    products: "950+ Products",
+    image: "/categories/gaming.png",
+  },
+];
+
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-[#faf8f3] overflow-hidden">
@@ -171,10 +204,7 @@ export default function HomePage() {
       </div>
 
     </div>
-
-  </div>
-       
-       {/* Left IMAGE */}
+     {/* Left IMAGE */}
     <div className="relative">
       <img
         src="/hero-product.png"
@@ -182,6 +212,9 @@ export default function HomePage() {
         className="w-full h-auto object-contain"
       />
     </div>
+
+  </div>
+       
 </section>
       {/* ================= FEATURES BAR ================= */}
 
@@ -224,79 +257,85 @@ export default function HomePage() {
 </section>
 
 {/* ================= CATEGORIES ================= */}
+<section className="py-16">
 
-<section className="max-w-7xl mx-auto px-6 py-20">
-
-  <div className="text-center mb-14">
-    <span className="text-[#D4AF37] font-semibold">
-      SHOP BY CATEGORY
-    </span>
-
-    <h2 className="text-5xl font-bold mt-3 text-black">
-      Explore Categories
+  <div className="text-center mb-10">
+    <h2 className="text-5xl font-bold text-black">
+      Shop By Categories
     </h2>
 
-    <p className="text-gray-500 mt-4">
-      Discover products across multiple categories
-    </p>
+    <div className="w-16 h-1 bg-[#D4AF37] mx-auto mt-3 rounded-full" />
   </div>
 
-  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
 
-    {[
-      {
-        name: "Electronics",
-        icon: "📱"
-      },
-      {
-        name: "Fashion",
-        icon: "👕"
-      },
-      {
-        name: "Watches",
-        icon: "⌚"
-      },
-      {
-        name: "Beauty",
-        icon: "💄"
-      },
-      {
-        name: "Home",
-        icon: "🏠"
-      },
-      {
-        name: "Gaming",
-        icon: "🎮"
-      },
-    ].map((item) => (
+    {categories.map((category) => (
 
       <div
-        key={item.name}
+        key={category.name}
         className="
         bg-white
         rounded-3xl
-        p-8
-        text-center
         border
         border-[#eee]
+        overflow-hidden
         shadow-sm
         hover:shadow-xl
-        hover:-translate-y-2
+        hover:-translate-y-1
         transition-all
         duration-300
-        cursor-pointer
         "
       >
-        <div className="text-5xl mb-4">
-          {item.icon}
+
+        <div className="h-40 bg-[#faf8f3] relative">
+
+          <img
+            src={category.image}
+            alt={category.name}
+            className="
+            w-full
+            h-full
+            object-contain
+            p-4
+            "
+          />
+
         </div>
 
-        <h3 className="font-semibold text-lg">
-          {item.name}
-        </h3>
+        <div className="p-4">
+
+          <h3 className="font-semibold text-lg text-black">
+            {category.name}
+          </h3>
+
+          <p className="text-gray-500 text-sm mt-1">
+            {category.products}
+          </p>
+
+        </div>
+
       </div>
 
     ))}
+
+  </div>
+
+  <div className="flex justify-center mt-10">
+
+    <button
+      className="
+      bg-[#D4AF37]
+      text-white
+      px-10
+      py-4
+      rounded-2xl
+      font-medium
+      hover:bg-[#c69f2f]
+      transition
+      "
+    >
+      View All Categories →
+    </button>
 
   </div>
 
