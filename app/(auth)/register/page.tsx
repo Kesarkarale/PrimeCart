@@ -270,6 +270,7 @@ mb-8
 flex
 items-center
 gap-4
+  ml-6
 ">
 
 <Image
