@@ -16,12 +16,12 @@ const categories = [
   {
     name: "Electronics",
     products: "2500+ Products",
-    image: "/categories/electronics.png",
+    image: "/products/electronics.png",
   },
   {
     name: "Fashion",
     products: "1800+ Products",
-    image: "/categories/fashion.png",
+    image: "/products/fashion.png",
   },
   {
     name: "Watches",
@@ -31,17 +31,17 @@ const categories = [
   {
     name: "Beauty",
     products: "800+ Products",
-    image: "/categories/perfume.png",
+    image: "/products/perfume.png",
   },
   {
     name: "Home & Living",
     products: "1500+ Products",
-    image: "/categories/home.png",
+    image: "/products/home.png",
   },
   {
     name: "Gaming",
     products: "950+ Products",
-    image: "/categories/gaming.png",
+    image: "/products/gaming.png",
   },
 ];
 
