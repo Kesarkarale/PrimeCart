@@ -306,8 +306,8 @@ gap-3
 <Image
 src="/logo.png"
 alt="PrimeCart Logo"
-width={85}
-height={85}
+width={180}
+height={50}
 priority
 className="object-contain"
 />
@@ -316,7 +316,7 @@ className="object-contain"
 <div>
 
 <h2 className="
-text-3xl
+text-5xl
 font-bold
 text-black
 ">
@@ -327,17 +327,6 @@ Cart
 </span>
 
 </h2>
-
-
-<p className="
-text-sm
-text-gray-500
-">
-
-Premium Shopping
-
-</p>
-
 
 </div>
 
