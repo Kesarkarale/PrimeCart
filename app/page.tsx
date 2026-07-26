@@ -129,6 +129,8 @@ export default function HomePage() {
     border-[#ece7db]
     shadow-lg
     overflow-hidden
+    max-w-5xl
+  mx-auto
     "
   >
 
