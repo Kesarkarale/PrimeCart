@@ -68,7 +68,7 @@ Premium Shopping
 
 
 <Link
-href="/"
+href="/login"
 className="hover:text-[#D4AF37] transition"
 >
 Home
@@ -76,7 +76,7 @@ Home
 
 
 <Link
-href="/shop"
+href="/login"
 className="hover:text-[#D4AF37] transition"
 >
 Shop
@@ -84,7 +84,7 @@ Shop
 
 
 <Link
-href="/categories"
+href="/login"
 className="hover:text-[#D4AF37] transition"
 >
 Categories
@@ -92,7 +92,7 @@ Categories
 
 
 <Link
-href="/deals"
+href="/login"
 className="hover:text-[#D4AF37] transition"
 >
 Deals
@@ -100,7 +100,7 @@ Deals
 
 
 <Link
-href="/contact"
+href="/login"
 className="hover:text-[#D4AF37] transition"
 >
 Contact
@@ -119,7 +119,7 @@ Contact
 
 
 <Link
-href="/search"
+href="/login"
 className="hidden md:flex w-11 h-11 rounded-xl bg-[#f5f2ea] items-center justify-center hover:bg-[#ece4d0] transition"
 >
 
@@ -130,7 +130,7 @@ className="hidden md:flex w-11 h-11 rounded-xl bg-[#f5f2ea] items-center justify
 
 
 <Link
-href="/wishlist"
+href="/login"
 className="hidden md:flex w-11 h-11 rounded-xl bg-[#f5f2ea] items-center justify-center hover:bg-[#ece4d0] transition"
 >
 
@@ -141,7 +141,7 @@ className="hidden md:flex w-11 h-11 rounded-xl bg-[#f5f2ea] items-center justify
 
 
 <Link
-href="/cart"
+href="/login"
 className="hidden md:flex w-11 h-11 rounded-xl bg-[#f5f2ea] items-center justify-center hover:bg-[#ece4d0] transition"
 >
 
@@ -205,27 +205,27 @@ openMenu && (
 <div className="flex flex-col gap-5 font-medium text-gray-700">
 
 
-<Link href="/" onClick={()=>setOpenMenu(false)}>
+<Link href="login" onClick={()=>setOpenMenu(false)}>
 Home
 </Link>
 
 
-<Link href="/shop" onClick={()=>setOpenMenu(false)}>
+<Link href="/login" onClick={()=>setOpenMenu(false)}>
 Shop
 </Link>
 
 
-<Link href="/categories" onClick={()=>setOpenMenu(false)}>
+<Link href="/login" onClick={()=>setOpenMenu(false)}>
 Categories
 </Link>
 
 
-<Link href="/deals" onClick={()=>setOpenMenu(false)}>
+<Link href="/login" onClick={()=>setOpenMenu(false)}>
 Deals
 </Link>
 
 
-<Link href="/contact" onClick={()=>setOpenMenu(false)}>
+<Link href="/login" onClick={()=>setOpenMenu(false)}>
 Contact
 </Link>
 
@@ -354,7 +354,7 @@ Your one-stop destination for all your needs.
 
 
 <Link
-href="/shop"
+href="/login"
 className="
 bg-[#D4AF37]
 text-white
@@ -378,7 +378,7 @@ Shop Now
 
 
 <Link
-href="/deals"
+href="/login"
 className="
 bg-white
 border
@@ -799,7 +799,7 @@ mt-1
 
 <Link
 
-href="/categories"
+href="/login"
 
 className="
 bg-[#D4AF37]
