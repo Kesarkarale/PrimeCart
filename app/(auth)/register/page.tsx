@@ -187,7 +187,8 @@ return (
 
 
 <div className="
-min-h-screen
+h-screen
+overflow-hidden
 bg-gradient-to-br
 from-[#f8f5ef]
 via-[#ffffff]
@@ -204,8 +205,9 @@ p-5
 
 <div className="
 w-full
-max-w-[1400px]
-min-h-[850px]
+max-w-[1200px]
+h-[calc(100vh-40px)]
+max-h-[760px]
 bg-white
 rounded-[40px]
 shadow-2xl
@@ -213,7 +215,6 @@ overflow-hidden
 grid
 lg:grid-cols-2
 ">
-
 
 
 
@@ -247,7 +248,7 @@ flex
 items-center
 justify-center
 px-6
-py-10
+py-6
 ">
 
 
@@ -266,21 +267,58 @@ max-w-md
 
 <div className="
 mb-8
+flex
+items-center
+gap-4
 ">
 
 <Image
 
 src="/logo.png"
 
-alt="PrimeCart"
+alt="PrimeCart Logo"
 
-width={180}
+width={100}
 
 height={50}
 
 priority
 
+className="object-contain"
+
 />
+
+
+
+<div>
+
+<h2 className="
+text-4xl
+font-bold
+text-black
+">
+
+Prime
+<span className="text-[#D4AF37]">
+Cart
+</span>
+
+</h2>
+
+
+
+<p className="
+text-sm
+text-gray-500
+">
+
+Premium Shopping
+
+</p>
+
+
+</div>
+
 
 </div>
 
@@ -325,8 +363,8 @@ Start your premium shopping journey.
 
 
 <div className="
-mt-8
-space-y-5
+mt-6
+space-y-4
 ">
 
 
