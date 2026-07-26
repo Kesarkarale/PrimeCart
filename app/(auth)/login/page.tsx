@@ -197,7 +197,8 @@ setLoading(false);
 return (
 
 <div className="
-min-h-screen
+h-screen
+overflow-hidden
 bg-gradient-to-br
 from-[#f8f5ef]
 via-[#ffffff]
@@ -209,13 +210,11 @@ p-5
 ">
 
 
-
-
-
 <div className="
 w-full
-max-w-[1400px]
-min-h-[850px]
+max-w-[1200px]
+h-[calc(100vh-40px)]
+max-h-[760px]
 bg-white
 rounded-[40px]
 shadow-2xl
@@ -276,7 +275,7 @@ flex
 items-center
 justify-center
 px-6
-py-10
+py-6
 ">
 
 
@@ -299,22 +298,48 @@ max-w-md
 
 <div className="
 mb-8
+flex
+items-center
+gap-3
 ">
 
-
 <Image
-
 src="/logo.png"
-
-alt="PrimeCart"
-
-width={180}
-
-height={50}
-
+alt="PrimeCart Logo"
+width={60}
+height={60}
 priority
-
+className="object-contain"
 />
+
+
+<div>
+
+<h2 className="
+text-3xl
+font-bold
+text-black
+">
+
+Prime
+<span className="text-[#D4AF37]">
+Cart
+</span>
+
+</h2>
+
+
+<p className="
+text-sm
+text-gray-500
+">
+
+Premium Shopping
+
+</p>
+
+
+</div>
 
 
 </div>
@@ -373,8 +398,8 @@ Continue your premium shopping journey.
 onSubmit={login}
 
 className="
-mt-8
-space-y-5
+mt-6
+space-y-4
 "
 
 >
