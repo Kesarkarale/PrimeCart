@@ -825,13 +825,14 @@ View All Categories →
 
 
 </section>
-      {/* ================= FOOTER ================= */}
-
-
+                {/* ================= FOOTER ================= */}
+     
 <footer className="
 mt-20
-bg-[#111827]
-text-white
+bg-[#faf8f3]
+text-gray-900
+border-t
+border-[#ece7db]
 ">
 
 
@@ -876,7 +877,7 @@ className="object-contain"
 
 <div>
 
-<h2 className="text-2xl font-bold">
+<h2 className="text-2xl font-bold text-black">
 
 Prime<span className="text-[#D4AF37]">
 Cart
@@ -885,7 +886,7 @@ Cart
 </h2>
 
 
-<p className="text-gray-400 text-sm">
+<p className="text-gray-600 text-sm">
 Premium Shopping Store
 </p>
 
@@ -897,8 +898,10 @@ Premium Shopping Store
 
 
 
+
+
 <p className="
-text-gray-400
+text-gray-600
 leading-relaxed
 ">
 
@@ -915,6 +918,7 @@ products at unbeatable prices.
 
 
 
+
 {/* QUICK LINKS */}
 
 
@@ -925,6 +929,7 @@ products at unbeatable prices.
 text-lg
 font-semibold
 mb-5
+text-black
 ">
 
 Quick Links
@@ -933,12 +938,14 @@ Quick Links
 
 
 
+
 <div className="
 flex
 flex-col
 gap-3
-text-gray-400
+text-gray-600
 ">
+
 
 
 <Link
@@ -949,8 +956,9 @@ Home
 </Link>
 
 
+
 <Link
-href="/shop"
+href="/login"
 className="hover:text-[#D4AF37] transition"
 >
 Shop
@@ -959,7 +967,7 @@ Shop
 
 
 <Link
-href="/categories"
+href="/login"
 className="hover:text-[#D4AF37] transition"
 >
 Categories
@@ -968,7 +976,7 @@ Categories
 
 
 <Link
-href="/deals"
+href="/login"
 className="hover:text-[#D4AF37] transition"
 >
 Deals
@@ -987,6 +995,7 @@ Deals
 
 
 
+
 {/* CUSTOMER */}
 
 
@@ -997,6 +1006,7 @@ Deals
 text-lg
 font-semibold
 mb-5
+text-black
 ">
 
 Customer Service
@@ -1005,16 +1015,18 @@ Customer Service
 
 
 
+
 <div className="
 flex
 flex-col
 gap-3
-text-gray-400
+text-gray-600
 ">
 
 
+
 <Link
-href="/contact"
+href="/login"
 className="hover:text-[#D4AF37] transition"
 >
 Contact Us
@@ -1022,8 +1034,9 @@ Contact Us
 
 
 
+
 <Link
-href="/shipping"
+href="/login"
 className="hover:text-[#D4AF37] transition"
 >
 Shipping Policy
@@ -1031,8 +1044,9 @@ Shipping Policy
 
 
 
+
 <Link
-href="/returns"
+href="/login"
 className="hover:text-[#D4AF37] transition"
 >
 Returns
@@ -1040,8 +1054,9 @@ Returns
 
 
 
+
 <Link
-href="/privacy"
+href="/login"
 className="hover:text-[#D4AF37] transition"
 >
 Privacy Policy
@@ -1061,6 +1076,7 @@ Privacy Policy
 
 
 
+
 {/* NEWSLETTER */}
 
 
@@ -1071,6 +1087,7 @@ Privacy Policy
 text-lg
 font-semibold
 mb-5
+text-black
 ">
 
 Stay Updated
@@ -1079,8 +1096,9 @@ Stay Updated
 
 
 
+
 <p className="
-text-gray-400
+text-gray-600
 mb-4
 ">
 
@@ -1091,10 +1109,13 @@ Subscribe for latest offers and deals.
 
 
 
+
+
 <div className="
 flex
 gap-2
 ">
+
 
 
 <input
@@ -1109,11 +1130,15 @@ px-4
 py-3
 rounded-xl
 bg-white
+border
+border-[#ece7db]
 text-black
 outline-none
 "
 
 />
+
+
 
 
 
@@ -1124,6 +1149,7 @@ bg-[#D4AF37]
 px-5
 rounded-xl
 font-semibold
+text-white
 hover:bg-[#c69f2f]
 transition
 "
@@ -1136,16 +1162,20 @@ transition
 
 
 
-</div>
-
-
 
 </div>
 
 
 
+</div>
+
+
+
+
 
 </div>
+
+
 
 
 
@@ -1158,10 +1188,10 @@ transition
 
 <div className="
 border-t
-border-gray-700
+border-[#ece7db]
 py-6
 text-center
-text-gray-400
+text-gray-600
 text-sm
 ">
 
@@ -1174,11 +1204,6 @@ text-sm
 
 
 </footer>
-
-
-
-
-
-</main>
+     </main>
 );
 }
