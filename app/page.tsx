@@ -26,7 +26,7 @@ const categories = [
   {
     name: "Watches",
     products: "1200+ Products",
-    image: "/watch.png",
+    image: "/products/watch.png",
   },
   {
     name: "Beauty",
