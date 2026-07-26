@@ -306,7 +306,7 @@ gap-3
 <Image
 src="/logo.png"
 alt="PrimeCart Logo"
-width={180}
+width={100}
 height={50}
 priority
 className="object-contain"
