@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-
+import Navbar from "@/components/layout/navbar";
+import TopBar from "@/components/layout/top-bar";
 import {
   ChevronRight,
   Headphones,
