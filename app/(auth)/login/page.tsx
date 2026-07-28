@@ -267,7 +267,7 @@ relative
 <div className="block md:hidden mb-6">
   <Image
     src="/login-banner.png"
-    alt="PrimeCart Banner"
+     
     width={600}
     height={350}
     priority
