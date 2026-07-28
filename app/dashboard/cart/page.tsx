@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 import {
   Minus,
@@ -9,29 +10,41 @@ import {
   Trash2,
   ShoppingBag,
   ShieldCheck,
-  Truck
+  Truck,
+  ArrowRight,
+  Sparkles
 } from "lucide-react";
 
-import { useState } from "react";
+import { motion } from "framer-motion";
+
+
+type CartItem = {
+  id:number;
+  name:string;
+  image:string;
+  price:number;
+  quantity:number;
+};
 
 
 
-const initialCart = [
-  {
-    id:1,
-    name:"Wireless Headphones",
-    image:"/products/headphone.png",
-    price:2499,
-    quantity:1
-  },
+const initialCart:CartItem[] = [
 
-  {
-    id:2,
-    name:"Smart Watch",
-    image:"/products/watch.png",
-    price:3499,
-    quantity:1
-  }
+{
+id:1,
+name:"Wireless Headphones",
+image:"/products/headphone.png",
+price:2499,
+quantity:1
+},
+
+{
+id:2,
+name:"Smart Watch",
+image:"/products/watch.png",
+price:3499,
+quantity:1
+},
 
 ];
 
@@ -40,7 +53,7 @@ const initialCart = [
 export default function CartPage(){
 
 
-const [cart,setCart]=useState(initialCart);
+const [cart,setCart]=useState<CartItem[]>(initialCart);
 
 
 
@@ -101,6 +114,7 @@ item
 
 
 
+
 const removeItem=(id:number)=>{
 
 setCart(prev=>
@@ -114,25 +128,29 @@ prev.filter(item=>item.id!==id)
 
 
 
+
 const subtotal = cart.reduce(
 
-(total,item)=>
+(sum,item)=>
 
-total + item.price * item.quantity,
+sum+(item.price*item.quantity),
 
 0
 
 );
 
 
-const delivery = subtotal > 1000 ? 0 : 99;
+
+const delivery = subtotal>1000 ? 0 : 99;
 
 
-const total = subtotal + delivery;
+const total=subtotal+delivery;
 
 
 
-return (
+
+
+return(
 
 <main
 className="
@@ -144,49 +162,41 @@ py-10
 >
 
 
-
-<div
-className="
+<div className="
 max-w-7xl
 mx-auto
-"
->
+">
 
 
-
-{/* HEADER */}
-
+{/* TOP HEADER */}
 
 <div className="
 flex
-items-center
 justify-between
+items-center
 mb-10
 ">
 
 
 <div>
 
-<h1
-className="
+<h1 className="
 text-4xl
 font-black
-"
->
+tracking-tight
+">
 
-Shopping Cart
+Your Cart
 
 </h1>
 
 
-<p
-className="
+<p className="
 text-gray-500
 mt-2
-"
->
+">
 
-Review your products before checkout
+Review your selected premium products
 
 </p>
 
@@ -194,11 +204,19 @@ Review your products before checkout
 </div>
 
 
+<div className="
+bg-white
+p-4
+rounded-2xl
+shadow
+">
 
 <ShoppingBag
-size={40}
+size={35}
 className="text-[#D4AF37]"
 />
+
+</div>
 
 
 </div>
@@ -208,73 +226,83 @@ className="text-[#D4AF37]"
 
 
 
-<div
-className="
+<div className="
 grid
 lg:grid-cols-3
 gap-8
-"
->
+">
 
 
 
 
 
-{/* CART ITEMS */}
+{/* PRODUCTS */}
 
 
-<div
-className="
+<div className="
 lg:col-span-2
 space-y-5
-"
->
+">
+
 
 
 {
-cart.length===0
+cart.length===0 ?
 
-?
 
-<div
-className="
+<div className="
 bg-white
 rounded-3xl
-p-10
+p-12
 text-center
-"
->
+shadow
+">
 
-<h2
+
+<ShoppingBag
+size={70}
 className="
-text-2xl
-font-bold
+mx-auto
+text-gray-300
 "
->
+/>
+
+
+<h2 className="
+text-2xl
+font-black
+mt-5
+">
+
 Your cart is empty
+
 </h2>
 
 
 <Link
 href="/"
 className="
-inline-block
-mt-5
-bg-[#D4AF37]
-px-6
+inline-flex
+items-center
+gap-2
+mt-6
+bg-black
+text-white
+px-7
 py-3
 rounded-xl
-text-white
 font-bold
 "
 >
 
 Continue Shopping
+<ArrowRight size={18}/>
 
 </Link>
 
 
 </div>
+
 
 
 :
@@ -283,33 +311,36 @@ Continue Shopping
 cart.map(item=>(
 
 
-<div
+<motion.div
 
 key={item.id}
+
+initial={{opacity:0,y:20}}
+
+animate={{opacity:1,y:0}}
 
 className="
 bg-white
 rounded-3xl
 p-5
+shadow-sm
 border
 flex
 gap-5
 items-center
 "
-
-
 >
 
 
-<div
-className="
+<div className="
 relative
 w-32
 h-32
-bg-gray-50
 rounded-2xl
+bg-gray-50
 "
 >
+
 
 <Image
 
@@ -326,53 +357,59 @@ p-4
 
 />
 
+
 </div>
 
 
 
 
 
-<div
-className="
+<div className="
 flex-1
-"
->
+">
 
 
-<h2
-className="
+<h2 className="
 text-xl
 font-bold
-"
->
+">
 
 {item.name}
 
 </h2>
 
 
-<p
-className="
-text-2xl
-font-black
-mt-2
-"
->
+<p className="
+text-gray-400
+text-sm
+mt-1
+">
 
-₹{item.price}
+Premium Quality Product
 
 </p>
 
 
 
-<div
-className="
+<p className="
+text-2xl
+font-black
+mt-3
+">
+
+₹{item.price.toLocaleString("en-IN")}
+
+</p>
+
+
+
+
+<div className="
 flex
 items-center
 gap-4
 mt-4
-"
->
+">
 
 
 <button
@@ -387,8 +424,10 @@ border
 flex
 items-center
 justify-center
+hover:bg-black
+hover:text-white
+transition
 "
-
 >
 
 <Minus size={16}/>
@@ -397,16 +436,14 @@ justify-center
 
 
 
-<span
-className="
+
+<span className="
 font-bold
-"
->
+">
 
 {item.quantity}
 
 </span>
-
 
 
 
@@ -422,8 +459,10 @@ border
 flex
 items-center
 justify-center
+hover:bg-black
+hover:text-white
+transition
 "
-
 >
 
 <Plus size={16}/>
@@ -431,15 +470,28 @@ justify-center
 </button>
 
 
+</div>
+
 
 </div>
 
 
 
-</div>
 
 
+<div className="
+text-right
+">
 
+
+<p className="
+font-bold
+mb-5
+">
+
+₹{(item.price*item.quantity).toLocaleString("en-IN")}
+
+</p>
 
 
 
@@ -456,6 +508,9 @@ text-red-500
 flex
 items-center
 justify-center
+hover:bg-red-500
+hover:text-white
+transition
 "
 
 >
@@ -469,15 +524,16 @@ justify-center
 </div>
 
 
-))
 
+</motion.div>
+
+
+))
 
 }
 
 
-
 </div>
-
 
 
 
@@ -491,71 +547,71 @@ justify-center
 <div>
 
 
-<div
-className="
+<div className="
 bg-white
 rounded-3xl
 p-7
 border
+shadow-sm
 sticky
 top-5
-"
->
+">
 
 
-<h2
-className="
+<div className="
+flex
+items-center
+gap-2
+mb-6
+">
+
+<Sparkles
+className="text-[#D4AF37]"
+/>
+
+
+<h2 className="
 text-2xl
 font-black
-mb-6
-"
->
+">
 
 Order Summary
 
 </h2>
 
+</div>
 
 
 
-<div
-className="
+
+<div className="
 space-y-4
-"
->
+">
 
 
-<div
-className="
-flex
-justify-between
-"
->
+<div className="flex justify-between">
 
 <span>
 Subtotal
 </span>
 
 <b>
-₹{subtotal}
+₹{subtotal.toLocaleString("en-IN")}
 </b>
 
 </div>
 
 
 
-<div
-className="
-flex
-justify-between
-"
->
+<div className="flex justify-between">
 
 <span>
 Delivery
 </span>
 
+
 <b>
+
 {
 delivery===0
 ?
@@ -563,31 +619,30 @@ delivery===0
 :
 `₹${delivery}`
 }
+
 </b>
+
 
 </div>
 
 
 
-<div
-className="
+<div className="
 border-t
-pt-4
+pt-5
 flex
 justify-between
 text-xl
-"
->
-
-<span
-className="font-bold"
->
-Total
-</span>
+">
 
 
 <b>
-₹{total}
+Total
+</b>
+
+
+<b>
+₹{total.toLocaleString("en-IN")}
 </b>
 
 
@@ -606,22 +661,24 @@ href="/checkout"
 
 className="
 mt-8
-w-full
 h-14
 rounded-2xl
 bg-[#D4AF37]
 hover:bg-black
+transition
 text-white
 font-bold
 flex
 items-center
 justify-center
-transition
+gap-2
 "
 
 >
 
-Proceed To Checkout
+Checkout Now
+
+<ArrowRight size={20}/>
 
 </Link>
 
@@ -629,48 +686,36 @@ Proceed To Checkout
 
 
 
-<div
-className="
-mt-6
-space-y-3
+<div className="
+mt-7
+space-y-4
 text-sm
 text-gray-600
-"
->
+">
 
 
 <div className="
 flex
 gap-3
 items-center
-"
->
+">
 
-<Truck size={20}/>
+<Truck/>
 
-Free delivery available
+Free & Fast Delivery
 
 </div>
-
 
 
 <div className="
 flex
 gap-3
 items-center
-"
->
+">
 
-<ShieldCheck size={20}/>
+<ShieldCheck/>
 
-Secure payment
-
-</div>
-
-
-</div>
-
-
+100% Secure Payment
 
 </div>
 
@@ -679,12 +724,21 @@ Secure payment
 
 
 
+</div>
 
 </div>
 
+
+
+
+</div>
+
+
+</div>
 
 
 </main>
 
-);
+)
+
 }
