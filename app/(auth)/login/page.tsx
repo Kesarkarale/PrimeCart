@@ -212,14 +212,14 @@ p-5
 <div className="
 w-full
 max-w-[1200px]
+min-h-[650px]
 bg-white/90
 backdrop-blur-xl
 rounded-[40px]
 shadow-2xl
 overflow-hidden
 grid
-grid-cols-1
-lg:grid-cols-2
+grid-cols-2
 border border-white/30
 ">
 
@@ -229,8 +229,8 @@ border border-white/30
 
 
 <div className="
-hidden md:block lg:block
 relative
+min-h-[650px]
 ">
 
    {/* GOLD GLOW TOP LEFT */}
@@ -310,27 +310,6 @@ px-5 py-8 sm:px-8 lg:px-10
 w-full
 max-w-md mx-auto
 ">
-
-
-{/* MOBILE BANNER */}
-<div className="md:hidden mb-6">
-  <Image
-    src="/login-banner.png"
-    alt="PrimeCart Banner"
-    width={600}
-    height={350}
-    priority
-    className="
-      w-full
-      h-auto
-      rounded-3xl
-      object-cover
-      shadow-lg
-    "
-  />
-</div>
-
-
 
 
 {/* LOGO */}
