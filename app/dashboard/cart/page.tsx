@@ -1,75 +1,71 @@
- "use client";
-
-import { useEffect, useState } from "react";
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
 
 import {
-  Trash2,
-  Plus,
   Minus,
-  ShoppingBag
+  Plus,
+  Trash2,
+  ShoppingBag,
+  ShieldCheck,
+  Truck
 } from "lucide-react";
 
-import { createClient } from "@/lib/supabase/client";
+import { useState } from "react";
 
-import { toast } from "sonner";
+
+
+const initialCart = [
+  {
+    id:1,
+    name:"Wireless Headphones",
+    image:"/products/headphone.png",
+    price:2499,
+    quantity:1
+  },
+
+  {
+    id:2,
+    name:"Smart Watch",
+    image:"/products/watch.png",
+    price:3499,
+    quantity:1
+  }
+
+];
 
 
 
 export default function CartPage(){
 
 
-const supabase = createClient();
-
-
-const [cart,setCart]=useState<any[]>([]);
+const [cart,setCart]=useState(initialCart);
 
 
 
-async function fetchCart(){
+const increaseQty=(id:number)=>{
 
+setCart(prev=>
 
-const {
+prev.map(item=>
 
-data:{
-user
+item.id===id
 
+?
+
+{
+...item,
+quantity:item.quantity+1
 }
 
-}=await supabase.auth.getUser();
+:
 
+item
 
+)
 
-if(!user) return;
-
-
-
-const {data,error}=await supabase
-
-.from("cart")
-
-.select("*")
-
-.eq(
-"user_id",
-user.id
-);
-
-
-
-if(error){
-
-toast.error(error.message);
-
-return;
-
-}
-
-
-setCart(data || []);
-
+)
 
 }
 
@@ -77,126 +73,120 @@ setCart(data || []);
 
 
 
-async function updateQuantity(
-id:string,
-quantity:number
-){
+const decreaseQty=(id:number)=>{
 
+setCart(prev=>
 
-if(quantity < 1) return;
+prev.map(item=>
 
+item.id===id && item.quantity>1
 
+?
 
-await supabase
+{
+...item,
+quantity:item.quantity-1
+}
 
-.from("cart")
+:
 
-.update({
-quantity
-})
+item
 
-.eq(
-"id",
-id
-);
+)
 
-
-
-fetchCart();
-
+)
 
 }
 
 
 
 
+const removeItem=(id:number)=>{
 
-async function removeItem(id:string){
+setCart(prev=>
 
+prev.filter(item=>item.id!==id)
 
-await supabase
-
-.from("cart")
-
-.delete()
-
-.eq(
-"id",
-id
-);
-
-
-
-toast.success(
-"Removed from cart"
-);
-
-
-fetchCart();
-
+)
 
 }
 
 
 
 
+const subtotal = cart.reduce(
 
-useEffect(()=>{
+(total,item)=>
 
-fetchCart();
-
-},[]);
-
-
-
-
-
-const total = cart.reduce(
-
-(sum,item)=>
-
-sum + item.price * item.quantity,
+total + item.price * item.quantity,
 
 0
 
 );
 
 
+const delivery = subtotal > 1000 ? 0 : 99;
+
+
+const total = subtotal + delivery;
+
 
 
 return (
 
-<div className="
-text-white
-">
+<main
+className="
+min-h-screen
+bg-[#faf8f3]
+px-5
+py-10
+"
+>
+
+
+
+<div
+className="
+max-w-7xl
+mx-auto
+"
+>
+
+
+
+{/* HEADER */}
 
 
 <div className="
 flex
 items-center
 justify-between
-mb-8
+mb-10
 ">
 
 
 <div>
 
-<h1 className="
+<h1
+className="
 text-4xl
-font-bold
-">
+font-black
+"
+>
 
 Shopping Cart
 
 </h1>
 
 
-<p className="
-text-gray-400
+<p
+className="
+text-gray-500
 mt-2
-">
+"
+>
 
-Your selected premium products
+Review your products before checkout
 
 </p>
 
@@ -206,10 +196,9 @@ Your selected premium products
 
 
 <ShoppingBag
-className="text-[#D4AF37]"
 size={40}
+className="text-[#D4AF37]"
 />
-
 
 
 </div>
@@ -218,48 +207,66 @@ size={40}
 
 
 
+
+<div
+className="
+grid
+lg:grid-cols-3
+gap-8
+"
+>
+
+
+
+
+
+{/* CART ITEMS */}
+
+
+<div
+className="
+lg:col-span-2
+space-y-5
+"
+>
+
+
 {
+cart.length===0
 
-cart.length===0 ?
+?
 
-
-(
-
-<div className="
-bg-white/5
-border
-border-white/10
+<div
+className="
+bg-white
 rounded-3xl
 p-10
 text-center
-">
+"
+>
 
-
-<h2 className="
+<h2
+className="
 text-2xl
 font-bold
-">
-
+"
+>
 Your cart is empty
-
 </h2>
 
 
 <Link
-
-href="/dashboard/products"
-
+href="/"
 className="
 inline-block
 mt-5
 bg-[#D4AF37]
-text-black
 px-6
 py-3
 rounded-xl
+text-white
 font-bold
 "
-
 >
 
 Continue Shopping
@@ -269,20 +276,10 @@ Continue Shopping
 
 </div>
 
-)
-
-
 
 :
 
-(
 
-<div className="
-space-y-5
-">
-
-
-{
 cart.map(item=>(
 
 
@@ -291,14 +288,11 @@ cart.map(item=>(
 key={item.id}
 
 className="
-bg-white/5
-border
-border-white/10
+bg-white
 rounded-3xl
 p-5
+border
 flex
-flex-col
-md:flex-row
 gap-5
 items-center
 "
@@ -307,6 +301,15 @@ items-center
 >
 
 
+<div
+className="
+relative
+w-32
+h-32
+bg-gray-50
+rounded-2xl
+"
+>
 
 <Image
 
@@ -314,43 +317,47 @@ src={item.image}
 
 alt={item.name}
 
-width={120}
-
-height={120}
+fill
 
 className="
-rounded-2xl
 object-contain
-bg-black/30
-p-3
+p-4
 "
 
 />
 
+</div>
 
 
 
 
-<div className="
+
+<div
+className="
 flex-1
-">
+"
+>
 
 
-<h2 className="
+<h2
+className="
 text-xl
 font-bold
-">
+"
+>
 
 {item.name}
 
 </h2>
 
 
-<p className="
-text-[#D4AF37]
-font-bold
+<p
+className="
+text-2xl
+font-black
 mt-2
-">
+"
+>
 
 ₹{item.price}
 
@@ -358,25 +365,28 @@ mt-2
 
 
 
-<div className="
+<div
+className="
 flex
 items-center
-gap-3
+gap-4
 mt-4
-">
+"
+>
 
 
 <button
 
-onClick={()=>updateQuantity(
-item.id,
-item.quantity-1
-)}
+onClick={()=>decreaseQty(item.id)}
 
 className="
-bg-white/10
-p-2
-rounded-lg
+w-9
+h-9
+rounded-full
+border
+flex
+items-center
+justify-center
 "
 
 >
@@ -387,7 +397,11 @@ rounded-lg
 
 
 
-<span>
+<span
+className="
+font-bold
+"
+>
 
 {item.quantity}
 
@@ -395,17 +409,19 @@ rounded-lg
 
 
 
+
 <button
 
-onClick={()=>updateQuantity(
-item.id,
-item.quantity+1
-)}
+onClick={()=>increaseQty(item.id)}
 
 className="
-bg-white/10
-p-2
-rounded-lg
+w-9
+h-9
+rounded-full
+border
+flex
+items-center
+justify-center
 "
 
 >
@@ -415,10 +431,13 @@ rounded-lg
 </button>
 
 
+
 </div>
 
 
+
 </div>
+
 
 
 
@@ -429,14 +448,19 @@ rounded-lg
 onClick={()=>removeItem(item.id)}
 
 className="
+w-10
+h-10
+rounded-full
+bg-red-50
 text-red-500
-hover:scale-110
-transition
+flex
+items-center
+justify-center
 "
 
 >
 
-<Trash2/>
+<Trash2 size={18}/>
 
 </button>
 
@@ -447,61 +471,151 @@ transition
 
 ))
 
+
 }
 
-
-
-<div className="
-bg-[#D4AF37]
-text-black
-rounded-3xl
-p-6
-flex
-justify-between
-items-center
-">
-
-
-<h2 className="
-text-2xl
-font-black
-">
-
-Total
-
-</h2>
-
-
-<h2 className="
-text-3xl
-font-black
-">
-
-₹{total.toLocaleString()}
-
-</h2>
 
 
 </div>
 
 
 
+
+
+
+
+
+{/* SUMMARY */}
+
+
+<div>
+
+
+<div
+className="
+bg-white
+rounded-3xl
+p-7
+border
+sticky
+top-5
+"
+>
+
+
+<h2
+className="
+text-2xl
+font-black
+mb-6
+"
+>
+
+Order Summary
+
+</h2>
+
+
+
+
+<div
+className="
+space-y-4
+"
+>
+
+
+<div
+className="
+flex
+justify-between
+"
+>
+
+<span>
+Subtotal
+</span>
+
+<b>
+₹{subtotal}
+</b>
+
+</div>
+
+
+
+<div
+className="
+flex
+justify-between
+"
+>
+
+<span>
+Delivery
+</span>
+
+<b>
+{
+delivery===0
+?
+"FREE"
+:
+`₹${delivery}`
+}
+</b>
+
+</div>
+
+
+
+<div
+className="
+border-t
+pt-4
+flex
+justify-between
+text-xl
+"
+>
+
+<span
+className="font-bold"
+>
+Total
+</span>
+
+
+<b>
+₹{total}
+</b>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
 <Link
 
-href="/dashboard/checkout"
+href="/checkout"
 
 className="
-block
-text-center
-bg-black
-border
-border-[#D4AF37]
-text-[#D4AF37]
-py-4
-rounded-xl
+mt-8
+w-full
+h-14
+rounded-2xl
+bg-[#D4AF37]
+hover:bg-black
+text-white
 font-bold
-hover:bg-[#D4AF37]
-hover:text-black
+flex
+items-center
+justify-center
 transition
 "
 
@@ -513,15 +627,64 @@ Proceed To Checkout
 
 
 
+
+
+<div
+className="
+mt-6
+space-y-3
+text-sm
+text-gray-600
+"
+>
+
+
+<div className="
+flex
+gap-3
+items-center
+"
+>
+
+<Truck size={20}/>
+
+Free delivery available
+
 </div>
 
-)
 
 
-}
+<div className="
+flex
+gap-3
+items-center
+"
+>
+
+<ShieldCheck size={20}/>
+
+Secure payment
+
+</div>
 
 
 </div>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+</div>
+
+
+
+</main>
 
 )
 
