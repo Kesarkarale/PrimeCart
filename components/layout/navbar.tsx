@@ -43,27 +43,27 @@ const nav=[
  },
  {
   name:"Categories",
-  link:"/categories"
+  link:"/dashboard/categories"
  },
  {
   name:"Deals",
-  link:"/deals"
+  link:"/dashboard/deals"
  },
  {
   name:"New Arrivals",
-  link:"/products/new"
+  link:"/dashboard/products/new"
  },
  {
   name:"Best Sellers",
-  link:"/products/best"
+  link:"/dashboard/products/best"
  },
  {
   name:"Electronics",
-  link:"/category/electronics"
+  link:"/dashboard/category/electronics"
  },
  {
   name:"Fashion",
-  link:"/category/fashion"
+  link:"/dashboard/category/fashion"
  },
  {
   name:"Home & Living",
@@ -355,7 +355,7 @@ Sign in / Register
 
 
 <Link
-href="/wishlist"
+href="/dashboard/wishlist"
 className="relative"
 >
 
@@ -390,7 +390,7 @@ justify-center
 
 
 <Link
-href="/cart"
+href="/dashboard/cart"
 className="relative"
 >
 
