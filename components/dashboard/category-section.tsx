@@ -69,7 +69,7 @@ const categories = [
   {
     name: "View All",
     icon: Grid2X2,
-    href: "/categories",
+    href: "/dashboard/categories",
   },
 ];
 
