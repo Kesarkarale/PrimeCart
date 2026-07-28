@@ -108,6 +108,8 @@ const categories = [
 
 export default function CategoriesPage() {
   return (
+   <TopBar />
+      <Navbar />
     <main className="min-h-screen bg-[#fafafa]">
 
       <div className="max-w-[1500px] mx-auto px-6 py-8">
