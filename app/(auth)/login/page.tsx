@@ -264,22 +264,21 @@ relative
   />
 
 
-<div className="block md:hidden mb-6">
-  <Image
-    src="/login-banner.png"
-     
-    width={600}
-    height={350}
-    priority
-    className="
-      w-full
-      h-auto
-      rounded-3xl
-      object-cover
-      shadow-lg
-    "
-  />
-</div>
+<Image
+
+src="/login-banner.png"
+
+alt="Banner"
+
+fill
+
+priority
+
+className="
+object-cover
+"
+
+/>
 
 
 </div>
@@ -313,7 +312,23 @@ max-w-md mx-auto
 ">
 
 
-
+{/* MOBILE BANNER */}
+<div className="md:hidden mb-6">
+  <Image
+    src="/login-banner.png"
+    alt="PrimeCart Banner"
+    width={600}
+    height={350}
+    priority
+    className="
+      w-full
+      h-auto
+      rounded-3xl
+      object-cover
+      shadow-lg
+    "
+  />
+</div>
 
 
 
