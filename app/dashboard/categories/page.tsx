@@ -22,84 +22,84 @@ import {
 const categories = [
   {
     name: "Electronics",
-    image: "/category/electronics.png",
+    image: "/products/electronics.png",
     items: "2500+ Items",
     icon: Headphones,
   },
 
   {
     name: "Fashion",
-    image: "/category/fashion.png",
+    image: "/products/fashion.png",
     items: "3800+ Items",
     icon: Shirt,
   },
 
   {
     name: "Home & Living",
-    image: "/category/home-living.png",
+    image: "/products/home.png",
     items: "4200+ Items",
     icon: Sofa,
   },
 
   {
     name: "Beauty",
-    image: "/category/beauty.png",
+    image: "/products/perfume.png",
     items: "2100+ Items",
     icon: Sparkles,
   },
 
   {
     name: "Mobiles",
-    image: "/category/mobiles.png",
+    image: "/products/mobiles.png",
     items: "1500+ Items",
     icon: Smartphone,
   },
 
   {
     name: "Appliances",
-    image: "/category/appliances.png",
+    image: "/products/appliances.png",
     items: "1800+ Items",
     icon: Refrigerator,
   },
 
   {
     name: "Footwear",
-    image: "/category/footwear.png",
+    image: "/products/footwear.png",
     items: "2200+ Items",
     icon: Footprints,
   },
 
   {
     name: "Watches",
-    image: "/category/watches.png",
+    image: "/products/watch.png",
     items: "1300+ Items",
     icon: Watch,
   },
 
   {
     name: "Bags",
-    image: "/category/bags.png",
+    image: "/products/bag.png",
     items: "1100+ Items",
     icon: ShoppingBag,
   },
 
   {
     name: "Toys & Baby",
-    image: "/category/toys.png",
+    image: "/products/toys.png",
     items: "1600+ Items",
     icon: Baby,
   },
 
   {
     name: "Sports & Outdoors",
-    image: "/category/sports.png",
+    image: "/products/sports.png",
     items: "1000+ Items",
     icon: Dumbbell,
   },
 
   {
     name: "Automotive",
-    image: "/category/automotive.png",
+    image: "/products/automotive.png",
     items: "900+ Items",
     icon: Car,
   },
