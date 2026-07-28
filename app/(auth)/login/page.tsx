@@ -197,8 +197,7 @@ setLoading(false);
 return (
 
 <div className="
-h-screen
-overflow-hidden
+min-h-screen
 bg-gradient-to-br
 from-[#f8f5ef]
 via-[#ffffff]
@@ -213,19 +212,15 @@ p-5
 <div className="
 w-full
 max-w-[1200px]
-h-[calc(100vh-40px)]
-max-h-[760px]
-bg-white
+bg-white/90
+backdrop-blur-xl
 rounded-[40px]
 shadow-2xl
 overflow-hidden
 grid
 lg:grid-cols-2
+border border-white/30
 ">
-
-
-
-
 
 
 
@@ -233,10 +228,39 @@ lg:grid-cols-2
 
 
 <div className="
-hidden
-lg:block
+hidden md:block lg:block
 relative
 ">
+
+   {/* GOLD GLOW TOP LEFT */}
+  <div
+    className="
+    absolute
+    top-10
+    left-10
+    w-52
+    h-52
+    bg-[#D4AF37]/20
+    blur-[120px]
+    rounded-full
+    z-10
+    "
+  />
+
+  {/* GOLD GLOW BOTTOM RIGHT */}
+  <div
+    className="
+    absolute
+    bottom-10
+    right-10
+    w-64
+    h-64
+    bg-[#D4AF37]/15
+    blur-[140px]
+    rounded-full
+    z-10
+    "
+  />
 
 
 <Image
@@ -274,8 +298,7 @@ object-cover
 flex
 items-center
 justify-center
-px-6
-py-6
+px-5 py-8 sm:px-8 lg:px-10
 ">
 
 
@@ -284,7 +307,7 @@ py-6
 
 <div className="
 w-full
-max-w-md
+max-w-md mx-auto
 ">
 
 
@@ -317,7 +340,7 @@ className="object-contain"
 <div>
 
 <h2 className="
-text-5xl
+text-3xl sm:text-4xl lg:text-5xl
 font-bold
 text-black
 ">
@@ -341,7 +364,7 @@ Cart
 
 
 <h1 className="
-text-4xl
+text-2xl sm:text-3xl lg:text-4xl
 font-bold
 text-gray-900
 ">
@@ -376,7 +399,32 @@ Continue your premium shopping journey.
 
 </p>
 
+<div className="
+mt-5
+inline-flex
+items-center
+gap-2
+px-4
+py-2
+rounded-full
+bg-[#D4AF37]/10
+border
+border-[#D4AF37]/20
+">
 
+<span className="text-[#D4AF37]">
+⭐
+</span>
+
+<span className="
+text-sm
+font-medium
+text-gray-700
+">
+10,000+ Happy Customers
+</span>
+
+</div>
 
 
 
@@ -443,7 +491,7 @@ placeholder="Email Address"
 
 className="
 w-full
-h-14
+h-12 sm:h-14
 rounded-2xl
 bg-gray-50
 border
@@ -516,7 +564,7 @@ placeholder="Password"
 
 className="
 w-full
-h-14
+h-12 sm:h-14
 rounded-2xl
 bg-gray-50
 border
@@ -670,7 +718,7 @@ from-[#B8860B]
 to-[#D4AF37]
 text-white
 font-semibold
-text-lg
+text-base sm:text-lg
 flex
 items-center
 justify-center
