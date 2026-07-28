@@ -4,707 +4,419 @@ import Image from "next/image";
 import Link from "next/link";
 
 import {
-  Search,
-  ArrowRight,
+  ChevronRight,
+  Headphones,
+  Shirt,
+  Sofa,
   Sparkles,
-  ShieldCheck,
-  Truck,
-  BadgePercent,
-  Award,
+  Smartphone,
+  Refrigerator,
+  Footprints,
+  Watch,
+  ShoppingBag,
+  Baby,
+  Dumbbell,
+  Car,
 } from "lucide-react";
-
-import { motion } from "framer-motion";
 
 const categories = [
   {
     name: "Electronics",
-    slug: "electronics",
     image: "/category/electronics.png",
-    products: "2500+ Products",
-    description: "Smartphones, laptops & gadgets",
+    items: "2500+ Items",
+    icon: Headphones,
   },
 
   {
     name: "Fashion",
-    slug: "fashion",
     image: "/category/fashion.png",
-    products: "5000+ Products",
-    description: "Trending fashion collections",
-  },
-
-  {
-    name: "Watches",
-    slug: "watches",
-    image: "/category/watches.png",
-    products: "1200+ Products",
-    description: "Luxury & smart watches",
-  },
-
-  {
-    name: "Beauty",
-    slug: "beauty",
-    image: "/category/beauty.png",
-    products: "1800+ Products",
-    description: "Beauty & skincare products",
+    items: "3800+ Items",
+    icon: Shirt,
   },
 
   {
     name: "Home & Living",
-    slug: "home-living",
     image: "/category/home-living.png",
-    products: "2200+ Products",
-    description: "Furniture & home essentials",
+    items: "4200+ Items",
+    icon: Sofa,
   },
 
   {
-    name: "Gaming",
-    slug: "gaming",
-    image: "/category/gaming.png",
-    products: "950+ Products",
-    description: "Gaming consoles & accessories",
-  },
-
-  {
-    name: "Sports",
-    slug: "sports",
-    image: "/category/sports.png",
-    products: "1300+ Products",
-    description: "Sports & fitness equipment",
-  },
-
-  {
-    name: "Toys",
-    slug: "toys",
-    image: "/category/toys.png",
-    products: "800+ Products",
-    description: "Kids toys & collections",
-  },
-
-  {
-    name: "Kitchen",
-    slug: "kitchen",
-    image: "/category/kitchen.png",
-    products: "1100+ Products",
-    description: "Modern kitchen essentials",
-  },
-
-  {
-    name: "Bags",
-    slug: "bags",
-    image: "/category/bags.png",
-    products: "1400+ Products",
-    description: "Luxury bags & accessories",
-  },
-
-  {
-    name: "Furniture",
-    slug: "furniture",
-    image: "/category/furniture.png",
-    products: "900+ Products",
-    description: "Premium furniture collection",
+    name: "Beauty",
+    image: "/category/beauty.png",
+    items: "2100+ Items",
+    icon: Sparkles,
   },
 
   {
     name: "Mobiles",
-    slug: "mobiles",
     image: "/category/mobiles.png",
-    products: "3000+ Products",
-    description: "Latest smartphones collection",
+    items: "1500+ Items",
+    icon: Smartphone,
+  },
+
+  {
+    name: "Appliances",
+    image: "/category/appliances.png",
+    items: "1800+ Items",
+    icon: Refrigerator,
+  },
+
+  {
+    name: "Footwear",
+    image: "/category/footwear.png",
+    items: "2200+ Items",
+    icon: Footprints,
+  },
+
+  {
+    name: "Watches",
+    image: "/category/watches.png",
+    items: "1300+ Items",
+    icon: Watch,
+  },
+
+  {
+    name: "Bags",
+    image: "/category/bags.png",
+    items: "1100+ Items",
+    icon: ShoppingBag,
+  },
+
+  {
+    name: "Toys & Baby",
+    image: "/category/toys.png",
+    items: "1600+ Items",
+    icon: Baby,
+  },
+
+  {
+    name: "Sports & Outdoors",
+    image: "/category/sports.png",
+    items: "1000+ Items",
+    icon: Dumbbell,
+  },
+
+  {
+    name: "Automotive",
+    image: "/category/automotive.png",
+    items: "900+ Items",
+    icon: Car,
   },
 ];
 
 export default function CategoriesPage() {
   return (
-    <main
-      className="
-      min-h-screen
-      bg-gradient-to-b
-      from-white
-      via-[#fffdf8]
-      to-[#f8f4ea]
-      dark:from-[#050505]
-      dark:via-[#050505]
-      dark:to-black
-      text-black
-      dark:text-white
-      "
-    >
-      <div className="max-w-7xl mx-auto px-5 py-10">
+    <main className="min-h-screen bg-[#fafafa]">
 
-        {/* HERO SECTION */}
+      <div className="max-w-[1500px] mx-auto px-6 py-8">
 
-        <motion.section
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="
-          relative
-          overflow-hidden
-          rounded-[40px]
-          bg-black
-          text-white
-          p-8
-          md:p-14
-          mb-10
-          "
-        >
-          <div
-            className="
-            absolute
-            top-0
-            right-0
-            h-80
-            w-80
-            bg-[#D4AF37]
-            opacity-20
-            blur-3xl
-            rounded-full
-            "
-          />
+        <div className="grid lg:grid-cols-[280px_1fr] gap-8">
 
-          <div className="relative z-10 max-w-3xl">
+          {/* SIDEBAR */}
 
-            <div
-              className="
-              inline-flex
-              items-center
-              gap-2
-              bg-[#D4AF37]/20
-              text-[#D4AF37]
-              px-5
-              py-2
-              rounded-full
-              font-semibold
-              "
-            >
-              <Sparkles size={18} />
-              PrimeCart Premium Categories
-            </div>
+          <div className="space-y-5">
 
-            <h1
-              className="
-              mt-6
-              text-4xl
-              md:text-6xl
-              font-black
-              "
-            >
-              Explore Premium Categories
-            </h1>
+            <div className="bg-white border border-gray-200 rounded-3xl p-5">
 
-            <p
-              className="
-              mt-5
-              text-gray-300
-              text-lg
-              "
-            >
-              Discover thousands of products across fashion,
-              electronics, beauty, gaming, furniture and more.
-            </p>
+              <h2 className="text-2xl font-bold mb-5">
+                All Categories
+              </h2>
 
-          </div>
-        </motion.section>
+              <div className="space-y-1">
 
-        {/* SEARCH BAR */}
+                {categories.map((cat, i) => {
 
-        <div
-          className="
-          bg-white
-          dark:bg-white/5
-          border
-          border-gray-200
-          dark:border-white/10
-          rounded-3xl
-          p-4
-          mb-10
-          flex
-          items-center
-          gap-3
-          shadow-sm
-          "
-        >
-          <Search className="text-[#D4AF37]" />
+                  const Icon = cat.icon;
 
-          <input
-            type="text"
-            placeholder="Search categories..."
-            className="
-            w-full
-            bg-transparent
-            outline-none
-            text-lg
-            "
-          />
-        </div>
-        {/* MAIN LAYOUT */}
+                  return (
+                    <button
+                      key={cat.name}
+                      className={"
+                      w-full
+                      flex
+                      items-center
+                      justify-between
+                      px-4
+                      py-3
+                      rounded-2xl
+                      transition
+                      ${
+                        i === 0
+                          ? "bg-[#f7f1e4] text-[#c99718]"
+                          : "hover:bg-[#faf6ee]"
+                      }
+                      "}
+                    >
 
-<div
-  className="
-  grid
-  lg:grid-cols-[280px_1fr]
-  gap-8
-  "
->
+                      <div className="flex items-center gap-3">
+                        <Icon size={18} />
+                        <span>{cat.name}</span>
+                      </div>
 
-  {/* SIDEBAR */}
+                      <ChevronRight size={16} />
 
-  <div
-    className="
-    bg-white
-    dark:bg-white/5
-    border
-    border-gray-200
-    dark:border-white/10
-    rounded-[30px]
-    p-6
-    h-fit
-    sticky
-    top-24
-    "
-  >
+                    </button>
+                  );
+                })}
 
-    <h2
-      className="
-      text-2xl
-      font-black
-      mb-6
-      "
-    >
-      Categories
-    </h2>
-
-    <div className="space-y-2">
-
-      {categories.map((item) => (
-
-        <Link
-          key={item.slug}
-          href={`/dashboard/categories/${item.slug}`}
-          className="
-          flex
-          items-center
-          justify-between
-          px-4
-          py-4
-          rounded-2xl
-          hover:bg-[#D4AF37]/10
-          hover:text-[#B8860B]
-          transition-all
-          duration-300
-          font-medium
-          "
-        >
-          {item.name}
-
-          <ArrowRight
-            size={16}
-            className="
-            opacity-60
-            "
-          />
-        </Link>
-
-      ))}
-
-    </div>
-
-  </div>
-
-
-
-  {/* RIGHT CONTENT */}
-
-  <div>
-
-    <div
-      className="
-      grid
-      sm:grid-cols-2
-      xl:grid-cols-3
-      gap-7
-      "
-    >
-
-      {categories.map((category, index) => (
-
-        <motion.div
-          key={category.slug}
-          initial={{
-            opacity: 0,
-            y: 30,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
-          transition={{
-            delay: index * 0.05,
-          }}
-          whileHover={{
-            y: -10,
-          }}
-        >
-
-          <Link
-            href={`/dashboard/categories/${category.slug}`}
-            className="
-            group
-            block
-            bg-white
-            dark:bg-white/5
-            border
-            border-gray-200
-            dark:border-white/10
-            rounded-[32px]
-            overflow-hidden
-            hover:border-[#D4AF37]
-            hover:shadow-2xl
-            transition-all
-            duration-500
-            "
-          >
-
-            {/* IMAGE */}
-
-            <div
-              className="
-              relative
-              h-[220px]
-              bg-gradient-to-b
-              from-[#fffdf7]
-              to-[#f7f2e7]
-              flex
-              items-center
-              justify-center
-              overflow-hidden
-              "
-            >
-
-              <Image
-                src={category.image}
-                alt={category.name}
-                fill
-                className="
-                object-contain
-                p-6
-                group-hover:scale-110
-                transition-all
-                duration-700
-                "
-              />
-
-            </div>
-
-            {/* CONTENT */}
-
-            <div className="p-6">
-
-              <div
-                className="
-                inline-flex
-                px-4
-                py-2
-                rounded-full
-                bg-[#D4AF37]/10
-                text-[#B8860B]
-                text-xs
-                font-bold
-                "
-              >
-                {category.products}
               </div>
 
-              <h3
+              <button
                 className="
-                mt-4
-                text-2xl
-                font-black
+                w-full
+                mt-5
+                border
+                border-gray-200
+                rounded-2xl
+                py-3
+                font-medium
                 "
               >
-                {category.name}
-              </h3>
+                View All Categories
+              </button>
 
-              <p
-                className="
-                mt-3
-                text-gray-600
-                dark:text-gray-400
-                "
-              >
-                {category.description}
+            </div>
+                       {/* OFFER CARD */}
+
+            <div
+              className="
+              bg-gradient-to-br
+              from-[#fff6df]
+              to-[#f5e3b0]
+              rounded-3xl
+              p-6
+              border
+              border-[#f0d78a]
+              "
+            >
+              <p className="text-gray-600 text-sm">
+                Limited Time Offer
               </p>
 
-              <div
+              <h3 className="text-4xl font-bold mt-2">
+                10% OFF
+              </h3>
+
+              <p className="mt-2 text-gray-700">
+                On your first order
+              </p>
+
+              <button
                 className="
-                mt-6
-                flex
-                items-center
-                gap-2
-                text-[#D4AF37]
-                font-bold
+                mt-5
+                bg-[#D4AF37]
+                text-white
+                px-5
+                py-3
+                rounded-xl
+                font-semibold
                 "
               >
-                View Collection
+                Use Code PRIME10
+              </button>
+            </div>
 
-                <ArrowRight
-                  size={18}
+          </div>
+
+          {/* RIGHT SIDE */}
+
+          <div>
+
+            <h1 className="text-4xl md:text-5xl font-bold">
+              Shop by Category
+            </h1>
+
+            <p className="text-gray-500 mt-3 mb-8">
+              Explore our wide range of premium products across all categories
+            </p>
+
+            {/* CATEGORY GRID */}
+
+            <div
+              className="
+              grid
+              grid-cols-2
+              md:grid-cols-3
+              xl:grid-cols-4
+              2xl:grid-cols-6
+              gap-6
+              "
+            >
+
+              {categories.map((category) => (
+
+                <Link
+                  href="#"
+                  key={category.name}
                   className="
-                  group-hover:translate-x-2
-                  transition
+                  bg-white
+                  border
+                  border-gray-200
+                  rounded-3xl
+                  p-5
+                  text-center
+                  hover:shadow-lg
+                  transition-all
+                  duration-300
                   "
-                />
+                >
+
+                  <div
+                    className="
+                    w-[140px]
+                    h-[140px]
+                    mx-auto
+                    rounded-full
+                    bg-[#f8f3e7]
+                    flex
+                    items-center
+                    justify-center
+                    "
+                  >
+
+                    <Image
+                      src={category.image}
+                      alt={category.name}
+                      width={110}
+                      height={110}
+                      className="
+                      object-contain
+                      hover:scale-105
+                      transition
+                      "
+                    />
+
+                  </div>
+
+                  <h3
+                    className="
+                    mt-5
+                    text-lg
+                    font-bold
+                    "
+                  >
+                    {category.name}
+                  </h3>
+
+                  <p
+                    className="
+                    text-gray-500
+                    text-sm
+                    mt-1
+                    "
+                  >
+                    {category.items}
+                  </p>
+
+                </Link>
+
+              ))}
+
+            </div>
+                       {/* FEATURES ROW */}
+
+            <div
+              className="
+              mt-8
+              bg-white
+              border
+              border-gray-200
+              rounded-3xl
+              p-6
+              grid
+              grid-cols-2
+              md:grid-cols-4
+              gap-6
+              "
+            >
+
+              <div className="text-center">
+                <div className="text-3xl mb-2">🏆</div>
+                <h3 className="font-bold">Top Brands</h3>
+                <p className="text-sm text-gray-500">
+                  1000+ Trusted Brands
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="text-3xl mb-2">💰</div>
+                <h3 className="font-bold">Best Prices</h3>
+                <p className="text-sm text-gray-500">
+                  Daily Best Deals
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="text-3xl mb-2">↩️</div>
+                <h3 className="font-bold">Easy Returns</h3>
+                <p className="text-sm text-gray-500">
+                  Hassle Free Returns
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="text-3xl mb-2">🔒</div>
+                <h3 className="font-bold">Secure Shopping</h3>
+                <p className="text-sm text-gray-500">
+                  Safe Payments
+                </p>
               </div>
 
             </div>
 
-          </Link>
+            {/* POPULAR SEARCHES */}
 
-        </motion.div>
+            <div className="mt-10">
 
-      ))}
+              <h2 className="text-2xl font-bold mb-5">
+                Popular Searches
+              </h2>
 
-    </div>
+              <div className="flex flex-wrap gap-3">
 
-        {/* FEATURED BANNER */}
+                {[
+                  "iPhone 16",
+                  "Samsung Galaxy",
+                  "Nike Shoes",
+                  "Luxury Watch",
+                  "Gaming Laptop",
+                  "Handbags",
+                  "Perfume",
+                  "Makeup Kit",
+                  "Sofa Set",
+                  "Bluetooth Speaker",
+                  "Refrigerator",
+                  "Smart TV",
+                ].map((item) => (
+                  <button
+                    key={item}
+                    className="
+                    px-5
+                    py-3
+                    bg-white
+                    border
+                    border-gray-200
+                    rounded-full
+                    hover:border-[#D4AF37]
+                    hover:text-[#C99718]
+                    transition
+                    "
+                  >
+                    {item}
+                  </button>
+                ))}
 
-    <div
-      className="
-      mt-12
-      relative
-      overflow-hidden
-      rounded-[35px]
-      bg-gradient-to-r
-      from-[#D4AF37]
-      via-[#E5C158]
-      to-[#B8860B]
-      p-8
-      md:p-12
-      text-black
-      "
-    >
-      <div className="max-w-2xl">
+              </div>
 
-        <span
-          className="
-          inline-flex
-          px-4
-          py-2
-          rounded-full
-          bg-black/10
-          font-semibold
-          "
-        >
-          PrimeCart Premium
-        </span>
-
-        <h2
-          className="
-          mt-5
-          text-3xl
-          md:text-5xl
-          font-black
-          "
-        >
-          Discover Luxury Collections
-        </h2>
-
-        <p
-          className="
-          mt-4
-          text-black/80
-          text-lg
-          "
-        >
-          Shop premium electronics, fashion,
-          furniture and lifestyle products with
-          exclusive offers and fast delivery.
-        </p>
-
-        <button
-          className="
-          mt-6
-          px-7
-          py-4
-          bg-black
-          text-white
-          rounded-2xl
-          font-bold
-          hover:scale-105
-          transition
-          "
-        >
-          Explore Now
-        </button>
-
-      </div>
-    </div>
-
-
-
-    {/* STATS SECTION */}
-
-    <div
-      className="
-      mt-12
-      grid
-      md:grid-cols-2
-      xl:grid-cols-4
-      gap-6
-      "
-    >
-
-      {[
-        {
-          icon: Award,
-          title: "Top Brands",
-          desc: "1000+ trusted brands",
-        },
-
-        {
-          icon: BadgePercent,
-          title: "Best Deals",
-          desc: "Exclusive discounts",
-        },
-
-        {
-          icon: Truck,
-          title: "Fast Delivery",
-          desc: "Quick nationwide shipping",
-        },
-
-        {
-          icon: ShieldCheck,
-          title: "Secure Shopping",
-          desc: "100% protected payments",
-        },
-      ].map((item) => {
-
-        const Icon = item.icon;
-
-        return (
-
-          <div
-            key={item.title}
-            className="
-            bg-white
-            dark:bg-white/5
-            border
-            border-gray-200
-            dark:border-white/10
-            rounded-[28px]
-            p-6
-            "
-          >
-
-            <div
-              className="
-              w-14
-              h-14
-              rounded-2xl
-              bg-[#D4AF37]/10
-              text-[#B8860B]
-              flex
-              items-center
-              justify-center
-              "
-            >
-              <Icon size={28} />
             </div>
-
-            <h3
-              className="
-              mt-5
-              text-xl
-              font-black
-              "
-            >
-              {item.title}
-            </h3>
-
-            <p
-              className="
-              mt-2
-              text-gray-600
-              dark:text-gray-400
-              "
-            >
-              {item.desc}
-            </p>
 
           </div>
 
-        );
-      })}
-
-    </div>
-
-
-
-    {/* POPULAR SEARCHES */}
-
-    <div className="mt-12">
-
-      <h2
-        className="
-        text-3xl
-        font-black
-        mb-6
-        "
-      >
-        Popular Searches
-      </h2>
-
-      <div
-        className="
-        flex
-        flex-wrap
-        gap-3
-        "
-      >
-
-        {[
-          "iPhone 16",
-          "Samsung Galaxy",
-          "Nike Shoes",
-          "Luxury Watch",
-          "Gaming Laptop",
-          "Handbags",
-          "Perfume",
-          "Makeup Kit",
-          "Furniture",
-          "Wireless Headphones",
-        ].map((item) => (
-
-          <button
-            key={item}
-            className="
-            px-5
-            py-3
-            rounded-full
-            bg-white
-            dark:bg-white/5
-            border
-            border-gray-200
-            dark:border-white/10
-            hover:border-[#D4AF37]
-            hover:text-[#B8860B]
-            transition
-            "
-          >
-            {item}
-          </button>
-
-        ))}
+        </div>
 
       </div>
 
-    </div>
-
-  </div>
-
-</div>
-
-      </div>
     </main>
   );
 }
