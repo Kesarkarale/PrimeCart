@@ -686,6 +686,5 @@ Secure payment
 
 </main>
 
-)
-
+);
 }
