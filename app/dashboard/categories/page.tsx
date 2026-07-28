@@ -108,6 +108,7 @@ const categories = [
 
 export default function CategoriesPage() {
   return (
+   <> 
    <TopBar />
       <Navbar />
     <main className="min-h-screen bg-[#fafafa]">
@@ -421,5 +422,6 @@ export default function CategoriesPage() {
       </div>
 
     </main>
+    </>
   );
 }
