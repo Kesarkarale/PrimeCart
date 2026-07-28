@@ -132,7 +132,7 @@ export default function CategoriesPage() {
                   return (
                     <button
                       key={cat.name}
-                      className={
+                      className={`
                       w-full
                       flex
                       items-center
@@ -146,7 +146,7 @@ export default function CategoriesPage() {
                           ? "bg-[#f7f1e4] text-[#c99718]"
                           : "hover:bg-[#faf6ee]"
                       }
-                      }
+                     `}
                     >
 
                       <div className="flex items-center gap-3">
