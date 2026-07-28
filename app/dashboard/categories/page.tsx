@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/layout/navbar";
 import TopBar from "@/components/layout/top-bar";
+import Footer from "@/components/layout/footer";
 import {
   ChevronRight,
   Headphones,
@@ -420,7 +421,7 @@ export default function CategoriesPage() {
         </div>
 
       </div>
-
+     <Footer />
     </main>
     </>
   );
