@@ -158,6 +158,10 @@ console.log("ERROR:", error);
                     }
                   />
                 </button>
+                
+              <p className="absolute bottom-2 left-2 right-2 z-10 text-[10px] bg-white p-1 break-all">
+               {product.image_url}
+             </p>
 
                 <Image
                   src={
