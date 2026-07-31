@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, ShoppingCart, Star } from "lucide-react";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 
 type Product = {
   id: string;
