@@ -21,6 +21,8 @@ type Product = {
 };
 
 export default function FeaturedProducts() {
+    const supabase = createClient();
+  
   const [products, setProducts] = useState<Product[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
