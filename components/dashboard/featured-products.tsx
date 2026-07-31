@@ -77,7 +77,7 @@ export default function FeaturedProducts() {
         </div>
 
         <Link
-          href="/products"
+          href="/dashboard/products"
           className="text-[#D4AF37] font-bold hover:underline"
         >
           View All →
