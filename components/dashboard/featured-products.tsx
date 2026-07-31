@@ -10,14 +10,12 @@ type Product = {
   id: string;
   category_id: string | null;
   name: string;
-  short_description: string | null;
   description: string | null;
   price: number;
   stock: number | null;
   image_url: string | null;
   brand: string | null;
   rating: number | null;
-  created_at: string | null;
 };
 
 export default function FeaturedProducts() {
