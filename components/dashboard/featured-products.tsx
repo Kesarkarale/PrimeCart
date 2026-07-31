@@ -30,7 +30,10 @@ export default function FeaturedProducts() {
       const { data, error } = await supabase
         .from("products")
         .select("*")
-        .order("created_at", { ascending: false });
+
+      console.log("DATA:", data);
+console.log("ERROR:", error);
+      
 
       if (!error && data) {
         setProducts(data);
@@ -83,6 +86,9 @@ export default function FeaturedProducts() {
       </div>
 
       {/* PRODUCTS GRID */}
+      <p className="mb-4 text-lg font-semibold">
+  Total Products: {products.length}
+</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-6">
         {products.map((product) => (
           <div
@@ -188,9 +194,7 @@ export default function FeaturedProducts() {
               </Link>
 
               <p className="text-sm text-gray-500 mt-2 line-clamp-2">
-                {product.short_description ||
-                  product.description ||
-                  "Premium product"}
+                {product.description || "Premium product"}
               </p>
 
               <div className="flex items-center gap-2 mt-3">
