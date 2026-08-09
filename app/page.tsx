@@ -675,7 +675,7 @@ image:"/products/watch.png"
 {
 name:"Beauty",
 products:"800+ Products",
-image:"/products/perfume.png"
+image:"/products/perfume23.png"
 },
 
 {
