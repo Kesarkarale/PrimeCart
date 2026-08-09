@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+
 import Navbar from "@/components/layout/navbar";
 import TopBar from "@/components/layout/top-bar";
 import Footer from "@/components/layout/footer";
@@ -121,6 +123,8 @@ const categories = [
 ];
 
 export default function CategoriesPage() {
+  const pathname = usePathname();
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-white via-[#fffdf8] to-[#f8f4ea] text-gray-900">
 
@@ -143,8 +147,11 @@ export default function CategoriesPage() {
 
               <div className="space-y-1">
 
-                {categories.map((cat, i) => {
+                {categories.map((cat) => {
                   const Icon = cat.icon;
+
+                  const isActive =
+                    pathname === `/category/${cat.slug}`;
 
                   return (
                     <Link
@@ -160,19 +167,21 @@ export default function CategoriesPage() {
                         rounded-2xl
                         transition
                         ${
-                          i === 0
+                          isActive
                             ? "bg-[#f7f1e4] text-[#c99718]"
-                            : "hover:bg-[#faf6ee]"
+                            : "hover:bg-[#faf6ee] text-gray-700"
                         }
                       `}
                     >
 
                       <div className="flex items-center gap-3">
+
                         <Icon size={18} />
 
                         <span>
                           {cat.name}
                         </span>
+
                       </div>
 
                       <ChevronRight size={16} />
@@ -371,7 +380,10 @@ export default function CategoriesPage() {
             >
 
               <div className="text-center">
-                <div className="text-3xl mb-2">🏆</div>
+
+                <div className="text-3xl mb-2">
+                  🏆
+                </div>
 
                 <h3 className="font-bold">
                   Top Brands
@@ -380,11 +392,15 @@ export default function CategoriesPage() {
                 <p className="text-sm text-gray-500">
                   1000+ Trusted Brands
                 </p>
+
               </div>
 
 
               <div className="text-center">
-                <div className="text-3xl mb-2">💰</div>
+
+                <div className="text-3xl mb-2">
+                  💰
+                </div>
 
                 <h3 className="font-bold">
                   Best Prices
@@ -393,11 +409,15 @@ export default function CategoriesPage() {
                 <p className="text-sm text-gray-500">
                   Daily Best Deals
                 </p>
+
               </div>
 
 
               <div className="text-center">
-                <div className="text-3xl mb-2">↩️</div>
+
+                <div className="text-3xl mb-2">
+                  ↩️
+                </div>
 
                 <h3 className="font-bold">
                   Easy Returns
@@ -406,11 +426,15 @@ export default function CategoriesPage() {
                 <p className="text-sm text-gray-500">
                   Hassle Free Returns
                 </p>
+
               </div>
 
 
               <div className="text-center">
-                <div className="text-3xl mb-2">🔒</div>
+
+                <div className="text-3xl mb-2">
+                  🔒
+                </div>
 
                 <h3 className="font-bold">
                   Secure Shopping
@@ -419,6 +443,7 @@ export default function CategoriesPage() {
                 <p className="text-sm text-gray-500">
                   Safe Payments
                 </p>
+
               </div>
 
             </div>
