@@ -19,52 +19,52 @@ const categories = [
   {
     name: "Electronics",
     icon: Headphones,
-    href: "/category/electronics",
+    href: "/dashboard/categories/electronics",
   },
   {
     name: "Fashion",
     icon: Shirt,
-    href: "/category/fashion",
+    href: "/dashboard/categories/fashion",
   },
   {
     name: "Home & Living",
     icon: Sofa,
-    href: "/category/home-living",
+    href: "/dashboard/categories/home-living",
   },
   {
     name: "Beauty",
     icon: Sparkles,
-    href: "/category/beauty",
+    href: "/dashboard/categories/beauty",
   },
   {
     name: "Mobiles",
     icon: Smartphone,
-    href: "/category/mobiles",
+    href: "/dashboard/categories/mobiles",
   },
   {
     name: "Appliances",
     icon: WashingMachine,
-    href: "/category/appliances",
+    href: "/dashboard/categories/appliances",
   },
   {
     name: "Footwear",
     icon: Footprints,
-    href: "/category/footwear",
+    href: "/dashboard/categories/footwear",
   },
   {
     name: "Watches",
     icon: Watch,
-    href: "/category/watches",
+    href: "/dashboard/categories/watches",
   },
   {
     name: "Bags",
     icon: ShoppingBag,
-    href: "/category/bags",
+    href: "/dashboard/categories/bags",
   },
   {
     name: "Toys & Baby",
     icon: Baby,
-    href: "/category/toys-baby",
+    href: "/dashboard/categories/toys-baby",
   },
   {
     name: "View All",
