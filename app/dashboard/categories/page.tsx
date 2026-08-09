@@ -1,10 +1,11 @@
- "use client";
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/layout/navbar";
 import TopBar from "@/components/layout/top-bar";
 import Footer from "@/components/layout/footer";
+
 import {
   ChevronRight,
   Headphones,
@@ -24,6 +25,7 @@ import {
 const categories = [
   {
     name: "Electronics",
+    slug: "electronics",
     image: "/products/electronics.png",
     items: "2500+ Items",
     icon: Headphones,
@@ -31,6 +33,7 @@ const categories = [
 
   {
     name: "Fashion",
+    slug: "fashion",
     image: "/products/fashion.png",
     items: "3800+ Items",
     icon: Shirt,
@@ -38,6 +41,7 @@ const categories = [
 
   {
     name: "Home & Living",
+    slug: "home-living",
     image: "/products/home.png",
     items: "4200+ Items",
     icon: Sofa,
@@ -45,6 +49,7 @@ const categories = [
 
   {
     name: "Beauty",
+    slug: "beauty",
     image: "/products/perfume.png",
     items: "2100+ Items",
     icon: Sparkles,
@@ -52,6 +57,7 @@ const categories = [
 
   {
     name: "Mobiles",
+    slug: "mobiles",
     image: "/products/mobiles.png",
     items: "1500+ Items",
     icon: Smartphone,
@@ -59,6 +65,7 @@ const categories = [
 
   {
     name: "Appliances",
+    slug: "appliances",
     image: "/products/appliances.png",
     items: "1800+ Items",
     icon: Refrigerator,
@@ -66,6 +73,7 @@ const categories = [
 
   {
     name: "Footwear",
+    slug: "footwear",
     image: "/products/footwear.png",
     items: "2200+ Items",
     icon: Footprints,
@@ -73,6 +81,7 @@ const categories = [
 
   {
     name: "Watches",
+    slug: "watches",
     image: "/products/watch.png",
     items: "1300+ Items",
     icon: Watch,
@@ -80,6 +89,7 @@ const categories = [
 
   {
     name: "Bags",
+    slug: "bags",
     image: "/products/bag.png",
     items: "1100+ Items",
     icon: ShoppingBag,
@@ -87,6 +97,7 @@ const categories = [
 
   {
     name: "Toys & Baby",
+    slug: "toys-baby",
     image: "/products/toys.png",
     items: "1600+ Items",
     icon: Baby,
@@ -94,6 +105,7 @@ const categories = [
 
   {
     name: "Sports & Outdoors",
+    slug: "sports-outdoors",
     image: "/products/sports.png",
     items: "1000+ Items",
     icon: Dumbbell,
@@ -101,6 +113,7 @@ const categories = [
 
   {
     name: "Automotive",
+    slug: "automotive",
     image: "/products/automotive.png",
     items: "900+ Items",
     icon: Car,
@@ -109,16 +122,16 @@ const categories = [
 
 export default function CategoriesPage() {
   return (
-   <> 
-   <TopBar />
+    <main className="min-h-screen bg-gradient-to-b from-white via-[#fffdf8] to-[#f8f4ea] text-gray-900">
+
+      <TopBar />
       <Navbar />
-    <main className="min-h-screen bg-[#fafafa]">
 
       <div className="max-w-[1500px] mx-auto px-6 py-8">
 
         <div className="grid lg:grid-cols-[280px_1fr] gap-8">
 
-          {/* SIDEBAR */}
+          {/* ================= SIDEBAR ================= */}
 
           <div className="space-y-5">
 
@@ -131,70 +144,82 @@ export default function CategoriesPage() {
               <div className="space-y-1">
 
                 {categories.map((cat, i) => {
-
                   const Icon = cat.icon;
 
                   return (
-                    <button
+                    <Link
                       key={cat.name}
+                      href={`/category/${cat.slug}`}
                       className={`
-                      w-full
-                      flex
-                      items-center
-                      justify-between
-                      px-4
-                      py-3
-                      rounded-2xl
-                      transition
-                      ${
-                        i === 0
-                          ? "bg-[#f7f1e4] text-[#c99718]"
-                          : "hover:bg-[#faf6ee]"
-                      }
-                     `}
+                        w-full
+                        flex
+                        items-center
+                        justify-between
+                        px-4
+                        py-3
+                        rounded-2xl
+                        transition
+                        ${
+                          i === 0
+                            ? "bg-[#f7f1e4] text-[#c99718]"
+                            : "hover:bg-[#faf6ee]"
+                        }
+                      `}
                     >
 
                       <div className="flex items-center gap-3">
                         <Icon size={18} />
-                        <span>{cat.name}</span>
+
+                        <span>
+                          {cat.name}
+                        </span>
                       </div>
 
                       <ChevronRight size={16} />
 
-                    </button>
+                    </Link>
                   );
                 })}
 
               </div>
 
-              <button
+              <Link
+                href="/categories"
                 className="
-                w-full
-                mt-5
-                border
-                border-gray-200
-                rounded-2xl
-                py-3
-                font-medium
+                  block
+                  text-center
+                  w-full
+                  mt-5
+                  border
+                  border-gray-200
+                  rounded-2xl
+                  py-3
+                  font-medium
+                  hover:border-[#D4AF37]
+                  hover:text-[#C99718]
+                  transition
                 "
               >
                 View All Categories
-              </button>
+              </Link>
 
             </div>
-                       {/* OFFER CARD */}
+
+
+            {/* ================= OFFER CARD ================= */}
 
             <div
               className="
-              bg-gradient-to-br
-              from-[#fff6df]
-              to-[#f5e3b0]
-              rounded-3xl
-              p-6
-              border
-              border-[#f0d78a]
+                bg-gradient-to-br
+                from-[#fff6df]
+                to-[#f5e3b0]
+                rounded-3xl
+                p-6
+                border
+                border-[#f0d78a]
               "
             >
+
               <p className="text-gray-600 text-sm">
                 Limited Time Offer
               </p>
@@ -209,22 +234,26 @@ export default function CategoriesPage() {
 
               <button
                 className="
-                mt-5
-                bg-[#D4AF37]
-                text-white
-                px-5
-                py-3
-                rounded-xl
-                font-semibold
+                  mt-5
+                  bg-[#D4AF37]
+                  text-white
+                  px-5
+                  py-3
+                  rounded-xl
+                  font-semibold
+                  hover:bg-[#c49d25]
+                  transition
                 "
               >
                 Use Code PRIME10
               </button>
+
             </div>
 
           </div>
 
-          {/* RIGHT SIDE */}
+
+          {/* ================= RIGHT SIDE ================= */}
 
           <div>
 
@@ -236,47 +265,49 @@ export default function CategoriesPage() {
               Explore our wide range of premium products across all categories
             </p>
 
-            {/* CATEGORY GRID */}
+
+            {/* ================= CATEGORY GRID ================= */}
 
             <div
               className="
-              grid
-              grid-cols-2
-              md:grid-cols-3
-              xl:grid-cols-4
-              2xl:grid-cols-6
-              gap-6
+                grid
+                grid-cols-2
+                md:grid-cols-3
+                xl:grid-cols-4
+                2xl:grid-cols-6
+                gap-6
               "
             >
 
               {categories.map((category) => (
 
                 <Link
-                  href="#"
+                  href={`/category/${category.slug}`}
                   key={category.name}
                   className="
-                  bg-white
-                  border
-                  border-gray-200
-                  rounded-3xl
-                  p-5
-                  text-center
-                  hover:shadow-lg
-                  transition-all
-                  duration-300
+                    bg-white
+                    border
+                    border-gray-200
+                    rounded-3xl
+                    p-5
+                    text-center
+                    hover:shadow-lg
+                    hover:-translate-y-1
+                    transition-all
+                    duration-300
                   "
                 >
 
                   <div
                     className="
-                    w-[140px]
-                    h-[140px]
-                    mx-auto
-                    rounded-full
-                    bg-[#f8f3e7]
-                    flex
-                    items-center
-                    justify-center
+                      w-[140px]
+                      h-[140px]
+                      mx-auto
+                      rounded-full
+                      bg-[#f8f3e7]
+                      flex
+                      items-center
+                      justify-center
                     "
                   >
 
@@ -286,19 +317,20 @@ export default function CategoriesPage() {
                       width={110}
                       height={110}
                       className="
-                      object-contain
-                      hover:scale-105
-                      transition
+                        object-contain
+                        hover:scale-105
+                        transition
                       "
                     />
 
                   </div>
 
+
                   <h3
                     className="
-                    mt-5
-                    text-lg
-                    font-bold
+                      mt-5
+                      text-lg
+                      font-bold
                     "
                   >
                     {category.name}
@@ -306,9 +338,9 @@ export default function CategoriesPage() {
 
                   <p
                     className="
-                    text-gray-500
-                    text-sm
-                    mt-1
+                      text-gray-500
+                      text-sm
+                      mt-1
                     "
                   >
                     {category.items}
@@ -319,50 +351,71 @@ export default function CategoriesPage() {
               ))}
 
             </div>
-                       {/* FEATURES ROW */}
+
+
+            {/* ================= FEATURES ROW ================= */}
 
             <div
               className="
-              mt-8
-              bg-white
-              border
-              border-gray-200
-              rounded-3xl
-              p-6
-              grid
-              grid-cols-2
-              md:grid-cols-4
-              gap-6
+                mt-8
+                bg-white
+                border
+                border-gray-200
+                rounded-3xl
+                p-6
+                grid
+                grid-cols-2
+                md:grid-cols-4
+                gap-6
               "
             >
 
               <div className="text-center">
                 <div className="text-3xl mb-2">🏆</div>
-                <h3 className="font-bold">Top Brands</h3>
+
+                <h3 className="font-bold">
+                  Top Brands
+                </h3>
+
                 <p className="text-sm text-gray-500">
                   1000+ Trusted Brands
                 </p>
               </div>
 
+
               <div className="text-center">
                 <div className="text-3xl mb-2">💰</div>
-                <h3 className="font-bold">Best Prices</h3>
+
+                <h3 className="font-bold">
+                  Best Prices
+                </h3>
+
                 <p className="text-sm text-gray-500">
                   Daily Best Deals
                 </p>
               </div>
 
+
               <div className="text-center">
                 <div className="text-3xl mb-2">↩️</div>
-                <h3 className="font-bold">Easy Returns</h3>
+
+                <h3 className="font-bold">
+                  Easy Returns
+                </h3>
+
                 <p className="text-sm text-gray-500">
                   Hassle Free Returns
                 </p>
               </div>
 
+
               <div className="text-center">
                 <div className="text-3xl mb-2">🔒</div>
-                <h3 className="font-bold">Secure Shopping</h3>
+
+                <h3 className="font-bold">
+                  Secure Shopping
+                </h3>
+
                 <p className="text-sm text-gray-500">
                   Safe Payments
                 </p>
@@ -370,7 +423,8 @@ export default function CategoriesPage() {
 
             </div>
 
-            {/* POPULAR SEARCHES */}
+
+            {/* ================= POPULAR SEARCHES ================= */}
 
             <div className="mt-10">
 
@@ -394,22 +448,24 @@ export default function CategoriesPage() {
                   "Refrigerator",
                   "Smart TV",
                 ].map((item) => (
+
                   <button
                     key={item}
                     className="
-                    px-5
-                    py-3
-                    bg-white
-                    border
-                    border-gray-200
-                    rounded-full
-                    hover:border-[#D4AF37]
-                    hover:text-[#C99718]
-                    transition
+                      px-5
+                      py-3
+                      bg-white
+                      border
+                      border-gray-200
+                      rounded-full
+                      hover:border-[#D4AF37]
+                      hover:text-[#C99718]
+                      transition
                     "
                   >
                     {item}
                   </button>
+
                 ))}
 
               </div>
@@ -421,8 +477,9 @@ export default function CategoriesPage() {
         </div>
 
       </div>
-     <Footer />
+
+      <Footer />
+
     </main>
-    </>
   );
 }
