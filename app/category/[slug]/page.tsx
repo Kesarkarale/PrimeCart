@@ -194,7 +194,7 @@ export default function CategoryProductsPage({ params }: Props) {
         ============================ */}
 
         <Link
-          href="/categories"
+          href="/dashboard/categories"
           className="
             inline-flex
             items-center
