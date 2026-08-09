@@ -39,10 +39,9 @@ export default function FeaturedProducts() {
       setErrorMessage("");
 
       const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("is_active", true)
-        .order("created_at", { ascending: false });
+  .from("products")
+  .select("*")
+  .order("created_at", { ascending: false });
 
       console.log("PRODUCT DATA:", data);
       console.log("PRODUCT ERROR:", error);
