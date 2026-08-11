@@ -3,22 +3,20 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
+  ArrowLeft,
   Heart,
-  Star,
   ShoppingCart,
+  Star,
   Truck,
   ShieldCheck,
   Minus,
   Plus,
-  ArrowLeft,
-  Check,
   RotateCcw,
   PackageCheck,
   Loader2,
 } from "lucide-react";
-
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 type Product = {
@@ -50,18 +48,19 @@ type RelatedProduct = {
   image_url: string | null;
   rating: number | null;
   reviews_count: number | null;
-  category_id: string | null;
 };
 
-export default function ProductDetails() {
+export default function ProductDetailsPage() {
   const params = useParams();
-  const router = useRouter();
+
+  const productId =
+    typeof params.id === "string"
+      ? params.id
+      : Array.isArray(params.id)
+      ? params.id[0]
+      : "";
 
   const supabase = createClient();
-
-  const productId = Array.isArray(params.id)
-    ? params.id[0]
-    : params.id;
 
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<
@@ -71,7 +70,6 @@ export default function ProductDetails() {
   const [loading, setLoading] = useState(true);
   const [relatedLoading, setRelatedLoading] = useState(true);
 
-  const [activeImage, setActiveImage] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [wishlist, setWishlist] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
@@ -79,17 +77,19 @@ export default function ProductDetails() {
   useEffect(() => {
     if (!productId) return;
 
-    const fetchProduct = async () => {
+    const loadProduct = async () => {
       setLoading(true);
+
+      console.log("PRODUCT ID:", productId);
 
       const { data, error } = await supabase
         .from("products")
         .select("*")
         .eq("id", productId)
-        .single();
+        .maybeSingle();
 
-      console.log("PRODUCT DETAILS:", data);
-      console.log("PRODUCT DETAILS ERROR:", error);
+      console.log("PRODUCT:", data);
+      console.log("PRODUCT ERROR:", error);
 
       if (error || !data) {
         setProduct(null);
@@ -98,60 +98,44 @@ export default function ProductDetails() {
       }
 
       setProduct(data);
-      setActiveImage(
-        data.image_url || "/products/product-placeholder.png"
-      );
-
       setLoading(false);
 
-      // RELATED PRODUCTS
+      // Related products
       setRelatedLoading(true);
 
-      let relatedQuery = supabase
+      const { data: relatedData } = await supabase
         .from("products")
         .select(
-          "id,name,price,original_price,image_url,rating,reviews_count,category_id"
+          "id,name,price,original_price,image_url,rating,reviews_count"
         )
         .eq("is_active", true)
         .neq("id", data.id)
         .limit(8);
 
-      if (data.category_id) {
-        relatedQuery = relatedQuery.eq(
-          "category_id",
-          data.category_id
-        );
-      }
-
-      const { data: relatedData, error: relatedError } =
-        await relatedQuery;
-
-      console.log("RELATED PRODUCTS:", relatedData);
-      console.log("RELATED ERROR:", relatedError);
-
-      if (!relatedError) {
-        setRelatedProducts(relatedData || []);
-      }
-
+      setRelatedProducts(relatedData || []);
       setRelatedLoading(false);
     };
 
-    fetchProduct();
+    loadProduct();
   }, [productId]);
 
   const increaseQuantity = () => {
     if (!product) return;
 
-    const maxStock = product.stock ?? 99;
+    const maxStock = product.stock ?? 1;
 
-    setQuantity((prev) => Math.min(prev + 1, maxStock));
+    setQuantity((current) =>
+      Math.min(current + 1, maxStock)
+    );
   };
 
   const decreaseQuantity = () => {
-    setQuantity((prev) => Math.max(1, prev - 1));
+    setQuantity((current) =>
+      Math.max(current - 1, 1)
+    );
   };
 
-  const addToCart = async () => {
+  const addToCart = () => {
     if (!product) return;
 
     setCartLoading(true);
@@ -161,41 +145,22 @@ export default function ProductDetails() {
       quantity,
     });
 
-    // Cart functionality can be connected to cart table/context here.
     setTimeout(() => {
       setCartLoading(false);
       alert(`${product.name} added to cart`);
     }, 500);
   };
 
-  const buyNow = () => {
-    if (!product) return;
-
-    router.push(
-      `/checkout?product=${product.id}&quantity=${quantity}`
-    );
-  };
-
-  const discount =
-    product?.original_price &&
-    product.original_price > product.price
-      ? Math.round(
-          ((product.original_price - product.price) /
-            product.original_price) *
-            100
-        )
-      : 0;
-
   if (loading) {
     return (
       <main className="min-h-screen bg-[#faf8f3] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
+        <div className="text-center">
           <Loader2
-            size={42}
-            className="animate-spin text-[#D4AF37]"
+            size={40}
+            className="animate-spin text-[#D4AF37] mx-auto"
           />
 
-          <p className="text-gray-600 font-semibold">
+          <p className="mt-4 text-gray-500 font-semibold">
             Loading Product...
           </p>
         </div>
@@ -207,14 +172,17 @@ export default function ProductDetails() {
     return (
       <main className="min-h-screen bg-[#faf8f3] flex items-center justify-center px-6">
         <div className="text-center">
-          <div className="text-6xl mb-5">🛍️</div>
+
+          <div className="text-6xl mb-5">
+            🛍️
+          </div>
 
           <h1 className="text-3xl font-black">
             Product Not Found
           </h1>
 
           <p className="text-gray-500 mt-2">
-            The product you are looking for does not exist.
+            This product could not be found.
           </p>
 
           <Link
@@ -237,15 +205,30 @@ export default function ProductDetails() {
             <ArrowLeft size={18} />
             Back To Shop
           </Link>
+
         </div>
       </main>
     );
   }
 
+  const discount =
+    product.original_price &&
+    product.original_price > product.price
+      ? Math.round(
+          ((product.original_price - product.price) /
+            product.original_price) *
+            100
+        )
+      : 0;
+
+  const image =
+    product.image_url ||
+    "/products/product-placeholder.png";
+
   return (
     <main className="min-h-screen bg-[#faf8f3]">
 
-      {/* TOP BACK NAVIGATION */}
+      {/* BACK */}
 
       <div className="max-w-7xl mx-auto px-6 pt-8">
 
@@ -256,28 +239,25 @@ export default function ProductDetails() {
             items-center
             gap-2
             text-gray-600
-            hover:text-black
             font-semibold
+            hover:text-black
             transition
           "
         >
           <ArrowLeft size={19} />
-          Back To Shopping
+          Back To Shop
         </Link>
 
       </div>
 
 
-      {/* PRODUCT MAIN SECTION */}
+      {/* MAIN PRODUCT */}
 
       <section className="max-w-7xl mx-auto px-6 py-8">
 
-        <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-10">
+        <div className="grid lg:grid-cols-2 gap-10">
 
-
-          {/* ========================= */}
-          {/* LEFT - PRODUCT IMAGES */}
-          {/* ========================= */}
+          {/* IMAGE */}
 
           <div>
 
@@ -285,17 +265,14 @@ export default function ProductDetails() {
               className="
                 relative
                 h-[420px]
-                sm:h-[520px]
+                sm:h-[540px]
                 bg-white
                 rounded-[30px]
                 border
-                border-gray-200
                 overflow-hidden
                 shadow-sm
               "
             >
-
-              {/* FLASH SALE */}
 
               {product.is_flash_sale && (
                 <div
@@ -317,11 +294,10 @@ export default function ProductDetails() {
                 </div>
               )}
 
-
-              {/* WISHLIST */}
-
               <button
-                onClick={() => setWishlist(!wishlist)}
+                onClick={() =>
+                  setWishlist(!wishlist)
+                }
                 className="
                   absolute
                   top-5
@@ -335,11 +311,8 @@ export default function ProductDetails() {
                   flex
                   items-center
                   justify-center
-                  hover:scale-105
-                  transition
                 "
               >
-
                 <Heart
                   size={23}
                   className={
@@ -348,105 +321,95 @@ export default function ProductDetails() {
                       : "text-gray-700"
                   }
                 />
-
               </button>
 
-
-              {/* MAIN IMAGE */}
-
-              {activeImage ? (
-                <Image
-                  src={activeImage}
-                  alt={product.name}
-                  fill
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 55vw"
-                  className="
-                    object-contain
-                    p-8
-                    sm:p-12
-                    hover:scale-105
-                    transition
-                    duration-500
-                  "
-                />
-              ) : (
-                <div className="h-full flex items-center justify-center text-gray-400">
-                  No Image Available
-                </div>
-              )}
+              <Image
+                src={image}
+                alt={product.name}
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="
+                  object-contain
+                  p-8
+                  sm:p-12
+                  hover:scale-105
+                  transition
+                  duration-500
+                "
+              />
 
             </div>
 
 
-            {/* IMAGE THUMBNAILS */}
+            {/* THUMBNAIL */}
 
-            <div className="flex gap-4 mt-5">
+            <div className="mt-5">
 
-              <button
-                onClick={() =>
-                  setActiveImage(
-                    product.image_url ||
-                      "/products/product-placeholder.png"
-                  )
-                }
-                className={`
+              <div
+                className="
                   relative
                   w-20
                   h-20
-                  rounded-2xl
                   bg-white
+                  rounded-xl
                   border-2
+                  border-[#D4AF37]
                   overflow-hidden
-                  transition
-                  ${
-                    activeImage === product.image_url
-                      ? "border-[#D4AF37]"
-                      : "border-gray-200"
-                  }
-                `}
+                "
               >
 
-                {product.image_url && (
-                  <Image
-                    src={product.image_url}
-                    alt={product.name}
-                    fill
-                    sizes="80px"
-                    className="object-contain p-2"
-                  />
-                )}
+                <Image
+                  src={image}
+                  alt={product.name}
+                  fill
+                  sizes="80px"
+                  className="object-contain p-2"
+                />
 
-              </button>
+              </div>
 
             </div>
 
           </div>
 
 
-          {/* ========================= */}
-          {/* RIGHT - PRODUCT DETAILS */}
-          {/* ========================= */}
+          {/* DETAILS */}
 
-          <div className="bg-white rounded-[30px] border border-gray-200 p-6 sm:p-8 shadow-sm">
+          <div
+            className="
+              bg-white
+              rounded-[30px]
+              border
+              p-6
+              sm:p-8
+            "
+          >
 
             {/* BRAND */}
 
             {product.brand && (
-              <p className="text-sm font-bold text-[#D4AF37] uppercase tracking-wider">
+              <p
+                className="
+                  text-sm
+                  font-bold
+                  text-[#D4AF37]
+                  uppercase
+                  tracking-wider
+                "
+              >
                 {product.brand}
               </p>
             )}
 
 
-            {/* PRODUCT NAME */}
+            {/* NAME */}
 
             <h1
               className="
                 text-3xl
                 sm:text-4xl
                 font-black
-                text-gray-900
                 mt-2
                 leading-tight
               "
@@ -478,18 +441,16 @@ export default function ProductDetails() {
                   px-3
                   py-1.5
                   rounded-lg
-                  font-bold
                   text-sm
+                  font-bold
                 "
               >
-
                 <Star
                   size={15}
                   className="fill-white"
                 />
 
                 {product.rating ?? 4.5}
-
               </div>
 
               <span className="text-gray-500 text-sm">
@@ -504,34 +465,36 @@ export default function ProductDetails() {
 
             {/* PRICE */}
 
-            <div>
+            <div className="flex items-center gap-3 flex-wrap">
 
-              <div className="flex items-center gap-3 flex-wrap">
+              <span className="text-4xl font-black">
+                ₹{product.price.toLocaleString("en-IN")}
+              </span>
 
-                <span className="text-4xl font-black text-gray-900">
-                  ₹{product.price.toLocaleString("en-IN")}
-                </span>
-
-                {product.original_price &&
-                  product.original_price > product.price && (
-                    <span className="text-lg text-gray-400 line-through">
-                      ₹
-                      {product.original_price.toLocaleString(
-                        "en-IN"
-                      )}
-                    </span>
-                  )}
-
-              </div>
-
-
-              {discount > 0 && (
-                <p className="text-green-600 font-bold mt-2">
-                  {discount}% OFF
-                </p>
-              )}
+              {product.original_price &&
+                product.original_price > product.price && (
+                  <span
+                    className="
+                      text-lg
+                      text-gray-400
+                      line-through
+                    "
+                  >
+                    ₹
+                    {product.original_price.toLocaleString(
+                      "en-IN"
+                    )}
+                  </span>
+                )}
 
             </div>
+
+
+            {discount > 0 && (
+              <p className="text-green-600 font-bold mt-2">
+                {discount}% OFF
+              </p>
+            )}
 
 
             {/* STOCK */}
@@ -539,21 +502,16 @@ export default function ProductDetails() {
             <div className="mt-5">
 
               {product.stock && product.stock > 0 ? (
-                <div className="flex items-center gap-2 text-green-600 font-bold">
-
-                  <Check size={18} />
-
-                  In Stock
-
-                  <span className="text-gray-500 font-normal">
+                <p className="text-green-600 font-bold">
+                  ✓ In Stock
+                  <span className="text-gray-500 font-normal ml-2">
                     ({product.stock} available)
                   </span>
-
-                </div>
+                </p>
               ) : (
-                <div className="text-red-500 font-bold">
+                <p className="text-red-500 font-bold">
                   Out of Stock
-                </div>
+                </p>
               )}
 
             </div>
@@ -565,7 +523,7 @@ export default function ProductDetails() {
               <div className="mt-7">
 
                 <h2 className="text-xl font-black mb-2">
-                  About This Product
+                  Description
                 </h2>
 
                 <p className="text-gray-600 leading-7">
@@ -590,16 +548,13 @@ export default function ProductDetails() {
                     inline-flex
                     items-center
                     border
-                    border-gray-300
                     rounded-xl
                     overflow-hidden
-                    bg-white
                   "
                 >
 
                   <button
                     onClick={decreaseQuantity}
-                    disabled={quantity <= 1}
                     className="
                       w-12
                       h-12
@@ -607,27 +562,17 @@ export default function ProductDetails() {
                       items-center
                       justify-center
                       hover:bg-gray-100
-                      disabled:opacity-40
                     "
                   >
                     <Minus size={18} />
                   </button>
 
-                  <span
-                    className="
-                      w-14
-                      text-center
-                      font-bold
-                    "
-                  >
+                  <span className="w-14 text-center font-bold">
                     {quantity}
                   </span>
 
                   <button
                     onClick={increaseQuantity}
-                    disabled={
-                      quantity >= (product.stock ?? 99)
-                    }
                     className="
                       w-12
                       h-12
@@ -635,7 +580,6 @@ export default function ProductDetails() {
                       items-center
                       justify-center
                       hover:bg-gray-100
-                      disabled:opacity-40
                     "
                   >
                     <Plus size={18} />
@@ -647,42 +591,34 @@ export default function ProductDetails() {
             )}
 
 
-            {/* ACTION BUTTONS */}
+            {/* BUTTONS */}
 
-            <div className="grid sm:grid-cols-[auto_1fr_1fr] gap-3 mt-7">
-
-              {/* WISHLIST */}
+            <div className="grid sm:grid-cols-[56px_1fr_1fr] gap-3 mt-7">
 
               <button
-                onClick={() => setWishlist(!wishlist)}
+                onClick={() =>
+                  setWishlist(!wishlist)
+                }
                 className="
                   h-14
-                  w-full
-                  sm:w-14
                   rounded-2xl
                   border
-                  border-gray-300
                   flex
                   items-center
                   justify-center
                   hover:border-[#D4AF37]
-                  transition
                 "
               >
-
                 <Heart
-                  size={23}
+                  size={22}
                   className={
                     wishlist
                       ? "fill-red-500 text-red-500"
                       : ""
                   }
                 />
-
               </button>
 
-
-              {/* ADD CART */}
 
               <button
                 onClick={addToCart}
@@ -721,10 +657,7 @@ export default function ProductDetails() {
               </button>
 
 
-              {/* BUY NOW */}
-
               <button
-                onClick={buyNow}
                 disabled={!product.stock || product.stock <= 0}
                 className="
                   h-14
@@ -743,131 +676,67 @@ export default function ProductDetails() {
             </div>
 
 
-            {/* SERVICE FEATURES */}
+            {/* FEATURES */}
 
             <div className="grid sm:grid-cols-2 gap-3 mt-7">
 
-              <div
-                className="
-                  rounded-2xl
-                  bg-[#faf8f3]
-                  border
-                  p-4
-                  flex
-                  gap-3
-                "
-              >
-
-                <Truck
-                  className="text-[#D4AF37] shrink-0"
-                  size={23}
-                />
+              <div className="bg-[#faf8f3] rounded-2xl p-4 flex gap-3">
+                <Truck className="text-[#D4AF37]" />
 
                 <div>
-
                   <p className="font-bold">
                     Free Delivery
                   </p>
 
-                  <p className="text-xs text-gray-500 mt-1">
-                    Fast & reliable delivery
+                  <p className="text-xs text-gray-500">
+                    Fast delivery
                   </p>
-
                 </div>
-
               </div>
 
 
-              <div
-                className="
-                  rounded-2xl
-                  bg-[#faf8f3]
-                  border
-                  p-4
-                  flex
-                  gap-3
-                "
-              >
-
-                <ShieldCheck
-                  className="text-[#D4AF37] shrink-0"
-                  size={23}
-                />
+              <div className="bg-[#faf8f3] rounded-2xl p-4 flex gap-3">
+                <ShieldCheck className="text-[#D4AF37]" />
 
                 <div>
-
                   <p className="font-bold">
                     Secure Payment
                   </p>
 
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500">
                     100% secure checkout
                   </p>
-
                 </div>
-
               </div>
 
 
-              <div
-                className="
-                  rounded-2xl
-                  bg-[#faf8f3]
-                  border
-                  p-4
-                  flex
-                  gap-3
-                "
-              >
-
-                <RotateCcw
-                  className="text-[#D4AF37] shrink-0"
-                  size={23}
-                />
+              <div className="bg-[#faf8f3] rounded-2xl p-4 flex gap-3">
+                <RotateCcw className="text-[#D4AF37]" />
 
                 <div>
-
                   <p className="font-bold">
                     Easy Returns
                   </p>
 
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500">
                     Hassle-free returns
                   </p>
-
                 </div>
-
               </div>
 
 
-              <div
-                className="
-                  rounded-2xl
-                  bg-[#faf8f3]
-                  border
-                  p-4
-                  flex
-                  gap-3
-                "
-              >
-
-                <PackageCheck
-                  className="text-[#D4AF37] shrink-0"
-                  size={23}
-                />
+              <div className="bg-[#faf8f3] rounded-2xl p-4 flex gap-3">
+                <PackageCheck className="text-[#D4AF37]" />
 
                 <div>
-
                   <p className="font-bold">
                     Quality Assured
                   </p>
 
-                  <p className="text-xs text-gray-500 mt-1">
-                    Genuine premium products
+                  <p className="text-xs text-gray-500">
+                    Genuine products
                   </p>
-
                 </div>
-
               </div>
 
             </div>
@@ -877,21 +746,9 @@ export default function ProductDetails() {
         </div>
 
 
-        {/* ========================= */}
         {/* PRODUCT INFORMATION */}
-        {/* ========================= */}
 
-        <div
-          className="
-            mt-10
-            bg-white
-            rounded-[30px]
-            border
-            border-gray-200
-            p-6
-            sm:p-8
-          "
-        >
+        <div className="mt-10 bg-white rounded-[30px] border p-6 sm:p-8">
 
           <h2 className="text-2xl font-black mb-6">
             Product Information
@@ -915,7 +772,7 @@ export default function ProductDetails() {
                 Product ID
               </p>
 
-              <p className="font-bold mt-1 text-sm break-all">
+              <p className="font-bold mt-1 text-xs break-all">
                 {product.id}
               </p>
             </div>
@@ -923,13 +780,11 @@ export default function ProductDetails() {
 
             <div className="bg-gray-50 rounded-2xl p-5">
               <p className="text-sm text-gray-500">
-                Availability
+                Stock
               </p>
 
               <p className="font-bold mt-1">
-                {product.stock && product.stock > 0
-                  ? "In Stock"
-                  : "Out of Stock"}
+                {product.stock ?? 0}
               </p>
             </div>
 
@@ -949,38 +804,17 @@ export default function ProductDetails() {
         </div>
 
 
-        {/* ========================= */}
-        {/* CUSTOMER REVIEWS */}
-        {/* ========================= */}
+        {/* REVIEWS */}
 
-        <div
-          className="
-            mt-8
-            bg-white
-            rounded-[30px]
-            border
-            border-gray-200
-            p-6
-            sm:p-8
-          "
-        >
+        <div className="mt-8 bg-white rounded-[30px] border p-6 sm:p-8">
 
           <h2 className="text-2xl font-black">
             Customer Reviews
           </h2>
 
-
           <div className="mt-6 flex flex-col sm:flex-row gap-6">
 
-            <div
-              className="
-                min-w-[180px]
-                rounded-2xl
-                bg-gray-50
-                p-6
-                text-center
-              "
-            >
+            <div className="bg-gray-50 rounded-2xl p-6 text-center sm:w-52">
 
               <p className="text-5xl font-black">
                 {product.rating ?? 4.5}
@@ -1008,11 +842,11 @@ export default function ProductDetails() {
             </div>
 
 
-            <div className="flex-1 space-y-4">
+            <div className="flex-1">
 
               <div className="border rounded-2xl p-5">
 
-                <div className="flex items-center justify-between">
+                <div className="flex justify-between">
 
                   <div>
                     <p className="font-bold">
@@ -1024,43 +858,15 @@ export default function ProductDetails() {
                     </p>
                   </div>
 
-                  <div className="flex text-yellow-400">
+                  <span className="text-yellow-400">
                     ★★★★★
-                  </div>
+                  </span>
 
                 </div>
 
                 <p className="text-gray-600 mt-3">
                   Great quality product. Exactly as described
                   and delivery was fast.
-                </p>
-
-              </div>
-
-
-              <div className="border rounded-2xl p-5">
-
-                <div className="flex items-center justify-between">
-
-                  <div>
-                    <p className="font-bold">
-                      Verified Customer
-                    </p>
-
-                    <p className="text-xs text-gray-400">
-                      Verified Purchase
-                    </p>
-                  </div>
-
-                  <div className="flex text-yellow-400">
-                    ★★★★★
-                  </div>
-
-                </div>
-
-                <p className="text-gray-600 mt-3">
-                  Very happy with the product. Good packaging
-                  and premium quality.
                 </p>
 
               </div>
@@ -1072,52 +878,26 @@ export default function ProductDetails() {
         </div>
 
 
-        {/* ========================= */}
         {/* RELATED PRODUCTS */}
-        {/* ========================= */}
 
         <div className="mt-12">
 
-          <div className="flex items-end justify-between mb-6">
+          <h2 className="text-3xl font-black">
+            Related Products
+          </h2>
 
-            <div>
-
-              <h2 className="text-3xl font-black">
-                Related Products
-              </h2>
-
-              <p className="text-gray-500 mt-1">
-                You may also like these products
-              </p>
-
-            </div>
-
-            <Link
-              href="/dashboard/products"
-              className="
-                text-[#D4AF37]
-                font-bold
-                hover:underline
-              "
-            >
-              View All →
-            </Link>
-
-          </div>
+          <p className="text-gray-500 mt-1 mb-6">
+            You may also like these products
+          </p>
 
 
           {relatedLoading ? (
 
             <div className="flex justify-center py-10">
-
               <Loader2
-                className="
-                  animate-spin
-                  text-[#D4AF37]
-                "
                 size={30}
+                className="animate-spin text-[#D4AF37]"
               />
-
             </div>
 
           ) : relatedProducts.length === 0 ? (
@@ -1130,166 +910,98 @@ export default function ProductDetails() {
 
           ) : (
 
-            <div
-              className="
-                grid
-                grid-cols-1
-                sm:grid-cols-2
-                lg:grid-cols-4
-                gap-6
-              "
-            >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
-              {relatedProducts.map((item) => {
+              {relatedProducts.map((item) => (
 
-                const itemDiscount =
-                  item.original_price &&
-                  item.original_price > item.price
-                    ? Math.round(
-                        ((item.original_price -
-                          item.price) /
-                          item.original_price) *
-                          100
-                      )
-                    : 0;
+                <Link
+                  key={item.id}
+                  href={`/product/dashboard/${item.id}`}
+                  className="
+                    bg-white
+                    rounded-3xl
+                    border
+                    overflow-hidden
+                    hover:shadow-xl
+                    transition
+                    group
+                  "
+                >
 
-                return (
-                  <Link
-                    key={item.id}
-                    href={`/product/dashboard/${item.id}`}
-                    className="
-                      group
-                      bg-white
-                      rounded-3xl
-                      border
-                      border-gray-200
-                      overflow-hidden
-                      hover:shadow-xl
-                      transition
-                    "
-                  >
+                  <div className="relative h-56 bg-gray-50">
 
-                    <div
-                      className="
-                        relative
-                        h-56
-                        bg-gray-50
-                      "
-                    >
-
-                      {item.image_url ? (
-                        <Image
-                          src={item.image_url}
-                          alt={item.name}
-                          fill
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                          className="
-                            object-contain
-                            p-6
-                            group-hover:scale-110
-                            transition
-                            duration-500
-                          "
-                        />
-                      ) : (
-                        <div className="h-full flex items-center justify-center text-gray-400">
-                          No Image
-                        </div>
-                      )}
-
-                      {itemDiscount > 0 && (
-                        <span
-                          className="
-                            absolute
-                            top-3
-                            left-3
-                            bg-red-500
-                            text-white
-                            text-xs
-                            font-bold
-                            px-3
-                            py-1
-                            rounded-full
-                          "
-                        >
-                          {itemDiscount}% OFF
-                        </span>
-                      )}
-
-                    </div>
-
-
-                    <div className="p-5">
-
-                      <h3
+                    {item.image_url ? (
+                      <Image
+                        src={item.image_url}
+                        alt={item.name}
+                        fill
+                        sizes="25vw"
                         className="
-                          font-bold
-                          text-lg
-                          line-clamp-2
-                          group-hover:text-[#D4AF37]
+                          object-contain
+                          p-6
+                          group-hover:scale-110
                           transition
                         "
-                      >
-                        {item.name}
-                      </h3>
-
-
-                      <div className="flex items-center gap-2 mt-3">
-
-                        <span
-                          className="
-                            flex
-                            items-center
-                            gap-1
-                            bg-green-600
-                            text-white
-                            px-2
-                            py-1
-                            rounded-lg
-                            text-xs
-                            font-bold
-                          "
-                        >
-
-                          <Star
-                            size={12}
-                            className="fill-white"
-                          />
-
-                          {item.rating ?? 4.5}
-
-                        </span>
-
-                        <span className="text-xs text-gray-500">
-                          ({item.reviews_count ?? 0})
-                        </span>
-
+                      />
+                    ) : (
+                      <div className="h-full flex items-center justify-center text-gray-400">
+                        No Image
                       </div>
+                    )}
+
+                  </div>
 
 
-                      <div className="flex items-center gap-2 mt-3">
+                  <div className="p-5">
 
-                        <span className="text-xl font-black">
-                          ₹{item.price.toLocaleString("en-IN")}
-                        </span>
+                    <h3 className="font-bold line-clamp-2">
+                      {item.name}
+                    </h3>
 
-                        {item.original_price &&
-                          item.original_price > item.price && (
-                            <span className="text-sm text-gray-400 line-through">
-                              ₹
-                              {item.original_price.toLocaleString(
-                                "en-IN"
-                              )}
-                            </span>
-                          )}
 
-                      </div>
+                    <div className="flex items-center gap-2 mt-3">
+
+                      <span className="bg-green-600 text-white px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
+
+                        <Star
+                          size={12}
+                          className="fill-white"
+                        />
+
+                        {item.rating ?? 4.5}
+
+                      </span>
+
+                      <span className="text-xs text-gray-500">
+                        ({item.reviews_count ?? 0})
+                      </span>
 
                     </div>
 
-                  </Link>
-                );
-              })}
+
+                    <div className="flex items-center gap-2 mt-3">
+
+                      <span className="text-xl font-black">
+                        ₹{item.price.toLocaleString("en-IN")}
+                      </span>
+
+                      {item.original_price &&
+                        item.original_price > item.price && (
+                          <span className="text-sm text-gray-400 line-through">
+                            ₹
+                            {item.original_price.toLocaleString(
+                              "en-IN"
+                            )}
+                          </span>
+                        )}
+
+                    </div>
+
+                  </div>
+
+                </Link>
+
+              ))}
 
             </div>
 
@@ -1302,3 +1014,4 @@ export default function ProductDetails() {
     </main>
   );
 }
+
