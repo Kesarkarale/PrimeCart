@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { 
+import {
   Heart,
   Star,
   ShoppingCart,
@@ -10,1116 +10,1295 @@ import {
   ShieldCheck,
   Minus,
   Plus,
-  ArrowLeft
+  ArrowLeft,
+  Check,
+  RotateCcw,
+  PackageCheck,
+  Loader2,
 } from "lucide-react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
+type Product = {
+  id: string;
+  category_id: string | null;
+  name: string;
+  slug: string;
+  short_description: string | null;
+  description: string | null;
+  price: number;
+  original_price: number | null;
+  stock: number | null;
+  image_url: string | null;
+  brand: string | null;
+  rating: number | null;
+  reviews_count: number | null;
+  is_featured: boolean;
+  is_flash_sale: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
 
-const products = [
-  {
-    id: 1,
-    name: "Wireless Headphones",
-    image: "/products/headphone.png",
-    images: [
-      "/products/headphone.png",
-      "/products/headphone.png",
-      "/products/headphone.png",
-    ],
-    price: 2499,
-    oldPrice: 3999,
-    rating: 4.8,
-    reviews: 245,
-    discount: "38%",
-    category: "Electronics",
-    brand: "PrimeAudio",
+type RelatedProduct = {
+  id: string;
+  name: string;
+  price: number;
+  original_price: number | null;
+  image_url: string | null;
+  rating: number | null;
+  reviews_count: number | null;
+  category_id: string | null;
+};
 
-    description:
-      "Premium wireless headphones with deep bass, noise cancellation and long battery life. Perfect for music, gaming and calls.",
+export default function ProductDetails() {
+  const params = useParams();
+  const router = useRouter();
 
-    stock: "In Stock",
+  const supabase = createClient();
 
-    features: [
-      "40 Hours Battery Backup",
-      "Active Noise Cancellation",
-      "Bluetooth 5.3",
-      "Fast Charging",
-    ],
+  const productId = Array.isArray(params.id)
+    ? params.id[0]
+    : params.id;
 
-    specifications: {
-      "Connectivity": "Bluetooth",
-      "Battery": "40 Hours",
-      "Warranty": "1 Year",
-      "Color": "Black",
-    },
-  },
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<
+    RelatedProduct[]
+  >([]);
 
+  const [loading, setLoading] = useState(true);
+  const [relatedLoading, setRelatedLoading] = useState(true);
 
-  {
-    id: 2,
-    name: "Smart Watch",
-    image: "/products/watch.png",
-    images:[
-      "/products/watch.png",
-      "/products/watch.png",
-      "/products/watch.png",
-    ],
-    price:3499,
-    oldPrice:4999,
-    rating:4.7,
-    reviews:180,
-    discount:"30%",
-    category:"Wearables",
-    brand:"PrimeTech",
+  const [activeImage, setActiveImage] = useState("");
+  const [quantity, setQuantity] = useState(1);
+  const [wishlist, setWishlist] = useState(false);
+  const [cartLoading, setCartLoading] = useState(false);
 
-    description:
-    "Smart watch with fitness tracking, heart rate monitoring and premium display.",
+  useEffect(() => {
+    if (!productId) return;
 
-    stock:"In Stock",
+    const fetchProduct = async () => {
+      setLoading(true);
 
-    features:[
-      "AMOLED Display",
-      "Fitness Tracking",
-      "Water Resistant",
-      "7 Days Battery",
-    ],
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", productId)
+        .single();
 
-    specifications:{
-      "Display":"AMOLED",
-      "Battery":"7 Days",
-      "Warranty":"1 Year",
-      "Color":"Black",
-    }
-  }
-];
+      console.log("PRODUCT DETAILS:", data);
+      console.log("PRODUCT DETAILS ERROR:", error);
 
+      if (error || !data) {
+        setProduct(null);
+        setLoading(false);
+        return;
+      }
 
+      setProduct(data);
+      setActiveImage(
+        data.image_url || "/products/product-placeholder.png"
+      );
 
-export default function ProductDetails({
-  params,
-}:{
-  params:{
-    id:string;
-  }
-}) {
+      setLoading(false);
 
+      // RELATED PRODUCTS
+      setRelatedLoading(true);
 
-  const product = products.find(
-    (item)=> item.id === Number(params.id)
-  );
+      let relatedQuery = supabase
+        .from("products")
+        .select(
+          "id,name,price,original_price,image_url,rating,reviews_count,category_id"
+        )
+        .eq("is_active", true)
+        .neq("id", data.id)
+        .limit(8);
 
+      if (data.category_id) {
+        relatedQuery = relatedQuery.eq(
+          "category_id",
+          data.category_id
+        );
+      }
 
-  const [activeImage,setActiveImage] = useState(
-    product?.image || ""
-  );
+      const { data: relatedData, error: relatedError } =
+        await relatedQuery;
 
+      console.log("RELATED PRODUCTS:", relatedData);
+      console.log("RELATED ERROR:", relatedError);
 
-  const [quantity,setQuantity] = useState(1);
+      if (!relatedError) {
+        setRelatedProducts(relatedData || []);
+      }
 
+      setRelatedLoading(false);
+    };
 
-  const [wishlist,setWishlist] = useState(false);
+    fetchProduct();
+  }, [productId]);
 
+  const increaseQuantity = () => {
+    if (!product) return;
 
+    const maxStock = product.stock ?? 99;
 
-  if(!product){
+    setQuantity((prev) => Math.min(prev + 1, maxStock));
+  };
 
+  const decreaseQuantity = () => {
+    setQuantity((prev) => Math.max(1, prev - 1));
+  };
+
+  const addToCart = async () => {
+    if (!product) return;
+
+    setCartLoading(true);
+
+    console.log("ADD TO CART:", {
+      product_id: product.id,
+      quantity,
+    });
+
+    // Cart functionality can be connected to cart table/context here.
+    setTimeout(() => {
+      setCartLoading(false);
+      alert(`${product.name} added to cart`);
+    }, 500);
+  };
+
+  const buyNow = () => {
+    if (!product) return;
+
+    router.push(
+      `/checkout?product=${product.id}&quantity=${quantity}`
+    );
+  };
+
+  const discount =
+    product?.original_price &&
+    product.original_price > product.price
+      ? Math.round(
+          ((product.original_price - product.price) /
+            product.original_price) *
+            100
+        )
+      : 0;
+
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <main className="min-h-screen bg-[#faf8f3] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2
+            size={42}
+            className="animate-spin text-[#D4AF37]"
+          />
 
-        <h1 className="text-3xl font-bold">
-          Product Not Found
-        </h1>
+          <p className="text-gray-600 font-semibold">
+            Loading Product...
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!product) {
+    return (
+      <main className="min-h-screen bg-[#faf8f3] flex items-center justify-center px-6">
+        <div className="text-center">
+          <div className="text-6xl mb-5">🛍️</div>
+
+          <h1 className="text-3xl font-black">
+            Product Not Found
+          </h1>
+
+          <p className="text-gray-500 mt-2">
+            The product you are looking for does not exist.
+          </p>
+
+          <Link
+            href="/dashboard"
+            className="
+              inline-flex
+              items-center
+              gap-2
+              mt-6
+              px-6
+              py-3
+              rounded-xl
+              bg-black
+              text-white
+              font-bold
+              hover:bg-[#D4AF37]
+              transition
+            "
+          >
+            <ArrowLeft size={18} />
+            Back To Shop
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-[#faf8f3]">
+
+      {/* TOP BACK NAVIGATION */}
+
+      <div className="max-w-7xl mx-auto px-6 pt-8">
+
+        <Link
+          href="/dashboard"
+          className="
+            inline-flex
+            items-center
+            gap-2
+            text-gray-600
+            hover:text-black
+            font-semibold
+            transition
+          "
+        >
+          <ArrowLeft size={19} />
+          Back To Shopping
+        </Link>
 
       </div>
-    );
 
-  }
 
+      {/* PRODUCT MAIN SECTION */}
+
+      <section className="max-w-7xl mx-auto px-6 py-8">
+
+        <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-10">
+
+
+          {/* ========================= */}
+          {/* LEFT - PRODUCT IMAGES */}
+          {/* ========================= */}
+
+          <div>
+
+            <div
+              className="
+                relative
+                h-[420px]
+                sm:h-[520px]
+                bg-white
+                rounded-[30px]
+                border
+                border-gray-200
+                overflow-hidden
+                shadow-sm
+              "
+            >
+
+              {/* FLASH SALE */}
+
+              {product.is_flash_sale && (
+                <div
+                  className="
+                    absolute
+                    top-5
+                    left-5
+                    z-10
+                    bg-red-500
+                    text-white
+                    px-4
+                    py-2
+                    rounded-full
+                    text-sm
+                    font-black
+                  "
+                >
+                  FLASH SALE
+                </div>
+              )}
+
+
+              {/* WISHLIST */}
+
+              <button
+                onClick={() => setWishlist(!wishlist)}
+                className="
+                  absolute
+                  top-5
+                  right-5
+                  z-10
+                  w-12
+                  h-12
+                  rounded-full
+                  bg-white
+                  shadow-lg
+                  flex
+                  items-center
+                  justify-center
+                  hover:scale-105
+                  transition
+                "
+              >
+
+                <Heart
+                  size={23}
+                  className={
+                    wishlist
+                      ? "fill-red-500 text-red-500"
+                      : "text-gray-700"
+                  }
+                />
+
+              </button>
+
+
+              {/* MAIN IMAGE */}
+
+              {activeImage ? (
+                <Image
+                  src={activeImage}
+                  alt={product.name}
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 55vw"
+                  className="
+                    object-contain
+                    p-8
+                    sm:p-12
+                    hover:scale-105
+                    transition
+                    duration-500
+                  "
+                />
+              ) : (
+                <div className="h-full flex items-center justify-center text-gray-400">
+                  No Image Available
+                </div>
+              )}
+
+            </div>
+
+
+            {/* IMAGE THUMBNAILS */}
+
+            <div className="flex gap-4 mt-5">
+
+              <button
+                onClick={() =>
+                  setActiveImage(
+                    product.image_url ||
+                      "/products/product-placeholder.png"
+                  )
+                }
+                className={`
+                  relative
+                  w-20
+                  h-20
+                  rounded-2xl
+                  bg-white
+                  border-2
+                  overflow-hidden
+                  transition
+                  ${
+                    activeImage === product.image_url
+                      ? "border-[#D4AF37]"
+                      : "border-gray-200"
+                  }
+                `}
+              >
 
-return (
+                {product.image_url && (
+                  <Image
+                    src={product.image_url}
+                    alt={product.name}
+                    fill
+                    sizes="80px"
+                    className="object-contain p-2"
+                  />
+                )}
+
+              </button>
+
+            </div>
+
+          </div>
+
+
+          {/* ========================= */}
+          {/* RIGHT - PRODUCT DETAILS */}
+          {/* ========================= */}
+
+          <div className="bg-white rounded-[30px] border border-gray-200 p-6 sm:p-8 shadow-sm">
+
+            {/* BRAND */}
+
+            {product.brand && (
+              <p className="text-sm font-bold text-[#D4AF37] uppercase tracking-wider">
+                {product.brand}
+              </p>
+            )}
 
-<main className="
-min-h-screen
-bg-[#faf8f3]
-px-6
-py-10
-">
 
+            {/* PRODUCT NAME */}
 
-<Link
-href="/"
-className="
-flex
-items-center
-gap-2
-text-gray-600
-mb-8
-"
->
+            <h1
+              className="
+                text-3xl
+                sm:text-4xl
+                font-black
+                text-gray-900
+                mt-2
+                leading-tight
+              "
+            >
+              {product.name}
+            </h1>
 
-<ArrowLeft size={20}/>
-Back
 
-</Link>
+            {/* SHORT DESCRIPTION */}
 
+            {product.short_description && (
+              <p className="text-gray-500 mt-3 leading-6">
+                {product.short_description}
+              </p>
+            )}
 
 
-<div className="
-max-w-7xl
-mx-auto
-grid
-lg:grid-cols-2
-gap-12
-">
+            {/* RATING */}
 
+            <div className="flex items-center gap-3 mt-5">
 
-{/* IMAGE SECTION */}
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-1
+                  bg-green-600
+                  text-white
+                  px-3
+                  py-1.5
+                  rounded-lg
+                  font-bold
+                  text-sm
+                "
+              >
 
+                <Star
+                  size={15}
+                  className="fill-white"
+                />
 
-<div>
+                {product.rating ?? 4.5}
 
+              </div>
 
-<div className="
-relative
-h-[500px]
-bg-white
-rounded-3xl
-border
-overflow-hidden
-">
+              <span className="text-gray-500 text-sm">
+                {product.reviews_count ?? 0} Reviews
+              </span>
 
+            </div>
 
-<Image
 
-src={activeImage}
+            <div className="h-px bg-gray-200 my-6" />
 
-alt={product.name}
 
-fill
+            {/* PRICE */}
 
-className="
-object-contain
-p-10
-"
+            <div>
 
-/>
+              <div className="flex items-center gap-3 flex-wrap">
 
+                <span className="text-4xl font-black text-gray-900">
+                  ₹{product.price.toLocaleString("en-IN")}
+                </span>
 
-</div>
+                {product.original_price &&
+                  product.original_price > product.price && (
+                    <span className="text-lg text-gray-400 line-through">
+                      ₹
+                      {product.original_price.toLocaleString(
+                        "en-IN"
+                      )}
+                    </span>
+                  )}
+
+              </div>
+
+
+              {discount > 0 && (
+                <p className="text-green-600 font-bold mt-2">
+                  {discount}% OFF
+                </p>
+              )}
+
+            </div>
+
+
+            {/* STOCK */}
+
+            <div className="mt-5">
+
+              {product.stock && product.stock > 0 ? (
+                <div className="flex items-center gap-2 text-green-600 font-bold">
+
+                  <Check size={18} />
+
+                  In Stock
+
+                  <span className="text-gray-500 font-normal">
+                    ({product.stock} available)
+                  </span>
+
+                </div>
+              ) : (
+                <div className="text-red-500 font-bold">
+                  Out of Stock
+                </div>
+              )}
+
+            </div>
+
+
+            {/* DESCRIPTION */}
+
+            {product.description && (
+              <div className="mt-7">
+
+                <h2 className="text-xl font-black mb-2">
+                  About This Product
+                </h2>
+
+                <p className="text-gray-600 leading-7">
+                  {product.description}
+                </p>
+
+              </div>
+            )}
+
+
+            {/* QUANTITY */}
+
+            {product.stock && product.stock > 0 && (
+              <div className="mt-7">
+
+                <h3 className="font-bold mb-3">
+                  Quantity
+                </h3>
+
+                <div
+                  className="
+                    inline-flex
+                    items-center
+                    border
+                    border-gray-300
+                    rounded-xl
+                    overflow-hidden
+                    bg-white
+                  "
+                >
+
+                  <button
+                    onClick={decreaseQuantity}
+                    disabled={quantity <= 1}
+                    className="
+                      w-12
+                      h-12
+                      flex
+                      items-center
+                      justify-center
+                      hover:bg-gray-100
+                      disabled:opacity-40
+                    "
+                  >
+                    <Minus size={18} />
+                  </button>
+
+                  <span
+                    className="
+                      w-14
+                      text-center
+                      font-bold
+                    "
+                  >
+                    {quantity}
+                  </span>
+
+                  <button
+                    onClick={increaseQuantity}
+                    disabled={
+                      quantity >= (product.stock ?? 99)
+                    }
+                    className="
+                      w-12
+                      h-12
+                      flex
+                      items-center
+                      justify-center
+                      hover:bg-gray-100
+                      disabled:opacity-40
+                    "
+                  >
+                    <Plus size={18} />
+                  </button>
+
+                </div>
+
+              </div>
+            )}
+
+
+            {/* ACTION BUTTONS */}
+
+            <div className="grid sm:grid-cols-[auto_1fr_1fr] gap-3 mt-7">
+
+              {/* WISHLIST */}
+
+              <button
+                onClick={() => setWishlist(!wishlist)}
+                className="
+                  h-14
+                  w-full
+                  sm:w-14
+                  rounded-2xl
+                  border
+                  border-gray-300
+                  flex
+                  items-center
+                  justify-center
+                  hover:border-[#D4AF37]
+                  transition
+                "
+              >
+
+                <Heart
+                  size={23}
+                  className={
+                    wishlist
+                      ? "fill-red-500 text-red-500"
+                      : ""
+                  }
+                />
+
+              </button>
+
+
+              {/* ADD CART */}
+
+              <button
+                onClick={addToCart}
+                disabled={
+                  cartLoading ||
+                  !product.stock ||
+                  product.stock <= 0
+                }
+                className="
+                  h-14
+                  rounded-2xl
+                  bg-[#D4AF37]
+                  hover:bg-black
+                  disabled:bg-gray-300
+                  text-white
+                  font-black
+                  flex
+                  items-center
+                  justify-center
+                  gap-2
+                  transition
+                "
+              >
+
+                {cartLoading ? (
+                  <Loader2
+                    size={20}
+                    className="animate-spin"
+                  />
+                ) : (
+                  <ShoppingCart size={20} />
+                )}
+
+                Add To Cart
+
+              </button>
+
+
+              {/* BUY NOW */}
+
+              <button
+                onClick={buyNow}
+                disabled={!product.stock || product.stock <= 0}
+                className="
+                  h-14
+                  rounded-2xl
+                  bg-black
+                  hover:bg-[#D4AF37]
+                  disabled:bg-gray-300
+                  text-white
+                  font-black
+                  transition
+                "
+              >
+                Buy Now
+              </button>
+
+            </div>
+
+
+            {/* SERVICE FEATURES */}
+
+            <div className="grid sm:grid-cols-2 gap-3 mt-7">
+
+              <div
+                className="
+                  rounded-2xl
+                  bg-[#faf8f3]
+                  border
+                  p-4
+                  flex
+                  gap-3
+                "
+              >
+
+                <Truck
+                  className="text-[#D4AF37] shrink-0"
+                  size={23}
+                />
+
+                <div>
+
+                  <p className="font-bold">
+                    Free Delivery
+                  </p>
+
+                  <p className="text-xs text-gray-500 mt-1">
+                    Fast & reliable delivery
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              <div
+                className="
+                  rounded-2xl
+                  bg-[#faf8f3]
+                  border
+                  p-4
+                  flex
+                  gap-3
+                "
+              >
+
+                <ShieldCheck
+                  className="text-[#D4AF37] shrink-0"
+                  size={23}
+                />
+
+                <div>
+
+                  <p className="font-bold">
+                    Secure Payment
+                  </p>
+
+                  <p className="text-xs text-gray-500 mt-1">
+                    100% secure checkout
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              <div
+                className="
+                  rounded-2xl
+                  bg-[#faf8f3]
+                  border
+                  p-4
+                  flex
+                  gap-3
+                "
+              >
+
+                <RotateCcw
+                  className="text-[#D4AF37] shrink-0"
+                  size={23}
+                />
+
+                <div>
+
+                  <p className="font-bold">
+                    Easy Returns
+                  </p>
+
+                  <p className="text-xs text-gray-500 mt-1">
+                    Hassle-free returns
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              <div
+                className="
+                  rounded-2xl
+                  bg-[#faf8f3]
+                  border
+                  p-4
+                  flex
+                  gap-3
+                "
+              >
+
+                <PackageCheck
+                  className="text-[#D4AF37] shrink-0"
+                  size={23}
+                />
+
+                <div>
+
+                  <p className="font-bold">
+                    Quality Assured
+                  </p>
+
+                  <p className="text-xs text-gray-500 mt-1">
+                    Genuine premium products
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        {/* ========================= */}
+        {/* PRODUCT INFORMATION */}
+        {/* ========================= */}
+
+        <div
+          className="
+            mt-10
+            bg-white
+            rounded-[30px]
+            border
+            border-gray-200
+            p-6
+            sm:p-8
+          "
+        >
+
+          <h2 className="text-2xl font-black mb-6">
+            Product Information
+          </h2>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+            <div className="bg-gray-50 rounded-2xl p-5">
+              <p className="text-sm text-gray-500">
+                Brand
+              </p>
+
+              <p className="font-bold mt-1">
+                {product.brand || "PrimeCart"}
+              </p>
+            </div>
+
+
+            <div className="bg-gray-50 rounded-2xl p-5">
+              <p className="text-sm text-gray-500">
+                Product ID
+              </p>
+
+              <p className="font-bold mt-1 text-sm break-all">
+                {product.id}
+              </p>
+            </div>
+
+
+            <div className="bg-gray-50 rounded-2xl p-5">
+              <p className="text-sm text-gray-500">
+                Availability
+              </p>
+
+              <p className="font-bold mt-1">
+                {product.stock && product.stock > 0
+                  ? "In Stock"
+                  : "Out of Stock"}
+              </p>
+            </div>
+
+
+            <div className="bg-gray-50 rounded-2xl p-5">
+              <p className="text-sm text-gray-500">
+                Reviews
+              </p>
+
+              <p className="font-bold mt-1">
+                {product.reviews_count ?? 0}
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        {/* ========================= */}
+        {/* CUSTOMER REVIEWS */}
+        {/* ========================= */}
+
+        <div
+          className="
+            mt-8
+            bg-white
+            rounded-[30px]
+            border
+            border-gray-200
+            p-6
+            sm:p-8
+          "
+        >
+
+          <h2 className="text-2xl font-black">
+            Customer Reviews
+          </h2>
+
+
+          <div className="mt-6 flex flex-col sm:flex-row gap-6">
+
+            <div
+              className="
+                min-w-[180px]
+                rounded-2xl
+                bg-gray-50
+                p-6
+                text-center
+              "
+            >
+
+              <p className="text-5xl font-black">
+                {product.rating ?? 4.5}
+              </p>
+
+              <div className="flex justify-center gap-1 mt-3">
+
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    size={17}
+                    className="
+                      fill-yellow-400
+                      text-yellow-400
+                    "
+                  />
+                ))}
+
+              </div>
+
+              <p className="text-sm text-gray-500 mt-2">
+                {product.reviews_count ?? 0} Reviews
+              </p>
+
+            </div>
 
+
+            <div className="flex-1 space-y-4">
 
+              <div className="border rounded-2xl p-5">
 
-<div className="
-flex
-gap-4
-mt-5
-">
+                <div className="flex items-center justify-between">
 
+                  <div>
+                    <p className="font-bold">
+                      Verified Customer
+                    </p>
 
-{
-product.images.map((img,index)=>(
+                    <p className="text-xs text-gray-400">
+                      Verified Purchase
+                    </p>
+                  </div>
 
+                  <div className="flex text-yellow-400">
+                    ★★★★★
+                  </div>
+
+                </div>
 
-<button
+                <p className="text-gray-600 mt-3">
+                  Great quality product. Exactly as described
+                  and delivery was fast.
+                </p>
 
-key={index}
-
-onClick={()=>setActiveImage(img)}
-
-className="
-relative
-h-20
-w-20
-rounded-xl
-border
-bg-white
-overflow-hidden
-hover:border-[#D4AF37]
-"
-
->
-
-
-<Image
-
-src={img}
-
-alt="thumbnail"
-
-fill
-
-className="
-object-contain
-p-2
-"
-
-/>
-
-
-</button>
-
-
-))
-
-}
-
-
-
-</div>
-
-
-</div>
- {/* PRODUCT DETAILS SECTION */}
-
-<div className="space-y-6">
-
-
-<div>
-
-<p className="
-text-sm
-text-gray-500
-font-medium
-">
-{product.category}
-</p>
-
-
-<h1 className="
-text-4xl
-font-black
-mt-2
-text-gray-900
-">
-{product.name}
-</h1>
-
-
-<p className="
-text-gray-500
-mt-1
-">
-Brand : {product.brand}
-</p>
-
-
-</div>
-
-
-
-{/* RATING */}
-
-
-<div className="
-flex
-items-center
-gap-3
-">
-
-
-<div className="
-flex
-items-center
-gap-1
-bg-green-600
-text-white
-px-3
-py-1
-rounded-full
-text-sm
-font-bold
-">
-
-<Star
-size={16}
-className="fill-white"
-/>
-
-{product.rating}
-
-</div>
-
-
-<span className="text-gray-500">
-({product.reviews} Reviews)
-</span>
-
-
-</div>
-
-
-
-
-
-{/* PRICE */}
-
-
-<div className="
-flex
-items-center
-gap-4
-">
-
-
-<h2 className="
-text-4xl
-font-black
-">
-₹{product.price}
-</h2>
-
-
-<span className="
-text-xl
-text-gray-400
-line-through
-">
-₹{product.oldPrice}
-</span>
-
-
-<span className="
-bg-red-500
-text-white
-px-3
-py-1
-rounded-full
-font-bold
-text-sm
-">
-{product.discount} OFF
-</span>
-
-
-</div>
-
-
-
-
-
-{/* DESCRIPTION */}
-
-
-<div>
-
-
-<h3 className="
-text-xl
-font-bold
-mb-2
-">
-Description
-</h3>
-
-
-<p className="
-text-gray-600
-leading-7
-">
-{product.description}
-</p>
-
-
-</div>
-
-
-
-
-
-{/* FEATURES */}
-
-
-<div>
-
-
-<h3 className="
-text-xl
-font-bold
-mb-3
-">
-Highlights
-</h3>
-
-
-<div className="
-grid
-sm:grid-cols-2
-gap-3
-">
-
-
-{
-product.features.map((feature,index)=>(
-
-
-<div
-
-key={index}
-
-className="
-bg-white
-border
-rounded-xl
-p-3
-text-sm
-"
->
-
-✓ {feature}
-
-</div>
-
-
-))
-
-}
-
-
-</div>
-
-</div>
-
-
-
-
-
-{/* QUANTITY */}
-
-
-<div>
-
-
-<h3 className="
-font-bold
-mb-3
-">
-Quantity
-</h3>
-
-
-<div className="
-flex
-items-center
-gap-4
-">
-
-
-<button
-
-onClick={()=> 
-setQuantity(
-Math.max(1,quantity-1)
-)
-}
-
-className="
-w-10
-h-10
-rounded-full
-border
-flex
-items-center
-justify-center
-hover:bg-gray-100
-"
-
->
-
-<Minus size={18}/>
-
-</button>
-
-
-
-<span className="
-text-xl
-font-bold
-">
-{quantity}
-</span>
-
-
-
-<button
-
-onClick={()=>setQuantity(quantity+1)}
-
-className="
-w-10
-h-10
-rounded-full
-border
-flex
-items-center
-justify-center
-hover:bg-gray-100
-"
-
->
-
-<Plus size={18}/>
-
-</button>
-
-
-
-</div>
-
-
-</div>
-
-
-
-
-
-{/* ACTION BUTTONS */}
-
-
-<div className="
-flex
-gap-4
-flex-wrap
-">
-
-
-<button
-
-onClick={()=>setWishlist(!wishlist)}
-
-className="
-h-14
-w-14
-rounded-2xl
-border
-flex
-items-center
-justify-center
-hover:border-[#D4AF37]
-transition
-"
-
->
-
-
-<Heart
-
-size={25}
-
-className={
-wishlist
-?
-"fill-red-500 text-red-500"
-:
-""
-}
-
-/>
-
-
-</button>
-
-
-
-
-<button
-
-className="
-flex-1
-h-14
-rounded-2xl
-bg-[#D4AF37]
-hover:bg-black
-text-white
-font-bold
-flex
-items-center
-justify-center
-gap-2
-transition
-"
-
->
-
-
-<ShoppingCart size={20}/>
-
-Add To Cart
-
-
-</button>
-
-
-
-
-<button
-
-className="
-flex-1
-h-14
-rounded-2xl
-bg-black
-hover:bg-[#D4AF37]
-text-white
-font-bold
-transition
-"
-
->
-
-Buy Now
-
-</button>
-
-
-
-</div>
-
-
-
-
-
-{/* DELIVERY INFO */}
-
-
-<div className="
-grid
-sm:grid-cols-2
-gap-4
-mt-6
-">
-
-
-<div className="
-bg-white
-rounded-2xl
-p-5
-border
-flex
-gap-3
-items-center
-">
-
-
-<Truck
-className="text-[#D4AF37]"
-/>
-
-
-<div>
-
-<h4 className="font-bold">
-Free Delivery
-</h4>
-
-<p className="text-sm text-gray-500">
-Fast delivery available
-</p>
-
-</div>
-
-
-</div>
-
-
-
-
-
-<div className="
-bg-white
-rounded-2xl
-p-5
-border
-flex
-gap-3
-items-center
-">
-
-
-<ShieldCheck
-className="text-[#D4AF37]"
-/>
-
-
-<div>
-
-<h4 className="font-bold">
-Secure Payment
-</h4>
-
-<p className="text-sm text-gray-500">
-100% safe checkout
-</p>
-
-</div>
-
-
-</div>
-
-
-
-</div>
-
-
-</div>
- {/* SPECIFICATIONS */}
-
-<div className="
-mt-16
-bg-white
-rounded-3xl
-border
-p-8
-">
-
-<h2 className="
-text-2xl
-font-black
-mb-6
-">
-Product Specifications
-</h2>
-
-
-<div className="
-grid
-sm:grid-cols-2
-gap-5
-">
-
-
-{
-Object.entries(product.specifications).map(
-([key,value])=>(
-
-<div
-
-key={key}
-
-className="
-flex
-justify-between
-border-b
-pb-3
-"
-
->
-
-<span className="
-font-semibold
-text-gray-600
-">
-{key}
-</span>
-
-
-<span className="
-font-bold
-">
-{value}
-</span>
-
-
-</div>
-
-)
-
-)
-
-
-}
-
-
-</div>
-
-
-</div>
-
-
-
-
-
-{/* CUSTOMER REVIEWS */}
-
-
-<div className="
-mt-10
-bg-white
-rounded-3xl
-border
-p-8
-">
-
-
-<h2 className="
-text-2xl
-font-black
-mb-6
-">
-Customer Reviews
-</h2>
-
-
-
-<div className="
-flex
-items-center
-gap-4
-bg-gray-50
-rounded-2xl
-p-5
-">
-
-
-<div className="
-text-4xl
-font-black
-">
-{product.rating}
-</div>
-
-
-<div>
-
-
-<div className="
-flex
-gap-1
-">
-
-{
-[1,2,3,4,5].map((star)=>(
-<Star
-key={star}
-size={20}
-className="
-fill-yellow-400
-text-yellow-400
-"
-/>
-))
-}
-
-</div>
-
-
-<p className="
-text-gray-500
-mt-1
-">
-Based on {product.reviews} verified reviews
-</p>
-
-
-</div>
-
-
-</div>
-
-
-
-<div className="
-mt-6
-space-y-4
-">
-
-
-<div className="
-border
-rounded-2xl
-p-5
-">
-
-<h4 className="font-bold">
-Rahul Sharma
-</h4>
-
-<p className="text-yellow-500">
-★★★★★
-</p>
-
-<p className="text-gray-600 mt-2">
-Amazing quality product. Delivery was very fast.
-</p>
-
-
-</div>
-
-
-
-<div className="
-border
-rounded-2xl
-p-5
-">
-
-<h4 className="font-bold">
-Priya Patil
-</h4>
-
-<p className="text-yellow-500">
-★★★★★
-</p>
-
-<p className="text-gray-600 mt-2">
-Product exactly as shown. Highly recommended.
-</p>
-
-
-</div>
-
-
-
-</div>
-
-
-</div>
-
-
-
-
-
-{/* RELATED PRODUCTS */}
-
-
-<div className="
-mt-10
-">
-
-
-<h2 className="
-text-3xl
-font-black
-mb-6
-">
-Related Products
-</h2>
-
-
-<div className="
-grid
-sm:grid-cols-2
-md:grid-cols-4
-gap-6
-">
-
-
-{
-products
-.filter(
-(item)=>item.id !== product.id
-)
-.map((item)=>(
-
-
-<Link
-
-key={item.id}
-
-href={`/product/dashboard/${item.id}`}
-
-className="
-bg-white
-rounded-3xl
-border
-p-5
-hover:shadow-xl
-transition
-"
-
-
->
-
-
-<div className="
-relative
-h-48
-">
-
-
-<Image
-
-src={item.image}
-
-alt={item.name}
-
-fill
-
-className="
-object-contain
-"
-
-/>
-
-
-</div>
-
-
-
-<h3 className="
-font-bold
-mt-4
-">
-{item.name}
-</h3>
-
-
-<div className="
-flex
-items-center
-gap-2
-mt-2
-">
-
-
-<Star
-
-size={16}
-
-className="
-fill-yellow-400
-text-yellow-400
-"
-
-/>
-
-
-<span>
-{item.rating}
-</span>
-
-
-</div>
-
-
-
-<p className="
-text-xl
-font-black
-mt-2
-">
-₹{item.price}
-</p>
-
-
-</Link>
-
-
-))
-
-}
-
-
-</div>
-
-
-
-
-
-</div>
-
-</div>
-
-</main>
-
-);
+              </div>
+
+
+              <div className="border rounded-2xl p-5">
+
+                <div className="flex items-center justify-between">
+
+                  <div>
+                    <p className="font-bold">
+                      Verified Customer
+                    </p>
+
+                    <p className="text-xs text-gray-400">
+                      Verified Purchase
+                    </p>
+                  </div>
+
+                  <div className="flex text-yellow-400">
+                    ★★★★★
+                  </div>
+
+                </div>
+
+                <p className="text-gray-600 mt-3">
+                  Very happy with the product. Good packaging
+                  and premium quality.
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        {/* ========================= */}
+        {/* RELATED PRODUCTS */}
+        {/* ========================= */}
+
+        <div className="mt-12">
+
+          <div className="flex items-end justify-between mb-6">
+
+            <div>
+
+              <h2 className="text-3xl font-black">
+                Related Products
+              </h2>
+
+              <p className="text-gray-500 mt-1">
+                You may also like these products
+              </p>
+
+            </div>
+
+            <Link
+              href="/dashboard/products"
+              className="
+                text-[#D4AF37]
+                font-bold
+                hover:underline
+              "
+            >
+              View All →
+            </Link>
+
+          </div>
+
+
+          {relatedLoading ? (
+
+            <div className="flex justify-center py-10">
+
+              <Loader2
+                className="
+                  animate-spin
+                  text-[#D4AF37]
+                "
+                size={30}
+              />
+
+            </div>
+
+          ) : relatedProducts.length === 0 ? (
+
+            <div className="bg-white border rounded-2xl p-8 text-center">
+              <p className="text-gray-500">
+                No related products available.
+              </p>
+            </div>
+
+          ) : (
+
+            <div
+              className="
+                grid
+                grid-cols-1
+                sm:grid-cols-2
+                lg:grid-cols-4
+                gap-6
+              "
+            >
+
+              {relatedProducts.map((item) => {
+
+                const itemDiscount =
+                  item.original_price &&
+                  item.original_price > item.price
+                    ? Math.round(
+                        ((item.original_price -
+                          item.price) /
+                          item.original_price) *
+                          100
+                      )
+                    : 0;
+
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/product/dashboard/${item.id}`}
+                    className="
+                      group
+                      bg-white
+                      rounded-3xl
+                      border
+                      border-gray-200
+                      overflow-hidden
+                      hover:shadow-xl
+                      transition
+                    "
+                  >
+
+                    <div
+                      className="
+                        relative
+                        h-56
+                        bg-gray-50
+                      "
+                    >
+
+                      {item.image_url ? (
+                        <Image
+                          src={item.image_url}
+                          alt={item.name}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                          className="
+                            object-contain
+                            p-6
+                            group-hover:scale-110
+                            transition
+                            duration-500
+                          "
+                        />
+                      ) : (
+                        <div className="h-full flex items-center justify-center text-gray-400">
+                          No Image
+                        </div>
+                      )}
+
+                      {itemDiscount > 0 && (
+                        <span
+                          className="
+                            absolute
+                            top-3
+                            left-3
+                            bg-red-500
+                            text-white
+                            text-xs
+                            font-bold
+                            px-3
+                            py-1
+                            rounded-full
+                          "
+                        >
+                          {itemDiscount}% OFF
+                        </span>
+                      )}
+
+                    </div>
+
+
+                    <div className="p-5">
+
+                      <h3
+                        className="
+                          font-bold
+                          text-lg
+                          line-clamp-2
+                          group-hover:text-[#D4AF37]
+                          transition
+                        "
+                      >
+                        {item.name}
+                      </h3>
+
+
+                      <div className="flex items-center gap-2 mt-3">
+
+                        <span
+                          className="
+                            flex
+                            items-center
+                            gap-1
+                            bg-green-600
+                            text-white
+                            px-2
+                            py-1
+                            rounded-lg
+                            text-xs
+                            font-bold
+                          "
+                        >
+
+                          <Star
+                            size={12}
+                            className="fill-white"
+                          />
+
+                          {item.rating ?? 4.5}
+
+                        </span>
+
+                        <span className="text-xs text-gray-500">
+                          ({item.reviews_count ?? 0})
+                        </span>
+
+                      </div>
+
+
+                      <div className="flex items-center gap-2 mt-3">
+
+                        <span className="text-xl font-black">
+                          ₹{item.price.toLocaleString("en-IN")}
+                        </span>
+
+                        {item.original_price &&
+                          item.original_price > item.price && (
+                            <span className="text-sm text-gray-400 line-through">
+                              ₹
+                              {item.original_price.toLocaleString(
+                                "en-IN"
+                              )}
+                            </span>
+                          )}
+
+                      </div>
+
+                    </div>
+
+                  </Link>
+                );
+              })}
+
+            </div>
+
+          )}
+
+        </div>
+
+      </section>
+
+    </main>
+  );
 }
