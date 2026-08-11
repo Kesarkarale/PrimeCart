@@ -15,6 +15,7 @@ import {
   PackageCheck,
   Loader2,
 } from "lucide-react";
+
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -60,8 +61,6 @@ export default function ProductDetailsPage() {
       ? params.id[0]
       : "";
 
-  const supabase = createClient();
-
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<
     RelatedProduct[]
@@ -75,45 +74,73 @@ export default function ProductDetailsPage() {
   const [cartLoading, setCartLoading] = useState(false);
 
   useEffect(() => {
-    if (!productId) return;
+    if (!productId) {
+      setLoading(false);
+      return;
+    }
+
+    const supabase = createClient();
 
     const loadProduct = async () => {
-      setLoading(true);
+      try {
+        setLoading(true);
 
-      console.log("PRODUCT ID:", productId);
+        console.log("PRODUCT ID:", productId);
 
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("id", productId)
-        .maybeSingle();
+        const { data, error } = await supabase
+          .from("products")
+          .select("*")
+          .eq("id", productId)
+          .maybeSingle();
 
-      console.log("PRODUCT:", data);
-      console.log("PRODUCT ERROR:", error);
+        console.log("PRODUCT:", data);
+        console.log("PRODUCT ERROR:", error);
 
-      if (error || !data) {
+        if (error || !data) {
+          console.error("Product not found:", error);
+          setProduct(null);
+          setLoading(false);
+          return;
+        }
+
+        setProduct(data);
+        setQuantity(1);
+
+        // Related products
+        setRelatedLoading(true);
+
+        const { data: relatedData, error: relatedError } =
+          await supabase
+            .from("products")
+            .select(
+              "id,name,price,original_price,image_url,rating,reviews_count"
+            )
+            .eq("is_active", true)
+            .neq("id", data.id)
+            .limit(8);
+
+        console.log(
+          "RELATED PRODUCTS:",
+          relatedData
+        );
+
+        console.log(
+          "RELATED ERROR:",
+          relatedError
+        );
+
+        setRelatedProducts(relatedData ?? []);
+      } catch (error) {
+        console.error(
+          "Product loading error:",
+          error
+        );
+
         setProduct(null);
+      } finally {
         setLoading(false);
-        return;
+        setRelatedLoading(false);
       }
-
-      setProduct(data);
-      setLoading(false);
-
-      // Related products
-      setRelatedLoading(true);
-
-      const { data: relatedData } = await supabase
-        .from("products")
-        .select(
-          "id,name,price,original_price,image_url,rating,reviews_count"
-        )
-        .eq("is_active", true)
-        .neq("id", data.id)
-        .limit(8);
-
-      setRelatedProducts(relatedData || []);
-      setRelatedLoading(false);
     };
 
     loadProduct();
@@ -138,26 +165,68 @@ export default function ProductDetailsPage() {
   const addToCart = () => {
     if (!product) return;
 
+    if (!product.stock || product.stock <= 0) {
+      return;
+    }
+
     setCartLoading(true);
 
     console.log("ADD TO CART:", {
       product_id: product.id,
+      name: product.name,
       quantity,
+      price: product.price,
     });
 
     setTimeout(() => {
       setCartLoading(false);
-      alert(`${product.name} added to cart`);
+
+      alert(
+        `${product.name} added to cart`
+      );
     }, 500);
   };
 
+  const buyNow = () => {
+    if (!product) return;
+
+    if (!product.stock || product.stock <= 0) {
+      return;
+    }
+
+    console.log("BUY NOW:", {
+      product_id: product.id,
+      quantity,
+    });
+
+    alert(
+      `Proceeding to checkout for ${product.name}`
+    );
+  };
+
+  /* =========================
+     LOADING
+  ========================= */
+
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#faf8f3] flex items-center justify-center">
+      <main
+        className="
+          min-h-screen
+          bg-[#faf8f3]
+          flex
+          items-center
+          justify-center
+        "
+      >
         <div className="text-center">
           <Loader2
-            size={40}
-            className="animate-spin text-[#D4AF37] mx-auto"
+            size={42}
+            className="
+              animate-spin
+              text-[#D4AF37]
+              mx-auto
+            "
           />
 
           <p className="mt-4 text-gray-500 font-semibold">
@@ -168,11 +237,23 @@ export default function ProductDetailsPage() {
     );
   }
 
+  /* =========================
+     NOT FOUND
+  ========================= */
+
   if (!product) {
     return (
-      <main className="min-h-screen bg-[#faf8f3] flex items-center justify-center px-6">
+      <main
+        className="
+          min-h-screen
+          bg-[#faf8f3]
+          flex
+          items-center
+          justify-center
+          px-6
+        "
+      >
         <div className="text-center">
-
           <div className="text-6xl mb-5">
             🛍️
           </div>
@@ -183,6 +264,10 @@ export default function ProductDetailsPage() {
 
           <p className="text-gray-500 mt-2">
             This product could not be found.
+          </p>
+
+          <p className="text-xs text-gray-400 mt-2 break-all">
+            ID: {productId}
           </p>
 
           <Link
@@ -205,7 +290,6 @@ export default function ProductDetailsPage() {
             <ArrowLeft size={18} />
             Back To Shop
           </Link>
-
         </div>
       </main>
     );
@@ -215,23 +299,29 @@ export default function ProductDetailsPage() {
     product.original_price &&
     product.original_price > product.price
       ? Math.round(
-          ((product.original_price - product.price) /
+          ((product.original_price -
+            product.price) /
             product.original_price) *
             100
         )
       : 0;
 
-  const image =
+  const productImage =
     product.image_url ||
     "/products/product-placeholder.png";
+
+  const isOutOfStock =
+    !product.stock ||
+    product.stock <= 0;
 
   return (
     <main className="min-h-screen bg-[#faf8f3]">
 
-      {/* BACK */}
+      {/* =========================
+          BACK
+      ========================= */}
 
       <div className="max-w-7xl mx-auto px-6 pt-8">
-
         <Link
           href="/dashboard"
           className="
@@ -247,17 +337,19 @@ export default function ProductDetailsPage() {
           <ArrowLeft size={19} />
           Back To Shop
         </Link>
-
       </div>
 
-
-      {/* MAIN PRODUCT */}
+      {/* =========================
+          MAIN PRODUCT
+      ========================= */}
 
       <section className="max-w-7xl mx-auto px-6 py-8">
 
         <div className="grid lg:grid-cols-2 gap-10">
 
-          {/* IMAGE */}
+          {/* =========================
+              PRODUCT IMAGE
+          ========================= */}
 
           <div>
 
@@ -273,6 +365,8 @@ export default function ProductDetailsPage() {
                 shadow-sm
               "
             >
+
+              {/* FLASH SALE */}
 
               {product.is_flash_sale && (
                 <div
@@ -294,10 +388,14 @@ export default function ProductDetailsPage() {
                 </div>
               )}
 
+              {/* WISHLIST */}
+
               <button
+                type="button"
                 onClick={() =>
-                  setWishlist(!wishlist)
+                  setWishlist((value) => !value)
                 }
+                aria-label="Add to wishlist"
                 className="
                   absolute
                   top-5
@@ -311,6 +409,8 @@ export default function ProductDetailsPage() {
                   flex
                   items-center
                   justify-center
+                  hover:scale-110
+                  transition
                 "
               >
                 <Heart
@@ -324,11 +424,14 @@ export default function ProductDetailsPage() {
               </button>
 
               <Image
-                src={image}
+                src={productImage}
                 alt={product.name}
                 fill
                 priority
-                sizes="(max-width: 1024px) 100vw, 50vw"
+                sizes="
+                  (max-width: 1024px) 100vw,
+                  50vw
+                "
                 className="
                   object-contain
                   p-8
@@ -341,11 +444,9 @@ export default function ProductDetailsPage() {
 
             </div>
 
-
             {/* THUMBNAIL */}
 
             <div className="mt-5">
-
               <div
                 className="
                   relative
@@ -358,23 +459,22 @@ export default function ProductDetailsPage() {
                   overflow-hidden
                 "
               >
-
                 <Image
-                  src={image}
+                  src={productImage}
                   alt={product.name}
                   fill
                   sizes="80px"
                   className="object-contain p-2"
                 />
-
               </div>
-
             </div>
 
           </div>
 
 
-          {/* DETAILS */}
+          {/* =========================
+              PRODUCT DETAILS
+          ========================= */}
 
           <div
             className="
@@ -402,7 +502,6 @@ export default function ProductDetailsPage() {
               </p>
             )}
 
-
             {/* NAME */}
 
             <h1
@@ -417,7 +516,6 @@ export default function ProductDetailsPage() {
               {product.name}
             </h1>
 
-
             {/* SHORT DESCRIPTION */}
 
             {product.short_description && (
@@ -425,7 +523,6 @@ export default function ProductDetailsPage() {
                 {product.short_description}
               </p>
             )}
-
 
             {/* RATING */}
 
@@ -459,20 +556,22 @@ export default function ProductDetailsPage() {
 
             </div>
 
-
             <div className="h-px bg-gray-200 my-6" />
-
 
             {/* PRICE */}
 
             <div className="flex items-center gap-3 flex-wrap">
 
               <span className="text-4xl font-black">
-                ₹{product.price.toLocaleString("en-IN")}
+                ₹
+                {Number(product.price).toLocaleString(
+                  "en-IN"
+                )}
               </span>
 
               {product.original_price &&
-                product.original_price > product.price && (
+                product.original_price >
+                  product.price && (
                   <span
                     className="
                       text-lg
@@ -481,14 +580,13 @@ export default function ProductDetailsPage() {
                     "
                   >
                     ₹
-                    {product.original_price.toLocaleString(
-                      "en-IN"
-                    )}
+                    {Number(
+                      product.original_price
+                    ).toLocaleString("en-IN")}
                   </span>
                 )}
 
             </div>
-
 
             {discount > 0 && (
               <p className="text-green-600 font-bold mt-2">
@@ -496,14 +594,14 @@ export default function ProductDetailsPage() {
               </p>
             )}
 
-
             {/* STOCK */}
 
             <div className="mt-5">
 
-              {product.stock && product.stock > 0 ? (
+              {!isOutOfStock ? (
                 <p className="text-green-600 font-bold">
                   ✓ In Stock
+
                   <span className="text-gray-500 font-normal ml-2">
                     ({product.stock} available)
                   </span>
@@ -515,7 +613,6 @@ export default function ProductDetailsPage() {
               )}
 
             </div>
-
 
             {/* DESCRIPTION */}
 
@@ -533,10 +630,9 @@ export default function ProductDetailsPage() {
               </div>
             )}
 
-
             {/* QUANTITY */}
 
-            {product.stock && product.stock > 0 && (
+            {!isOutOfStock && (
               <div className="mt-7">
 
                 <h3 className="font-bold mb-3">
@@ -554,6 +650,7 @@ export default function ProductDetailsPage() {
                 >
 
                   <button
+                    type="button"
                     onClick={decreaseQuantity}
                     className="
                       w-12
@@ -572,6 +669,7 @@ export default function ProductDetailsPage() {
                   </span>
 
                   <button
+                    type="button"
                     onClick={increaseQuantity}
                     className="
                       w-12
@@ -590,14 +688,24 @@ export default function ProductDetailsPage() {
               </div>
             )}
 
+            {/* ACTION BUTTONS */}
 
-            {/* BUTTONS */}
+            <div
+              className="
+                grid
+                grid-cols-1
+                sm:grid-cols-[56px_1fr_1fr]
+                gap-3
+                mt-7
+              "
+            >
 
-            <div className="grid sm:grid-cols-[56px_1fr_1fr] gap-3 mt-7">
+              {/* WISHLIST */}
 
               <button
+                type="button"
                 onClick={() =>
-                  setWishlist(!wishlist)
+                  setWishlist((value) => !value)
                 }
                 className="
                   h-14
@@ -607,6 +715,7 @@ export default function ProductDetailsPage() {
                   items-center
                   justify-center
                   hover:border-[#D4AF37]
+                  transition
                 "
               >
                 <Heart
@@ -619,13 +728,14 @@ export default function ProductDetailsPage() {
                 />
               </button>
 
+              {/* ADD CART */}
 
               <button
+                type="button"
                 onClick={addToCart}
                 disabled={
                   cartLoading ||
-                  !product.stock ||
-                  product.stock <= 0
+                  isOutOfStock
                 }
                 className="
                   h-14
@@ -633,6 +743,7 @@ export default function ProductDetailsPage() {
                   bg-[#D4AF37]
                   hover:bg-black
                   disabled:bg-gray-300
+                  disabled:cursor-not-allowed
                   text-white
                   font-black
                   flex
@@ -652,19 +763,25 @@ export default function ProductDetailsPage() {
                   <ShoppingCart size={20} />
                 )}
 
-                Add To Cart
+                {isOutOfStock
+                  ? "Out Of Stock"
+                  : "Add To Cart"}
 
               </button>
 
+              {/* BUY NOW */}
 
               <button
-                disabled={!product.stock || product.stock <= 0}
+                type="button"
+                onClick={buyNow}
+                disabled={isOutOfStock}
                 className="
                   h-14
                   rounded-2xl
                   bg-black
                   hover:bg-[#D4AF37]
                   disabled:bg-gray-300
+                  disabled:cursor-not-allowed
                   text-white
                   font-black
                   transition
@@ -675,8 +792,7 @@ export default function ProductDetailsPage() {
 
             </div>
 
-
-            {/* FEATURES */}
+            {/* SERVICE FEATURES */}
 
             <div className="grid sm:grid-cols-2 gap-3 mt-7">
 
@@ -694,7 +810,6 @@ export default function ProductDetailsPage() {
                 </div>
               </div>
 
-
               <div className="bg-[#faf8f3] rounded-2xl p-4 flex gap-3">
                 <ShieldCheck className="text-[#D4AF37]" />
 
@@ -709,7 +824,6 @@ export default function ProductDetailsPage() {
                 </div>
               </div>
 
-
               <div className="bg-[#faf8f3] rounded-2xl p-4 flex gap-3">
                 <RotateCcw className="text-[#D4AF37]" />
 
@@ -723,7 +837,6 @@ export default function ProductDetailsPage() {
                   </p>
                 </div>
               </div>
-
 
               <div className="bg-[#faf8f3] rounded-2xl p-4 flex gap-3">
                 <PackageCheck className="text-[#D4AF37]" />
@@ -746,9 +859,20 @@ export default function ProductDetailsPage() {
         </div>
 
 
-        {/* PRODUCT INFORMATION */}
+        {/* =========================
+            PRODUCT INFORMATION
+        ========================= */}
 
-        <div className="mt-10 bg-white rounded-[30px] border p-6 sm:p-8">
+        <div
+          className="
+            mt-10
+            bg-white
+            rounded-[30px]
+            border
+            p-6
+            sm:p-8
+          "
+        >
 
           <h2 className="text-2xl font-black mb-6">
             Product Information
@@ -766,7 +890,6 @@ export default function ProductDetailsPage() {
               </p>
             </div>
 
-
             <div className="bg-gray-50 rounded-2xl p-5">
               <p className="text-sm text-gray-500">
                 Product ID
@@ -777,7 +900,6 @@ export default function ProductDetailsPage() {
               </p>
             </div>
 
-
             <div className="bg-gray-50 rounded-2xl p-5">
               <p className="text-sm text-gray-500">
                 Stock
@@ -787,7 +909,6 @@ export default function ProductDetailsPage() {
                 {product.stock ?? 0}
               </p>
             </div>
-
 
             <div className="bg-gray-50 rounded-2xl p-5">
               <p className="text-sm text-gray-500">
@@ -804,9 +925,20 @@ export default function ProductDetailsPage() {
         </div>
 
 
-        {/* REVIEWS */}
+        {/* =========================
+            REVIEWS
+        ========================= */}
 
-        <div className="mt-8 bg-white rounded-[30px] border p-6 sm:p-8">
+        <div
+          className="
+            mt-8
+            bg-white
+            rounded-[30px]
+            border
+            p-6
+            sm:p-8
+          "
+        >
 
           <h2 className="text-2xl font-black">
             Customer Reviews
@@ -814,7 +946,15 @@ export default function ProductDetailsPage() {
 
           <div className="mt-6 flex flex-col sm:flex-row gap-6">
 
-            <div className="bg-gray-50 rounded-2xl p-6 text-center sm:w-52">
+            <div
+              className="
+                bg-gray-50
+                rounded-2xl
+                p-6
+                text-center
+                sm:w-52
+              "
+            >
 
               <p className="text-5xl font-black">
                 {product.rating ?? 4.5}
@@ -822,16 +962,18 @@ export default function ProductDetailsPage() {
 
               <div className="flex justify-center gap-1 mt-3">
 
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    size={17}
-                    className="
-                      fill-yellow-400
-                      text-yellow-400
-                    "
-                  />
-                ))}
+                {[1, 2, 3, 4, 5].map(
+                  (star) => (
+                    <Star
+                      key={star}
+                      size={17}
+                      className="
+                        fill-yellow-400
+                        text-yellow-400
+                      "
+                    />
+                  )
+                )}
 
               </div>
 
@@ -840,7 +982,6 @@ export default function ProductDetailsPage() {
               </p>
 
             </div>
-
 
             <div className="flex-1">
 
@@ -865,8 +1006,8 @@ export default function ProductDetailsPage() {
                 </div>
 
                 <p className="text-gray-600 mt-3">
-                  Great quality product. Exactly as described
-                  and delivery was fast.
+                  Great quality product. Exactly as
+                  described and delivery was fast.
                 </p>
 
               </div>
@@ -878,7 +1019,9 @@ export default function ProductDetailsPage() {
         </div>
 
 
-        {/* RELATED PRODUCTS */}
+        {/* =========================
+            RELATED PRODUCTS
+        ========================= */}
 
         <div className="mt-12">
 
@@ -890,33 +1033,46 @@ export default function ProductDetailsPage() {
             You may also like these products
           </p>
 
-
           {relatedLoading ? (
-
             <div className="flex justify-center py-10">
               <Loader2
                 size={30}
-                className="animate-spin text-[#D4AF37]"
+                className="
+                  animate-spin
+                  text-[#D4AF37]
+                "
               />
             </div>
-
           ) : relatedProducts.length === 0 ? (
-
-            <div className="bg-white border rounded-2xl p-8 text-center">
+            <div
+              className="
+                bg-white
+                border
+                rounded-2xl
+                p-8
+                text-center
+              "
+            >
               <p className="text-gray-500">
                 No related products available.
               </p>
             </div>
-
           ) : (
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div
+              className="
+                grid
+                grid-cols-1
+                sm:grid-cols-2
+                lg:grid-cols-4
+                gap-6
+              "
+            >
 
               {relatedProducts.map((item) => (
 
                 <Link
                   key={item.id}
-                  href={`/product/dashboard/${item.id}`}
+                  href={`/dashboard/product/${item.id}`}
                   className="
                     bg-white
                     rounded-3xl
@@ -928,14 +1084,24 @@ export default function ProductDetailsPage() {
                   "
                 >
 
-                  <div className="relative h-56 bg-gray-50">
+                  <div
+                    className="
+                      relative
+                      h-56
+                      bg-gray-50
+                    "
+                  >
 
                     {item.image_url ? (
                       <Image
                         src={item.image_url}
                         alt={item.name}
                         fill
-                        sizes="25vw"
+                        sizes="
+                          (max-width: 640px) 100vw,
+                          (max-width: 1024px) 50vw,
+                          25vw
+                        "
                         className="
                           object-contain
                           p-6
@@ -944,32 +1110,56 @@ export default function ProductDetailsPage() {
                         "
                       />
                     ) : (
-                      <div className="h-full flex items-center justify-center text-gray-400">
+                      <div
+                        className="
+                          h-full
+                          flex
+                          items-center
+                          justify-center
+                          text-gray-400
+                        "
+                      >
                         No Image
                       </div>
                     )}
 
                   </div>
 
-
                   <div className="p-5">
 
-                    <h3 className="font-bold line-clamp-2">
+                    <h3
+                      className="
+                        font-bold
+                        line-clamp-2
+                        group-hover:text-[#D4AF37]
+                        transition
+                      "
+                    >
                       {item.name}
                     </h3>
 
-
                     <div className="flex items-center gap-2 mt-3">
 
-                      <span className="bg-green-600 text-white px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
-
+                      <span
+                        className="
+                          bg-green-600
+                          text-white
+                          px-2
+                          py-1
+                          rounded-lg
+                          text-xs
+                          font-bold
+                          flex
+                          items-center
+                          gap-1
+                        "
+                      >
                         <Star
                           size={12}
                           className="fill-white"
                         />
 
                         {item.rating ?? 4.5}
-
                       </span>
 
                       <span className="text-xs text-gray-500">
@@ -978,20 +1168,29 @@ export default function ProductDetailsPage() {
 
                     </div>
 
-
                     <div className="flex items-center gap-2 mt-3">
 
                       <span className="text-xl font-black">
-                        ₹{item.price.toLocaleString("en-IN")}
+                        ₹
+                        {Number(
+                          item.price
+                        ).toLocaleString("en-IN")}
                       </span>
 
                       {item.original_price &&
-                        item.original_price > item.price && (
-                          <span className="text-sm text-gray-400 line-through">
+                        item.original_price >
+                          item.price && (
+                          <span
+                            className="
+                              text-sm
+                              text-gray-400
+                              line-through
+                            "
+                          >
                             ₹
-                            {item.original_price.toLocaleString(
-                              "en-IN"
-                            )}
+                            {Number(
+                              item.original_price
+                            ).toLocaleString("en-IN")}
                           </span>
                         )}
 
@@ -1004,7 +1203,6 @@ export default function ProductDetailsPage() {
               ))}
 
             </div>
-
           )}
 
         </div>
@@ -1014,4 +1212,3 @@ export default function ProductDetailsPage() {
     </main>
   );
 }
-
