@@ -155,7 +155,7 @@ export default function FeaturedProducts() {
             >
 
               {/* IMAGE */}
-              <Link href={`/product/dashboard/${product.id}`}>
+              <Link href={`/dashboard/product/${product.id}`}>
 
                 <div className="relative h-[280px] bg-gray-50 overflow-hidden">
 
