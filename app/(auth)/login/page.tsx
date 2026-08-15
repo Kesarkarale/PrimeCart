@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import {
   Eye,
@@ -20,19 +20,24 @@ import { FcGoogle } from "react-icons/fc";
 
 import { createClient } from "@/lib/supabase/client";
 
+export const dynamic = "force-dynamic";
+
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
   const supabase = createClient();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
+  const [showPassword, setShowPassword] =
+    useState(false);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [googleLoading, setGoogleLoading] =
+    useState(false);
 
   // =========================================================
   // LOAD REMEMBERED EMAIL
@@ -87,11 +92,11 @@ export default function LoginPage() {
       setLoading(true);
 
       console.log(
-        "🔐 PrimeCart login started"
+        "🔐 PrimeCart login started..."
       );
 
       // -----------------------------------------------------
-      // SIGN IN
+      // SUPABASE LOGIN
       // -----------------------------------------------------
 
       const {
@@ -102,6 +107,10 @@ export default function LoginPage() {
           email: cleanEmail,
           password,
         });
+
+      // -----------------------------------------------------
+      // LOGIN ERROR
+      // -----------------------------------------------------
 
       if (error) {
         console.error(
@@ -134,23 +143,30 @@ export default function LoginPage() {
           );
         }
 
+        setLoading(false);
         return;
       }
 
+      // -----------------------------------------------------
+      // USER CHECK
+      // -----------------------------------------------------
+
       if (!data.user) {
         toast.error(
-          "Unable to login. Please try again."
+          "Login failed. Please try again."
         );
+
+        setLoading(false);
         return;
       }
 
       console.log(
-        "✅ User authenticated:",
+        "✅ USER LOGIN SUCCESS:",
         data.user.email
       );
 
       // -----------------------------------------------------
-      // CHECK SESSION
+      // SESSION CHECK
       // -----------------------------------------------------
 
       const {
@@ -161,83 +177,87 @@ export default function LoginPage() {
 
       if (sessionError) {
         console.error(
-          "❌ Session error:",
+          "❌ SESSION ERROR:",
           sessionError
         );
 
         toast.error(
-          "Could not create login session."
+          "Login session could not be created."
         );
 
+        setLoading(false);
         return;
       }
 
       if (!sessionData.session) {
         console.error(
-          "❌ No session found after login"
+          "❌ NO SESSION FOUND"
         );
 
         toast.error(
-          "Login session was not created."
+          "Login session was not created. Please try again."
         );
 
+        setLoading(false);
         return;
       }
 
       console.log(
-        "✅ Supabase session exists"
+        "✅ SESSION CREATED"
       );
 
       // -----------------------------------------------------
       // REMEMBER EMAIL
       // -----------------------------------------------------
 
-      if (remember) {
-        localStorage.setItem(
-          "rememberEmail",
-          cleanEmail
-        );
-      } else {
-        localStorage.removeItem(
-          "rememberEmail"
+      try {
+        if (remember) {
+          localStorage.setItem(
+            "rememberEmail",
+            cleanEmail
+          );
+        } else {
+          localStorage.removeItem(
+            "rememberEmail"
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Remember email save error:",
+          error
         );
       }
 
       // -----------------------------------------------------
-      // SUCCESS
+      // SUCCESS MESSAGE
       // -----------------------------------------------------
 
       toast.success(
-        "Login successful! Welcome to PrimeCart ✨"
+        "Login successful! Welcome back to PrimeCart ✨"
       );
-
-      /*
-       * Small delay only for showing success toast.
-       * The actual navigation is still handled by Next router.
-       */
-
-      const next =
-        searchParams.get("next") ||
-        "/dashboard";
 
       console.log(
-        "🚀 Navigating to:",
-        next
+        "🚀 Redirecting to /dashboard..."
       );
 
-      router.replace(next);
+      // -----------------------------------------------------
+      // DASHBOARD REDIRECT
+      // -----------------------------------------------------
+
       router.refresh();
+
+      router.replace("/dashboard");
 
     } catch (error) {
       console.error(
-        "❌ Login unexpected error:",
+        "❌ UNEXPECTED LOGIN ERROR:",
         error
       );
 
       toast.error(
         "Something went wrong. Please try again."
       );
-    } finally {
+
       setLoading(false);
     }
   }
@@ -248,8 +268,8 @@ export default function LoginPage() {
 
   async function handleGoogleLogin() {
     if (
-      loading ||
-      googleLoading
+      googleLoading ||
+      loading
     ) {
       return;
     }
@@ -257,12 +277,8 @@ export default function LoginPage() {
     try {
       setGoogleLoading(true);
 
-      const next =
-        searchParams.get("next") ||
-        "/dashboard";
-
       console.log(
-        "🔐 Starting Google login"
+        "🔐 Starting Google login..."
       );
 
       const {
@@ -273,15 +289,13 @@ export default function LoginPage() {
 
           options: {
             redirectTo:
-              `${window.location.origin}/auth/callback?next=${encodeURIComponent(
-                next
-              )}`,
+              `${window.location.origin}/auth/callback?next=/dashboard`,
           },
         });
 
       if (error) {
         console.error(
-          "❌ Google login error:",
+          "❌ GOOGLE LOGIN ERROR:",
           error
         );
 
@@ -294,7 +308,7 @@ export default function LoginPage() {
 
     } catch (error) {
       console.error(
-        "❌ Google login error:",
+        "❌ GOOGLE LOGIN ERROR:",
         error
       );
 
@@ -342,7 +356,7 @@ export default function LoginPage() {
         "
       >
         {/* =====================================================
-            LEFT SIDE
+            LEFT BANNER
         ===================================================== */}
 
         <div
@@ -362,6 +376,8 @@ export default function LoginPage() {
             className="object-cover"
           />
 
+          {/* OVERLAY */}
+
           <div
             className="
               absolute
@@ -372,6 +388,8 @@ export default function LoginPage() {
               to-transparent
             "
           />
+
+          {/* GOLD GLOW */}
 
           <div
             className="
@@ -400,6 +418,8 @@ export default function LoginPage() {
               blur-[140px]
             "
           />
+
+          {/* BANNER CONTENT */}
 
           <div
             className="
@@ -506,7 +526,7 @@ export default function LoginPage() {
         </div>
 
         {/* =====================================================
-            RIGHT SIDE
+            RIGHT LOGIN
         ===================================================== */}
 
         <div
@@ -526,7 +546,9 @@ export default function LoginPage() {
               max-w-md
             "
           >
-            {/* LOGO */}
+            {/* =================================================
+                LOGO
+            ================================================= */}
 
             <Link
               href="/"
@@ -562,7 +584,9 @@ export default function LoginPage() {
               </h2>
             </Link>
 
-            {/* HEADING */}
+            {/* =================================================
+                HEADING
+            ================================================= */}
 
             <p
               className="
@@ -587,7 +611,11 @@ export default function LoginPage() {
               "
             >
               Welcome
-              <span className="text-[#D4AF37]">
+              <span
+                className="
+                  text-[#D4AF37]
+                "
+              >
                 {" "}
                 Back ✨
               </span>
@@ -636,7 +664,9 @@ export default function LoginPage() {
               </span>
             </div>
 
-            {/* FORM */}
+            {/* =================================================
+                LOGIN FORM
+            ================================================= */}
 
             <form
               onSubmit={handleLogin}
@@ -663,7 +693,9 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) =>
-                    setEmail(e.target.value)
+                    setEmail(
+                      e.target.value
+                    )
                   }
                   placeholder="Email Address"
                   autoComplete="email"
@@ -715,7 +747,9 @@ export default function LoginPage() {
                   }
                   value={password}
                   onChange={(e) =>
-                    setPassword(e.target.value)
+                    setPassword(
+                      e.target.value
+                    )
                   }
                   placeholder="Password"
                   autoComplete="current-password"
@@ -752,6 +786,11 @@ export default function LoginPage() {
                     )
                   }
                   disabled={loading}
+                  aria-label={
+                    showPassword
+                      ? "Hide password"
+                      : "Show password"
+                  }
                   className="
                     absolute
                     right-4
@@ -851,6 +890,7 @@ export default function LoginPage() {
                   hover:shadow-[0_16px_30px_rgba(184,134,11,0.28)]
                   disabled:cursor-not-allowed
                   disabled:opacity-60
+                  disabled:hover:translate-y-0
                 "
               >
                 {loading ? (
@@ -878,7 +918,9 @@ export default function LoginPage() {
               </button>
             </form>
 
-            {/* DIVIDER */}
+            {/* =================================================
+                DIVIDER
+            ================================================= */}
 
             <div
               className="
@@ -915,14 +957,18 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* GOOGLE */}
+            {/* =================================================
+                GOOGLE LOGIN
+            ================================================= */}
 
             <button
               type="button"
-              onClick={handleGoogleLogin}
+              onClick={
+                handleGoogleLogin
+              }
               disabled={
-                loading ||
-                googleLoading
+                googleLoading ||
+                loading
               }
               className="
                 flex
@@ -963,7 +1009,9 @@ export default function LoginPage() {
               )}
             </button>
 
-            {/* REGISTER */}
+            {/* =================================================
+                REGISTER
+            ================================================= */}
 
             <p
               className="
@@ -990,7 +1038,9 @@ export default function LoginPage() {
               </Link>
             </p>
 
-            {/* SECURITY */}
+            {/* =================================================
+                SECURITY
+            ================================================= */}
 
             <div
               className="
