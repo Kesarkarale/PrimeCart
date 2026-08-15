@@ -207,38 +207,6 @@ export default function RegisterPage() {
               className="object-cover"
             />
 
-            {/* Overlay */}
-
-            <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
-
-            <div className="absolute bottom-10 left-10 right-10 text-white">
-              <div className="mb-4 flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#D4AF37]">
-                  <CheckCircle2
-                    size={17}
-                    className="text-white"
-                  />
-                </div>
-
-                <span className="text-xs font-bold uppercase tracking-[0.16em]">
-                  Premium Shopping
-                </span>
-              </div>
-
-              <h2 className="max-w-md text-4xl font-black leading-tight">
-                Everything you love,
-                <br />
-                all in one place.
-              </h2>
-
-              <p className="mt-4 max-w-md text-sm leading-6 text-white/75">
-                Create your PrimeCart account and enjoy
-                a smarter, simpler and premium shopping
-                experience.
-              </p>
-            </div>
-          </div>
-
           {/* =====================================================
               RIGHT REGISTER
           ===================================================== */}
