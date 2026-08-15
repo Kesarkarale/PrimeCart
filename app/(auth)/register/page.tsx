@@ -34,35 +34,52 @@ export default function RegisterPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (
+  // =========================================================
+  // HANDLE INPUT
+  // =========================================================
+
+  function handleChange(
     e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  ) {
     const { name, value } = e.target;
 
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
-  };
+  }
 
-  const validateForm = () => {
+  // =========================================================
+  // VALIDATE FORM
+  // =========================================================
+
+  function validateForm() {
     const name = formData.name.trim();
-    const email = formData.email.trim().toLowerCase();
+    const email = formData.email
+      .trim()
+      .toLowerCase();
     const password = formData.password;
-    const confirmPassword = formData.confirmPassword;
+    const confirmPassword =
+      formData.confirmPassword;
 
     if (!name) {
-      toast.error("Please enter your full name.");
+      toast.error(
+        "Please enter your full name."
+      );
       return false;
     }
 
     if (name.length < 2) {
-      toast.error("Name must contain at least 2 characters.");
+      toast.error(
+        "Name must contain at least 2 characters."
+      );
       return false;
     }
 
     if (!email) {
-      toast.error("Please enter your email address.");
+      toast.error(
+        "Please enter your email address."
+      );
       return false;
     }
 
@@ -70,12 +87,16 @@ export default function RegisterPage() {
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(email)) {
-      toast.error("Please enter a valid email address.");
+      toast.error(
+        "Please enter a valid email address."
+      );
       return false;
     }
 
     if (!password) {
-      toast.error("Please enter a password.");
+      toast.error(
+        "Please enter a password."
+      );
       return false;
     }
 
@@ -87,99 +108,150 @@ export default function RegisterPage() {
     }
 
     if (!confirmPassword) {
-      toast.error("Please confirm your password.");
+      toast.error(
+        "Please confirm your password."
+      );
       return false;
     }
 
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match.");
+      toast.error(
+        "Passwords do not match."
+      );
       return false;
     }
 
     return true;
-  };
+  }
 
-  const register = async () => {
+  // =========================================================
+  // REGISTER
+  // =========================================================
+
+  async function register() {
     if (loading) return;
 
     if (!validateForm()) return;
 
-    const name = formData.name.trim();
-    const email = formData.email.trim().toLowerCase();
-    const password = formData.password;
+    const name =
+      formData.name.trim();
+
+    const email =
+      formData.email
+        .trim()
+        .toLowerCase();
+
+    const password =
+      formData.password;
 
     try {
       setLoading(true);
 
+      console.log(
+        "Creating PrimeCart account..."
+      );
+
       const {
         data,
         error,
-      } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-            full_name: name,
+      } =
+        await supabase.auth.signUp({
+          email,
+          password,
+
+          options: {
+            data: {
+              name,
+              full_name: name,
+            },
           },
-        },
-      });
+        });
+
+      // =====================================================
+      // ERROR
+      // =====================================================
 
       if (error) {
-        console.error("Registration error:", error);
+        console.error(
+          "REGISTRATION ERROR:",
+          error
+        );
 
-        const message = error.message.toLowerCase();
+        const message =
+          error.message.toLowerCase();
 
         if (
-          message.includes("already registered") ||
-          message.includes("already exists") ||
-          message.includes("user already registered")
+          message.includes(
+            "already registered"
+          ) ||
+          message.includes(
+            "already exists"
+          ) ||
+          message.includes(
+            "user already registered"
+          )
         ) {
           toast.error(
             "This email is already registered. Please login instead."
           );
-        } else if (message.includes("password")) {
-          toast.error(error.message);
-        } else if (message.includes("email")) {
-          toast.error(error.message);
         } else {
-          toast.error(error.message);
+          toast.error(
+            error.message
+          );
         }
 
         return;
       }
 
+      // =====================================================
+      // USER CHECK
+      // =====================================================
+
       if (!data.user) {
         toast.error(
           "Account could not be created. Please try again."
         );
+
         return;
       }
 
-      /*
-       * Supabase returns a session immediately when
-       * email confirmation is disabled.
-       *
-       * If email confirmation is enabled, session will
-       * normally be null and the user needs to verify email.
-       */
+      console.log(
+        "REGISTERED USER:",
+        data.user
+      );
+
+      // =====================================================
+      // EMAIL CONFIRMATION ENABLED
+      // =====================================================
 
       if (!data.session) {
         toast.success(
           "Account created! Please verify your email before logging in."
         );
 
-        router.push("/login");
+        router.replace("/login");
+
         return;
       }
+
+      // =====================================================
+      // EMAIL CONFIRMATION DISABLED
+      // =====================================================
 
       toast.success(
         "Account created successfully! Welcome to PrimeCart ✨"
       );
 
-      router.push("/login");
+      // Sign out after registration.
+      // User will login normally from login page.
+      await supabase.auth.signOut();
+
+      router.replace("/login");
     } catch (error) {
-      console.error("Unexpected registration error:", error);
+      console.error(
+        "UNEXPECTED REGISTRATION ERROR:",
+        error
+      );
 
       toast.error(
         "Something went wrong while creating your account."
@@ -187,17 +259,58 @@ export default function RegisterPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  // =========================================================
+  // UI
+  // =========================================================
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#f8f5ef] via-white to-[#efe5cf] p-4 sm:p-5">
-      <div className="flex min-h-[calc(100vh-40px)] items-center justify-center">
-        <div className="grid w-full max-w-[1200px] overflow-hidden rounded-[32px] bg-white shadow-[0_25px_80px_rgba(0,0,0,0.12)] lg:h-[760px] lg:grid-cols-2 lg:rounded-[40px]">
+    <main
+      className="
+        min-h-screen
+        bg-gradient-to-br
+        from-[#f8f5ef]
+        via-white
+        to-[#efe5cf]
+        p-4
+        sm:p-5
+      "
+    >
+      <div
+        className="
+          flex
+          min-h-[calc(100vh-40px)]
+          items-center
+          justify-center
+        "
+      >
+        <div
+          className="
+            grid
+            w-full
+            max-w-[1200px]
+            overflow-hidden
+            rounded-[32px]
+            bg-white
+            shadow-[0_25px_80px_rgba(0,0,0,0.12)]
+            lg:h-[760px]
+            lg:grid-cols-2
+            lg:rounded-[40px]
+          "
+        >
           {/* =====================================================
               LEFT IMAGE
           ===================================================== */}
 
-          <div className="relative hidden min-h-[400px] lg:block">
+          <div
+            className="
+              relative
+              hidden
+              min-h-[400px]
+              lg:block
+            "
+          >
             <Image
               src="/login-banner.png"
               alt="PrimeCart shopping"
@@ -207,37 +320,164 @@ export default function RegisterPage() {
               className="object-cover"
             />
 
+            <div
+              className="
+                absolute
+                inset-0
+                bg-gradient-to-t
+                from-black/60
+                via-black/10
+                to-transparent
+              "
+            />
+
+            <div
+              className="
+                absolute
+                bottom-10
+                left-10
+                right-10
+                text-white
+              "
+            >
+              <div
+                className="
+                  mb-4
+                  inline-flex
+                  items-center
+                  rounded-full
+                  border
+                  border-white/20
+                  bg-white/10
+                  px-4
+                  py-2
+                  backdrop-blur-md
+                "
+              >
+                <span
+                  className="
+                    text-[10px]
+                    font-black
+                    uppercase
+                    tracking-[0.2em]
+                  "
+                >
+                  Premium Shopping
+                </span>
+              </div>
+
+              <h2
+                className="
+                  max-w-md
+                  text-4xl
+                  font-black
+                  leading-tight
+                "
+              >
+                Your premium
+                <br />
+                shopping journey
+                <br />
+                starts here.
+              </h2>
+
+              <p
+                className="
+                  mt-4
+                  max-w-md
+                  text-sm
+                  leading-6
+                  text-white/75
+                "
+              >
+                Create your PrimeCart account
+                and discover premium products,
+                exclusive deals and a smarter
+                shopping experience.
+              </p>
+            </div>
+          </div>
+
           {/* =====================================================
               RIGHT REGISTER
           ===================================================== */}
 
-          <div className="flex items-center justify-center px-5 py-8 sm:px-8 lg:px-12">
-            <div className="w-full max-w-[430px]">
+          <div
+            className="
+              flex
+              items-center
+              justify-center
+              px-5
+              py-8
+              sm:px-8
+              lg:px-12
+            "
+          >
+            <div
+              className="
+                w-full
+                max-w-[430px]
+              "
+            >
               {/* =================================================
                   LOGO
               ================================================= */}
 
               <Link
                 href="/"
-                className="mb-7 inline-flex items-center gap-3"
+                className="
+                  mb-7
+                  inline-flex
+                  items-center
+                  gap-3
+                "
               >
-                <div className="relative h-12 w-[92px]">
+                <div
+                  className="
+                    relative
+                    h-12
+                    w-[92px]
+                  "
+                >
                   <Image
                     src="/logo.png"
                     alt="PrimeCart Logo"
                     fill
                     priority
                     sizes="92px"
-                    className="object-contain object-left"
+                    className="
+                      object-contain
+                      object-left
+                    "
                   />
                 </div>
 
-                <div className="border-l border-gray-200 pl-3">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-gray-400">
+                <div
+                  className="
+                    border-l
+                    border-gray-200
+                    pl-3
+                  "
+                >
+                  <p
+                    className="
+                      text-[9px]
+                      font-bold
+                      uppercase
+                      tracking-[0.18em]
+                      text-gray-400
+                    "
+                  >
                     Premium
                   </p>
 
-                  <p className="text-xs font-black text-gray-800">
+                  <p
+                    className="
+                      text-xs
+                      font-black
+                      text-gray-800
+                    "
+                  >
                     Shopping Experience
                   </p>
                 </div>
@@ -248,11 +488,28 @@ export default function RegisterPage() {
               ================================================= */}
 
               <div>
-                <p className="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#B28B18]">
+                <p
+                  className="
+                    mb-2
+                    text-[10px]
+                    font-black
+                    uppercase
+                    tracking-[0.2em]
+                    text-[#B28B18]
+                  "
+                >
                   Join PrimeCart
                 </p>
 
-                <h1 className="text-3xl font-black tracking-[-0.04em] text-gray-900 sm:text-4xl">
+                <h1
+                  className="
+                    text-3xl
+                    font-black
+                    tracking-[-0.04em]
+                    text-gray-900
+                    sm:text-4xl
+                  "
+                >
                   Create
                   <span className="text-[#D4AF37]">
                     {" "}
@@ -260,9 +517,16 @@ export default function RegisterPage() {
                   </span>
                 </h1>
 
-                <p className="mt-2 text-sm leading-6 text-gray-500">
-                  Start your premium shopping journey
-                  with PrimeCart.
+                <p
+                  className="
+                    mt-2
+                    text-sm
+                    leading-6
+                    text-gray-500
+                  "
+                >
+                  Start your premium shopping
+                  journey with PrimeCart.
                 </p>
               </div>
 
@@ -275,14 +539,23 @@ export default function RegisterPage() {
                   e.preventDefault();
                   register();
                 }}
-                className="mt-7 space-y-4"
+                className="
+                  mt-7
+                  space-y-4
+                "
               >
                 {/* NAME */}
 
                 <div className="relative">
                   <User
                     size={19}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                    className="
+                      absolute
+                      left-4
+                      top-1/2
+                      -translate-y-1/2
+                      text-gray-400
+                    "
                   />
 
                   <input
@@ -293,7 +566,28 @@ export default function RegisterPage() {
                     value={formData.name}
                     onChange={handleChange}
                     disabled={loading}
-                    className="h-14 w-full rounded-2xl border border-gray-200 bg-gray-50 pl-12 pr-4 text-sm font-medium text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-[#D4AF37] focus:bg-white focus:ring-4 focus:ring-[#D4AF37]/10 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="
+                      h-14
+                      w-full
+                      rounded-2xl
+                      border
+                      border-gray-200
+                      bg-gray-50
+                      pl-12
+                      pr-4
+                      text-sm
+                      font-medium
+                      text-gray-900
+                      outline-none
+                      transition
+                      placeholder:text-gray-400
+                      focus:border-[#D4AF37]
+                      focus:bg-white
+                      focus:ring-4
+                      focus:ring-[#D4AF37]/10
+                      disabled:cursor-not-allowed
+                      disabled:opacity-60
+                    "
                   />
                 </div>
 
@@ -302,7 +596,13 @@ export default function RegisterPage() {
                 <div className="relative">
                   <Mail
                     size={19}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                    className="
+                      absolute
+                      left-4
+                      top-1/2
+                      -translate-y-1/2
+                      text-gray-400
+                    "
                   />
 
                   <input
@@ -313,7 +613,28 @@ export default function RegisterPage() {
                     value={formData.email}
                     onChange={handleChange}
                     disabled={loading}
-                    className="h-14 w-full rounded-2xl border border-gray-200 bg-gray-50 pl-12 pr-4 text-sm font-medium text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-[#D4AF37] focus:bg-white focus:ring-4 focus:ring-[#D4AF37]/10 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="
+                      h-14
+                      w-full
+                      rounded-2xl
+                      border
+                      border-gray-200
+                      bg-gray-50
+                      pl-12
+                      pr-4
+                      text-sm
+                      font-medium
+                      text-gray-900
+                      outline-none
+                      transition
+                      placeholder:text-gray-400
+                      focus:border-[#D4AF37]
+                      focus:bg-white
+                      focus:ring-4
+                      focus:ring-[#D4AF37]/10
+                      disabled:cursor-not-allowed
+                      disabled:opacity-60
+                    "
                   />
                 </div>
 
@@ -322,7 +643,13 @@ export default function RegisterPage() {
                 <div className="relative">
                   <Lock
                     size={19}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                    className="
+                      absolute
+                      left-4
+                      top-1/2
+                      -translate-y-1/2
+                      text-gray-400
+                    "
                   />
 
                   <input
@@ -337,23 +664,47 @@ export default function RegisterPage() {
                     value={formData.password}
                     onChange={handleChange}
                     disabled={loading}
-                    className="h-14 w-full rounded-2xl border border-gray-200 bg-gray-50 pl-12 pr-12 text-sm font-medium text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-[#D4AF37] focus:bg-white focus:ring-4 focus:ring-[#D4AF37]/10 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="
+                      h-14
+                      w-full
+                      rounded-2xl
+                      border
+                      border-gray-200
+                      bg-gray-50
+                      pl-12
+                      pr-12
+                      text-sm
+                      font-medium
+                      text-gray-900
+                      outline-none
+                      transition
+                      placeholder:text-gray-400
+                      focus:border-[#D4AF37]
+                      focus:bg-white
+                      focus:ring-4
+                      focus:ring-[#D4AF37]/10
+                      disabled:cursor-not-allowed
+                      disabled:opacity-60
+                    "
                   />
 
                   <button
                     type="button"
                     onClick={() =>
                       setShowPassword(
-                        !showPassword
+                        (prev) => !prev
                       )
                     }
                     disabled={loading}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-black disabled:opacity-40"
-                    aria-label={
-                      showPassword
-                        ? "Hide password"
-                        : "Show password"
-                    }
+                    className="
+                      absolute
+                      right-4
+                      top-1/2
+                      -translate-y-1/2
+                      text-gray-400
+                      transition
+                      hover:text-black
+                    "
                   >
                     {showPassword ? (
                       <EyeOff size={19} />
@@ -365,11 +716,28 @@ export default function RegisterPage() {
 
                 {/* PASSWORD HINT */}
 
-                <div className="-mt-1 flex items-center gap-2 px-1 text-[10px] text-gray-400">
-                  <div className="h-1 w-1 rounded-full bg-[#D4AF37]" />
+                <div
+                  className="
+                    -mt-1
+                    flex
+                    items-center
+                    gap-2
+                    px-1
+                    text-[10px]
+                    text-gray-400
+                  "
+                >
+                  <div
+                    className="
+                      h-1
+                      w-1
+                      rounded-full
+                      bg-[#D4AF37]
+                    "
+                  />
 
-                  Password must contain at least 6
-                  characters.
+                  Password must contain at
+                  least 6 characters.
                 </div>
 
                 {/* CONFIRM PASSWORD */}
@@ -377,7 +745,13 @@ export default function RegisterPage() {
                 <div className="relative">
                   <Lock
                     size={19}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                    className="
+                      absolute
+                      left-4
+                      top-1/2
+                      -translate-y-1/2
+                      text-gray-400
+                    "
                   />
 
                   <input
@@ -389,26 +763,52 @@ export default function RegisterPage() {
                     }
                     autoComplete="new-password"
                     placeholder="Confirm Password"
-                    value={formData.confirmPassword}
+                    value={
+                      formData.confirmPassword
+                    }
                     onChange={handleChange}
                     disabled={loading}
-                    className="h-14 w-full rounded-2xl border border-gray-200 bg-gray-50 pl-12 pr-12 text-sm font-medium text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-[#D4AF37] focus:bg-white focus:ring-4 focus:ring-[#D4AF37]/10 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="
+                      h-14
+                      w-full
+                      rounded-2xl
+                      border
+                      border-gray-200
+                      bg-gray-50
+                      pl-12
+                      pr-12
+                      text-sm
+                      font-medium
+                      text-gray-900
+                      outline-none
+                      transition
+                      placeholder:text-gray-400
+                      focus:border-[#D4AF37]
+                      focus:bg-white
+                      focus:ring-4
+                      focus:ring-[#D4AF37]/10
+                      disabled:cursor-not-allowed
+                      disabled:opacity-60
+                    "
                   />
 
                   <button
                     type="button"
                     onClick={() =>
                       setShowConfirm(
-                        !showConfirm
+                        (prev) => !prev
                       )
                     }
                     disabled={loading}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-black disabled:opacity-40"
-                    aria-label={
-                      showConfirm
-                        ? "Hide confirm password"
-                        : "Show confirm password"
-                    }
+                    className="
+                      absolute
+                      right-4
+                      top-1/2
+                      -translate-y-1/2
+                      text-gray-400
+                      transition
+                      hover:text-black
+                    "
                   >
                     {showConfirm ? (
                       <EyeOff size={19} />
@@ -418,17 +818,25 @@ export default function RegisterPage() {
                   </button>
                 </div>
 
-                {/* PASSWORD MATCH STATUS */}
+                {/* MATCH STATUS */}
 
-                {formData.confirmPassword.length >
-                  0 && (
+                {formData.confirmPassword
+                  .length > 0 && (
                   <div
-                    className={`flex items-center gap-2 px-1 text-[10px] font-semibold ${
-                      formData.password ===
-                      formData.confirmPassword
-                        ? "text-green-600"
-                        : "text-red-500"
-                    }`}
+                    className={`
+                      flex
+                      items-center
+                      gap-2
+                      px-1
+                      text-[10px]
+                      font-semibold
+                      ${
+                        formData.password ===
+                        formData.confirmPassword
+                          ? "text-green-600"
+                          : "text-red-500"
+                      }
+                    `}
                   >
                     <CheckCircle2 size={13} />
 
@@ -439,12 +847,34 @@ export default function RegisterPage() {
                   </div>
                 )}
 
-                {/* REGISTER */}
+                {/* REGISTER BUTTON */}
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="group mt-2 flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[#B8860B] to-[#D4AF37] text-base font-black text-white shadow-[0_12px_25px_rgba(184,134,11,0.22)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_30px_rgba(184,134,11,0.28)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+                  className="
+                    group
+                    mt-2
+                    flex
+                    h-14
+                    w-full
+                    items-center
+                    justify-center
+                    gap-3
+                    rounded-2xl
+                    bg-gradient-to-r
+                    from-[#B8860B]
+                    to-[#D4AF37]
+                    text-base
+                    font-black
+                    text-white
+                    shadow-[0_12px_25px_rgba(184,134,11,0.22)]
+                    transition
+                    hover:-translate-y-0.5
+                    hover:shadow-[0_16px_30px_rgba(184,134,11,0.28)]
+                    disabled:cursor-not-allowed
+                    disabled:opacity-60
+                  "
                 >
                   {loading ? (
                     <>
@@ -461,34 +891,66 @@ export default function RegisterPage() {
 
                       <ArrowRight
                         size={19}
-                        className="transition-transform group-hover:translate-x-1"
+                        className="
+                          transition-transform
+                          group-hover:translate-x-1
+                        "
                       />
                     </>
                   )}
                 </button>
               </form>
 
-              {/* =================================================
-                  LOGIN
-              ================================================= */}
+              {/* LOGIN */}
 
-              <p className="mt-7 text-center text-sm text-gray-500">
+              <p
+                className="
+                  mt-7
+                  text-center
+                  text-sm
+                  text-gray-500
+                "
+              >
                 Already have an account?
 
                 <Link
                   href="/login"
-                  className="ml-2 font-black text-[#B28B18] transition hover:text-black"
+                  className="
+                    ml-2
+                    font-black
+                    text-[#B28B18]
+                    transition
+                    hover:text-black
+                  "
                 >
                   Login →
                 </Link>
               </p>
 
-              {/* =================================================
-                  TRUST
-              ================================================= */}
+              {/* TRUST */}
 
-              <div className="mt-7 flex items-center justify-center gap-5 border-t border-gray-100 pt-5 text-[9px] font-semibold text-gray-400">
-                <span className="flex items-center gap-1.5">
+              <div
+                className="
+                  mt-7
+                  flex
+                  items-center
+                  justify-center
+                  gap-5
+                  border-t
+                  border-gray-100
+                  pt-5
+                  text-[9px]
+                  font-semibold
+                  text-gray-400
+                "
+              >
+                <span
+                  className="
+                    flex
+                    items-center
+                    gap-1.5
+                  "
+                >
                   <Lock
                     size={12}
                     className="text-[#D4AF37]"
@@ -496,7 +958,13 @@ export default function RegisterPage() {
                   Secure
                 </span>
 
-                <span className="flex items-center gap-1.5">
+                <span
+                  className="
+                    flex
+                    items-center
+                    gap-1.5
+                  "
+                >
                   <CheckCircle2
                     size={12}
                     className="text-[#D4AF37]"
@@ -504,7 +972,13 @@ export default function RegisterPage() {
                   Trusted
                 </span>
 
-                <span className="flex items-center gap-1.5">
+                <span
+                  className="
+                    flex
+                    items-center
+                    gap-1.5
+                  "
+                >
                   <Mail
                     size={12}
                     className="text-[#D4AF37]"
