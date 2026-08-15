@@ -17,17 +17,14 @@ export async function middleware(request: NextRequest) {
         },
 
         setAll(cookiesToSet) {
-          // Update request cookies
           cookiesToSet.forEach(({ name, value }) => {
             request.cookies.set(name, value);
           });
 
-          // Create new response with updated request
           response = NextResponse.next({
             request,
           });
 
-          // Update response cookies
           cookiesToSet.forEach(
             ({ name, value, options }) => {
               response.cookies.set(
@@ -42,21 +39,11 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  /*
-   * IMPORTANT
-   * getUser() validates the Supabase session.
-   */
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
-
-  /*
-   * ============================================================
-   * PROTECTED ROUTES
-   * ============================================================
-   */
 
   const protectedRoutes = [
     "/dashboard",
@@ -73,39 +60,13 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith(`${route}/`)
   );
 
-  /*
-   * ============================================================
-   * USER IS NOT LOGGED IN
-   * ============================================================
-   *
-   * If user tries to access:
-   *
-   * /dashboard
-   * /profile
-   * /orders
-   * /checkout
-   * /wishlist
-   * /cart
-   *
-   * without authentication,
-   * redirect to /login.
-   */
-
+  // User is NOT logged in
+  // Protected page -> Login
   if (isProtectedRoute && !user) {
     const loginUrl = new URL(
       "/login",
       request.url
     );
-
-    /*
-     * Remember the page the user wanted.
-     *
-     * Example:
-     * /dashboard
-     *
-     * becomes:
-     * /login?redirect=/dashboard
-     */
 
     loginUrl.searchParams.set(
       "redirect",
@@ -115,56 +76,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  /*
-   * ============================================================
-   * LOGIN / REGISTER
-   * ============================================================
-   *
-   * VERY IMPORTANT:
-   *
-   * DO NOT redirect /login to /dashboard here.
-   *
-   * This allows:
-   *
-   * Login button
-   *      ↓
-   * /login
-   *      ↓
-   * Email + Password
-   *      ↓
-   * Login Now
-   *      ↓
-   * Successful authentication
-   *      ↓
-   * /dashboard
-   *
-   * The actual login redirect is handled
-   * inside the login page after signInWithPassword().
-   */
-
-  if (
-    pathname === "/login" ||
-    pathname === "/register"
-  ) {
-    return response;
-  }
-
-  /*
-   * ============================================================
-   * EVERYTHING ELSE
-   * ============================================================
-   */
+  // IMPORTANT:
+  // Never redirect /login or /register automatically.
+  // Login/Register pages must always be allowed to open.
 
   return response;
 }
-
-/*
- * ==============================================================
- * MIDDLEWARE MATCHER
- * ==============================================================
- *
- * Middleware will run only on these routes.
- */
 
 export const config = {
   matcher: [
