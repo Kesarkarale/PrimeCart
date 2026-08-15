@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 import {
   Eye,
@@ -20,6 +21,7 @@ import { FcGoogle } from "react-icons/fc";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
+  const router = useRouter();
   const supabase = createClient();
 
   const [formData, setFormData] = useState({
@@ -80,7 +82,7 @@ export default function LoginPage() {
   }
 
   // =========================================================
-  // LOGIN
+  // EMAIL / PASSWORD LOGIN
   // =========================================================
 
   async function login(
@@ -194,18 +196,18 @@ export default function LoginPage() {
       );
 
       // -----------------------------------------------------
-      // GET SESSION
+      // VERIFY SESSION
       // -----------------------------------------------------
 
       const {
-        data: sessionResult,
+        data: sessionData,
         error: sessionError,
       } =
         await supabase.auth.getSession();
 
       if (
         sessionError ||
-        !sessionResult.session
+        !sessionData.session
       ) {
         console.error(
           "❌ SESSION ERROR:",
@@ -222,6 +224,11 @@ export default function LoginPage() {
 
       console.log(
         "✅ SESSION CREATED"
+      );
+
+      console.log(
+        "👤 Logged in user:",
+        sessionData.session.user.email
       );
 
       // -----------------------------------------------------
@@ -247,26 +254,24 @@ export default function LoginPage() {
       }
 
       // -----------------------------------------------------
-      // SUCCESS TOAST
+      // SUCCESS
       // -----------------------------------------------------
 
       toast.success(
         "Login successful! Welcome back to PrimeCart ✨"
       );
 
-      // -----------------------------------------------------
-      // REDIRECT TO DASHBOARD
-      // -----------------------------------------------------
-
       console.log(
         "🚀 Redirecting to /dashboard..."
       );
 
-      setTimeout(() => {
-        window.location.assign(
-          "/dashboard"
-        );
-      }, 800);
+      // -----------------------------------------------------
+      // IMPORTANT REDIRECT
+      // -----------------------------------------------------
+
+      router.refresh();
+
+      router.replace("/dashboard");
 
     } catch (error) {
       console.error(
@@ -306,11 +311,12 @@ export default function LoginPage() {
       } =
         await supabase.auth.signInWithOAuth({
           provider: "google",
+
           options: {
             redirectTo:
               `${window.location.origin}/auth/callback?next=/dashboard`,
           },
-        });
+          });
 
       if (error) {
         console.error(
@@ -630,11 +636,7 @@ export default function LoginPage() {
               "
             >
               Welcome
-              <span
-                className="
-                  text-[#D4AF37]
-                "
-              >
+              <span className="text-[#D4AF37]">
                 {" "}
                 Back ✨
               </span>
@@ -911,7 +913,6 @@ export default function LoginPage() {
                       size={20}
                       className="animate-spin"
                     />
-
                     Logging in...
                   </>
                 ) : (
