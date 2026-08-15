@@ -1,8 +1,15 @@
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { createServerClient } from "@supabase/ssr";
 
-export async function middleware(request: NextRequest) {
+export async function middleware(
+  request: NextRequest
+) {
+  /*
+   * Create the initial response.
+   * Supabase may update cookies while refreshing
+   * the user's session.
+   */
   let response = NextResponse.next({
     request,
   });
@@ -17,14 +24,28 @@ export async function middleware(request: NextRequest) {
         },
 
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => {
-            request.cookies.set(name, value);
-          });
+          /*
+           * Update request cookies first.
+           */
+          cookiesToSet.forEach(
+            ({ name, value }) => {
+              request.cookies.set(
+                name,
+                value
+              );
+            }
+          );
 
+          /*
+           * Re-create response with updated request.
+           */
           response = NextResponse.next({
             request,
           });
 
+          /*
+           * Copy refreshed cookies to response.
+           */
           cookiesToSet.forEach(
             ({ name, value, options }) => {
               response.cookies.set(
@@ -41,16 +62,20 @@ export async function middleware(request: NextRequest) {
 
   /*
    * IMPORTANT:
-   * getUser() verifies the Supabase user
-   * and also refreshes the auth session when needed.
+   * getUser() validates the Supabase session
+   * on the server.
    */
   const {
     data: { user },
     error,
   } = await supabase.auth.getUser();
 
-  const pathname = request.nextUrl.pathname;
+  const pathname =
+    request.nextUrl.pathname;
 
+  /*
+   * Routes that require login.
+   */
   const protectedRoutes = [
     "/dashboard",
     "/profile",
@@ -60,50 +85,88 @@ export async function middleware(request: NextRequest) {
     "/cart",
   ];
 
-  const isProtectedRoute = protectedRoutes.some(
-    (route) =>
-      pathname === route ||
-      pathname.startsWith(`${route}/`)
-  );
-
-  /*
-   * User is not logged in
-   * → send them to login.
-   */
-  if (isProtectedRoute && (!user || error)) {
-    const loginUrl = new URL(
-      "/login",
-      request.url
+  const isProtectedRoute =
+    protectedRoutes.some(
+      (route) =>
+        pathname === route ||
+        pathname.startsWith(`${route}/`)
     );
 
+  /*
+   * ---------------------------------------------------------
+   * NOT LOGGED IN
+   * ---------------------------------------------------------
+   *
+   * If someone tries to open:
+   *
+   * /dashboard
+   *
+   * without authentication,
+   * send them to login.
+   */
+  if (
+    isProtectedRoute &&
+    (!user || error)
+  ) {
+    const loginUrl =
+      new URL(
+        "/login",
+        request.url
+      );
+
     /*
-     * After login we can return the user
-     * to the page they originally requested.
+     * Remember where the user wanted to go.
      */
     loginUrl.searchParams.set(
       "redirect",
       pathname
     );
 
-    return NextResponse.redirect(loginUrl);
-  }
-
-  /*
-   * Logged-in users should not stay on login/register.
-   */
-  if (
-    (pathname === "/login" ||
-      pathname === "/register") &&
-    user
-  ) {
     return NextResponse.redirect(
-      new URL("/dashboard", request.url)
+      loginUrl
     );
   }
 
+  /*
+   * ---------------------------------------------------------
+   * ALREADY LOGGED IN
+   * ---------------------------------------------------------
+   *
+   * If authenticated user manually opens:
+   *
+   * /login
+   *
+   * or
+   *
+   * /register
+   *
+   * send them directly to dashboard.
+   */
+  if (
+    user &&
+    (
+      pathname === "/login" ||
+      pathname === "/register"
+    )
+  ) {
+    return NextResponse.redirect(
+      new URL(
+        "/dashboard",
+        request.url
+      )
+    );
+  }
+
+  /*
+   * Return response containing
+   * refreshed Supabase cookies.
+   */
   return response;
 }
 
+/*
+ * Middleware only runs on these routes.
+ */
 export const config = {
   matcher: [
     "/dashboard/:path*",
