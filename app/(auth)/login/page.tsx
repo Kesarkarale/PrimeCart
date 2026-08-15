@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 
 import {
   Eye,
@@ -21,7 +20,6 @@ import { FcGoogle } from "react-icons/fc";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
-  const router = useRouter();
   const supabase = createClient();
 
   const [formData, setFormData] = useState({
@@ -39,15 +37,22 @@ export default function LoginPage() {
   // =========================================================
 
   useEffect(() => {
-    const rememberedEmail =
-      localStorage.getItem("rememberEmail");
+    try {
+      const rememberedEmail =
+        localStorage.getItem("rememberEmail");
 
-    if (rememberedEmail) {
-      setFormData((prev) => ({
-        ...prev,
-        email: rememberedEmail,
-        remember: true,
-      }));
+      if (rememberedEmail) {
+        setFormData((prev) => ({
+          ...prev,
+          email: rememberedEmail,
+          remember: true,
+        }));
+      }
+    } catch (error) {
+      console.error(
+        "Remember email error:",
+        error
+      );
     }
   }, []);
 
@@ -78,28 +83,204 @@ export default function LoginPage() {
   // LOGIN
   // =========================================================
 
-  const { data, error } =
-  await supabase.auth.signInWithPassword({
-    email: email.trim().toLowerCase(),
-    password,
-  });
+  async function login(
+    e: React.FormEvent<HTMLFormElement>
+  ) {
+    e.preventDefault();
 
-console.log("LOGIN DATA:", data);
-console.log("LOGIN ERROR:", error);
+    if (loading) return;
 
-if (error) {
-  toast.error(error.message);
-  return;
-}
+    const email =
+      formData.email
+        .trim()
+        .toLowerCase();
 
-if (!data.user) {
-  toast.error("User not found");
-  return;
-}
+    const password =
+      formData.password;
 
-toast.success("Login Successful ✨");
+    // -------------------------------------------------------
+    // VALIDATION
+    // -------------------------------------------------------
 
-router.replace("/");
+    if (!email) {
+      toast.error(
+        "Please enter your email address."
+      );
+      return;
+    }
+
+    if (!password) {
+      toast.error(
+        "Please enter your password."
+      );
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      console.log(
+        "🔐 PrimeCart login started..."
+      );
+
+      // -----------------------------------------------------
+      // SUPABASE LOGIN
+      // -----------------------------------------------------
+
+      const {
+        data,
+        error,
+      } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+      // -----------------------------------------------------
+      // LOGIN ERROR
+      // -----------------------------------------------------
+
+      if (error) {
+        console.error(
+          "❌ LOGIN ERROR:",
+          error
+        );
+
+        const message =
+          error.message.toLowerCase();
+
+        if (
+          message.includes(
+            "email not confirmed"
+          )
+        ) {
+          toast.error(
+            "Please verify your email before logging in."
+          );
+        } else if (
+          message.includes(
+            "invalid login credentials"
+          )
+        ) {
+          toast.error(
+            "Invalid email or password."
+          );
+        } else {
+          toast.error(
+            error.message
+          );
+        }
+
+        setLoading(false);
+        return;
+      }
+
+      // -----------------------------------------------------
+      // USER CHECK
+      // -----------------------------------------------------
+
+      if (!data.user) {
+        toast.error(
+          "Login failed. Please try again."
+        );
+
+        setLoading(false);
+        return;
+      }
+
+      console.log(
+        "✅ USER LOGIN SUCCESS:",
+        data.user.email
+      );
+
+      // -----------------------------------------------------
+      // GET SESSION
+      // -----------------------------------------------------
+
+      const {
+        data: sessionResult,
+        error: sessionError,
+      } =
+        await supabase.auth.getSession();
+
+      if (
+        sessionError ||
+        !sessionResult.session
+      ) {
+        console.error(
+          "❌ SESSION ERROR:",
+          sessionError
+        );
+
+        toast.error(
+          "Login session could not be created. Please try again."
+        );
+
+        setLoading(false);
+        return;
+      }
+
+      console.log(
+        "✅ SESSION CREATED"
+      );
+
+      // -----------------------------------------------------
+      // REMEMBER EMAIL
+      // -----------------------------------------------------
+
+      try {
+        if (formData.remember) {
+          localStorage.setItem(
+            "rememberEmail",
+            email
+          );
+        } else {
+          localStorage.removeItem(
+            "rememberEmail"
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Remember email save error:",
+          error
+        );
+      }
+
+      // -----------------------------------------------------
+      // SUCCESS TOAST
+      // -----------------------------------------------------
+
+      toast.success(
+        "Login successful! Welcome back to PrimeCart ✨"
+      );
+
+      // -----------------------------------------------------
+      // REDIRECT TO DASHBOARD
+      // -----------------------------------------------------
+
+      console.log(
+        "🚀 Redirecting to /dashboard..."
+      );
+
+      setTimeout(() => {
+        window.location.assign(
+          "/dashboard"
+        );
+      }, 800);
+
+    } catch (error) {
+      console.error(
+        "❌ UNEXPECTED LOGIN ERROR:",
+        error
+      );
+
+      toast.error(
+        "Something went wrong. Please try again."
+      );
+
+      setLoading(false);
+    }
+  }
 
   // =========================================================
   // GOOGLE LOGIN
@@ -116,6 +297,10 @@ router.replace("/");
     try {
       setGoogleLoading(true);
 
+      console.log(
+        "🔐 Starting Google login..."
+      );
+
       const {
         error,
       } =
@@ -129,24 +314,27 @@ router.replace("/");
 
       if (error) {
         console.error(
-          "GOOGLE LOGIN ERROR:",
+          "❌ GOOGLE LOGIN ERROR:",
           error
         );
 
         toast.error(
           error.message
         );
+
+        setGoogleLoading(false);
       }
+
     } catch (error) {
       console.error(
-        "GOOGLE LOGIN ERROR:",
+        "❌ GOOGLE LOGIN ERROR:",
         error
       );
 
       toast.error(
         "Google login failed."
       );
-    } finally {
+
       setGoogleLoading(false);
     }
   }
@@ -177,11 +365,11 @@ router.replace("/");
           min-h-[650px]
           overflow-hidden
           rounded-[32px]
-          bg-white/90
-          backdrop-blur-xl
-          shadow-[0_25px_80px_rgba(0,0,0,0.12)]
           border
           border-white/40
+          bg-white/90
+          shadow-[0_25px_80px_rgba(0,0,0,0.12)]
+          backdrop-blur-xl
           grid
           lg:grid-cols-2
         "
@@ -207,20 +395,20 @@ router.replace("/");
             className="object-cover"
           />
 
-          {/* Overlay */}
+          {/* OVERLAY */}
 
           <div
             className="
               absolute
               inset-0
               bg-gradient-to-t
-              from-black/60
-              via-black/10
+              from-black/70
+              via-black/15
               to-transparent
             "
           />
 
-          {/* Gold Glow */}
+          {/* GOLD GLOW */}
 
           <div
             className="
@@ -250,7 +438,7 @@ router.replace("/");
             "
           />
 
-          {/* Banner Content */}
+          {/* BANNER CONTENT */}
 
           <div
             className="
@@ -279,6 +467,7 @@ router.replace("/");
                   justify-center
                   rounded-xl
                   bg-[#D4AF37]
+                  text-black
                 "
               >
                 <ShieldCheck size={18} />
@@ -322,11 +511,41 @@ router.replace("/");
               exclusive deals and a smarter
               shopping experience.
             </p>
+
+            <div
+              className="
+                mt-6
+                flex
+                items-center
+                gap-3
+              "
+            >
+              <div
+                className="
+                  h-1
+                  w-10
+                  rounded-full
+                  bg-[#D4AF37]
+                "
+              />
+
+              <span
+                className="
+                  text-[10px]
+                  font-bold
+                  uppercase
+                  tracking-[0.15em]
+                  text-white/60
+                "
+              >
+                Shop smarter. Live better.
+              </span>
+            </div>
           </div>
         </div>
 
         {/* =====================================================
-            RIGHT LOGIN PANEL
+            RIGHT LOGIN
         ===================================================== */}
 
         <div
@@ -373,6 +592,7 @@ router.replace("/");
                 className="
                   text-3xl
                   font-black
+                  tracking-tight
                   sm:text-4xl
                 "
               >
@@ -410,7 +630,11 @@ router.replace("/");
               "
             >
               Welcome
-              <span className="text-[#D4AF37]">
+              <span
+                className="
+                  text-[#D4AF37]
+                "
+              >
                 {" "}
                 Back ✨
               </span>
@@ -420,6 +644,7 @@ router.replace("/");
               className="
                 mt-3
                 text-sm
+                leading-6
                 text-gray-500
               "
             >
@@ -459,7 +684,7 @@ router.replace("/");
             </div>
 
             {/* =================================================
-                LOGIN FORM
+                FORM
             ================================================= */}
 
             <form
@@ -501,6 +726,8 @@ router.replace("/");
                     pl-12
                     pr-4
                     text-sm
+                    font-medium
+                    text-gray-900
                     outline-none
                     transition
                     placeholder:text-gray-400
@@ -550,6 +777,8 @@ router.replace("/");
                     pl-12
                     pr-12
                     text-sm
+                    font-medium
+                    text-gray-900
                     outline-none
                     transition
                     placeholder:text-gray-400
@@ -578,6 +807,7 @@ router.replace("/");
                     text-gray-400
                     transition
                     hover:text-black
+                    disabled:cursor-not-allowed
                     disabled:opacity-40
                   "
                   aria-label={
@@ -594,7 +824,7 @@ router.replace("/");
                 </button>
               </div>
 
-              {/* REMEMBER / FORGOT */}
+              {/* REMEMBER + FORGOT */}
 
               <div
                 className="
@@ -621,6 +851,7 @@ router.replace("/");
                       formData.remember
                     }
                     onChange={handleChange}
+                    disabled={loading}
                     className="
                       h-4
                       w-4
@@ -680,6 +911,7 @@ router.replace("/");
                       size={20}
                       className="animate-spin"
                     />
+
                     Logging in...
                   </>
                 ) : (
@@ -699,7 +931,7 @@ router.replace("/");
             </form>
 
             {/* =================================================
-                OR DIVIDER
+                DIVIDER
             ================================================= */}
 
             <div
@@ -846,6 +1078,7 @@ router.replace("/");
                   size={12}
                   className="text-[#D4AF37]"
                 />
+
                 Secure Login
               </span>
 
@@ -860,6 +1093,7 @@ router.replace("/");
                   size={12}
                   className="text-[#D4AF37]"
                 />
+
                 Protected
               </span>
             </div>
