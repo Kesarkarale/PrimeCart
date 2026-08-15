@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import {
   Eye,
@@ -22,13 +22,13 @@ import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   const supabase = createClient();
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    remember: false,
-  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -40,15 +40,12 @@ export default function LoginPage() {
 
   useEffect(() => {
     try {
-      const rememberedEmail =
+      const savedEmail =
         localStorage.getItem("rememberEmail");
 
-      if (rememberedEmail) {
-        setFormData((prev) => ({
-          ...prev,
-          email: rememberedEmail,
-          remember: true,
-        }));
+      if (savedEmail) {
+        setEmail(savedEmail);
+        setRemember(true);
       }
     } catch (error) {
       console.error(
@@ -59,52 +56,20 @@ export default function LoginPage() {
   }, []);
 
   // =========================================================
-  // HANDLE INPUT
+  // LOGIN
   // =========================================================
 
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement>
-  ) {
-    const {
-      name,
-      value,
-      type,
-      checked,
-    } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        type === "checkbox"
-          ? checked
-          : value,
-    }));
-  }
-
-  // =========================================================
-  // EMAIL / PASSWORD LOGIN
-  // =========================================================
-
-  async function login(
+  async function handleLogin(
     e: React.FormEvent<HTMLFormElement>
   ) {
     e.preventDefault();
 
     if (loading) return;
 
-    const email =
-      formData.email
-        .trim()
-        .toLowerCase();
+    const cleanEmail =
+      email.trim().toLowerCase();
 
-    const password =
-      formData.password;
-
-    // -------------------------------------------------------
-    // VALIDATION
-    // -------------------------------------------------------
-
-    if (!email) {
+    if (!cleanEmail) {
       toast.error(
         "Please enter your email address."
       );
@@ -122,11 +87,11 @@ export default function LoginPage() {
       setLoading(true);
 
       console.log(
-        "🔐 PrimeCart login started..."
+        "🔐 PrimeCart login started"
       );
 
       // -----------------------------------------------------
-      // SUPABASE LOGIN
+      // SIGN IN
       // -----------------------------------------------------
 
       const {
@@ -134,17 +99,13 @@ export default function LoginPage() {
         error,
       } =
         await supabase.auth.signInWithPassword({
-          email,
+          email: cleanEmail,
           password,
         });
 
-      // -----------------------------------------------------
-      // LOGIN ERROR
-      // -----------------------------------------------------
-
       if (error) {
         console.error(
-          "❌ LOGIN ERROR:",
+          "❌ Supabase login error:",
           error
         );
 
@@ -173,30 +134,23 @@ export default function LoginPage() {
           );
         }
 
-        setLoading(false);
         return;
       }
 
-      // -----------------------------------------------------
-      // USER CHECK
-      // -----------------------------------------------------
-
       if (!data.user) {
         toast.error(
-          "Login failed. Please try again."
+          "Unable to login. Please try again."
         );
-
-        setLoading(false);
         return;
       }
 
       console.log(
-        "✅ USER LOGIN SUCCESS:",
+        "✅ User authenticated:",
         data.user.email
       );
 
       // -----------------------------------------------------
-      // VERIFY SESSION
+      // CHECK SESSION
       // -----------------------------------------------------
 
       const {
@@ -205,51 +159,47 @@ export default function LoginPage() {
       } =
         await supabase.auth.getSession();
 
-      if (
-        sessionError ||
-        !sessionData.session
-      ) {
+      if (sessionError) {
         console.error(
-          "❌ SESSION ERROR:",
+          "❌ Session error:",
           sessionError
         );
 
         toast.error(
-          "Login session could not be created. Please try again."
+          "Could not create login session."
         );
 
-        setLoading(false);
+        return;
+      }
+
+      if (!sessionData.session) {
+        console.error(
+          "❌ No session found after login"
+        );
+
+        toast.error(
+          "Login session was not created."
+        );
+
         return;
       }
 
       console.log(
-        "✅ SESSION CREATED"
-      );
-
-      console.log(
-        "👤 Logged in user:",
-        sessionData.session.user.email
+        "✅ Supabase session exists"
       );
 
       // -----------------------------------------------------
       // REMEMBER EMAIL
       // -----------------------------------------------------
 
-      try {
-        if (formData.remember) {
-          localStorage.setItem(
-            "rememberEmail",
-            email
-          );
-        } else {
-          localStorage.removeItem(
-            "rememberEmail"
-          );
-        }
-      } catch (error) {
-        console.error(
-          "Remember email save error:",
-          error
+      if (remember) {
+        localStorage.setItem(
+          "rememberEmail",
+          cleanEmail
+        );
+      } else {
+        localStorage.removeItem(
+          "rememberEmail"
         );
       }
 
@@ -258,31 +208,36 @@ export default function LoginPage() {
       // -----------------------------------------------------
 
       toast.success(
-        "Login successful! Welcome back to PrimeCart ✨"
+        "Login successful! Welcome to PrimeCart ✨"
       );
+
+      /*
+       * Small delay only for showing success toast.
+       * The actual navigation is still handled by Next router.
+       */
+
+      const next =
+        searchParams.get("next") ||
+        "/dashboard";
 
       console.log(
-        "🚀 Redirecting to /dashboard..."
+        "🚀 Navigating to:",
+        next
       );
 
-      // -----------------------------------------------------
-      // IMPORTANT REDIRECT
-      // -----------------------------------------------------
-
+      router.replace(next);
       router.refresh();
-
-      router.replace("/dashboard");
 
     } catch (error) {
       console.error(
-        "❌ UNEXPECTED LOGIN ERROR:",
+        "❌ Login unexpected error:",
         error
       );
 
       toast.error(
         "Something went wrong. Please try again."
       );
-
+    } finally {
       setLoading(false);
     }
   }
@@ -291,10 +246,10 @@ export default function LoginPage() {
   // GOOGLE LOGIN
   // =========================================================
 
-  async function loginWithGoogle() {
+  async function handleGoogleLogin() {
     if (
-      googleLoading ||
-      loading
+      loading ||
+      googleLoading
     ) {
       return;
     }
@@ -302,8 +257,12 @@ export default function LoginPage() {
     try {
       setGoogleLoading(true);
 
+      const next =
+        searchParams.get("next") ||
+        "/dashboard";
+
       console.log(
-        "🔐 Starting Google login..."
+        "🔐 Starting Google login"
       );
 
       const {
@@ -314,13 +273,15 @@ export default function LoginPage() {
 
           options: {
             redirectTo:
-              `${window.location.origin}/auth/callback?next=/dashboard`,
+              `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+                next
+              )}`,
           },
-          });
+        });
 
       if (error) {
         console.error(
-          "❌ GOOGLE LOGIN ERROR:",
+          "❌ Google login error:",
           error
         );
 
@@ -333,7 +294,7 @@ export default function LoginPage() {
 
     } catch (error) {
       console.error(
-        "❌ GOOGLE LOGIN ERROR:",
+        "❌ Google login error:",
         error
       );
 
@@ -381,7 +342,7 @@ export default function LoginPage() {
         "
       >
         {/* =====================================================
-            LEFT BANNER
+            LEFT SIDE
         ===================================================== */}
 
         <div
@@ -401,8 +362,6 @@ export default function LoginPage() {
             className="object-cover"
           />
 
-          {/* OVERLAY */}
-
           <div
             className="
               absolute
@@ -413,8 +372,6 @@ export default function LoginPage() {
               to-transparent
             "
           />
-
-          {/* GOLD GLOW */}
 
           <div
             className="
@@ -443,8 +400,6 @@ export default function LoginPage() {
               blur-[140px]
             "
           />
-
-          {/* BANNER CONTENT */}
 
           <div
             className="
@@ -551,7 +506,7 @@ export default function LoginPage() {
         </div>
 
         {/* =====================================================
-            RIGHT LOGIN
+            RIGHT SIDE
         ===================================================== */}
 
         <div
@@ -571,9 +526,7 @@ export default function LoginPage() {
               max-w-md
             "
           >
-            {/* =================================================
-                LOGO
-            ================================================= */}
+            {/* LOGO */}
 
             <Link
               href="/"
@@ -609,9 +562,7 @@ export default function LoginPage() {
               </h2>
             </Link>
 
-            {/* =================================================
-                HEADING
-            ================================================= */}
+            {/* HEADING */}
 
             <p
               className="
@@ -685,12 +636,10 @@ export default function LoginPage() {
               </span>
             </div>
 
-            {/* =================================================
-                FORM
-            ================================================= */}
+            {/* FORM */}
 
             <form
-              onSubmit={login}
+              onSubmit={handleLogin}
               className="
                 mt-6
                 space-y-4
@@ -712,9 +661,10 @@ export default function LoginPage() {
 
                 <input
                   type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
+                  value={email}
+                  onChange={(e) =>
+                    setEmail(e.target.value)
+                  }
                   placeholder="Email Address"
                   autoComplete="email"
                   disabled={loading}
@@ -763,9 +713,10 @@ export default function LoginPage() {
                       ? "text"
                       : "password"
                   }
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
+                  value={password}
+                  onChange={(e) =>
+                    setPassword(e.target.value)
+                  }
                   placeholder="Password"
                   autoComplete="current-password"
                   disabled={loading}
@@ -812,11 +763,6 @@ export default function LoginPage() {
                     disabled:cursor-not-allowed
                     disabled:opacity-40
                   "
-                  aria-label={
-                    showPassword
-                      ? "Hide password"
-                      : "Show password"
-                  }
                 >
                   {showPassword ? (
                     <EyeOff size={20} />
@@ -848,11 +794,12 @@ export default function LoginPage() {
                 >
                   <input
                     type="checkbox"
-                    name="remember"
-                    checked={
-                      formData.remember
+                    checked={remember}
+                    onChange={(e) =>
+                      setRemember(
+                        e.target.checked
+                      )
                     }
-                    onChange={handleChange}
                     disabled={loading}
                     className="
                       h-4
@@ -904,7 +851,6 @@ export default function LoginPage() {
                   hover:shadow-[0_16px_30px_rgba(184,134,11,0.28)]
                   disabled:cursor-not-allowed
                   disabled:opacity-60
-                  disabled:hover:translate-y-0
                 "
               >
                 {loading ? (
@@ -913,6 +859,7 @@ export default function LoginPage() {
                       size={20}
                       className="animate-spin"
                     />
+
                     Logging in...
                   </>
                 ) : (
@@ -931,9 +878,7 @@ export default function LoginPage() {
               </button>
             </form>
 
-            {/* =================================================
-                DIVIDER
-            ================================================= */}
+            {/* DIVIDER */}
 
             <div
               className="
@@ -970,16 +915,14 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* =================================================
-                GOOGLE LOGIN
-            ================================================= */}
+            {/* GOOGLE */}
 
             <button
               type="button"
-              onClick={loginWithGoogle}
+              onClick={handleGoogleLogin}
               disabled={
-                googleLoading ||
-                loading
+                loading ||
+                googleLoading
               }
               className="
                 flex
@@ -1020,9 +963,7 @@ export default function LoginPage() {
               )}
             </button>
 
-            {/* =================================================
-                REGISTER
-            ================================================= */}
+            {/* REGISTER */}
 
             <p
               className="
@@ -1049,9 +990,7 @@ export default function LoginPage() {
               </Link>
             </p>
 
-            {/* =================================================
-                SECURITY
-            ================================================= */}
+            {/* SECURITY */}
 
             <div
               className="
