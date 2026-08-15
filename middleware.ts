@@ -50,10 +50,6 @@ export async function middleware(
     data: { user },
   } = await supabase.auth.getUser();
 
-  // =====================================================
-  // PROTECTED ROUTES
-  // =====================================================
-
   const protectedRoutes = [
     "/dashboard",
     "/profile",
@@ -68,10 +64,6 @@ export async function middleware(
       request.nextUrl.pathname.startsWith(route)
     );
 
-  // =====================================================
-  // NOT LOGGED IN → LOGIN
-  // =====================================================
-
   if (
     isProtectedRoute &&
     !user
@@ -80,10 +72,6 @@ export async function middleware(
       new URL("/login", request.url)
     );
   }
-
-  // IMPORTANT:
-  // Do NOT redirect /login to dashboard.
-  // User should be able to open login page normally.
 
   return response;
 }
