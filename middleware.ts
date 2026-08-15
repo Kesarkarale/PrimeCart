@@ -1,6 +1,6 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
@@ -17,9 +17,14 @@ export async function middleware(request: NextRequest) {
         },
 
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => {
-            request.cookies.set(name, value);
-          });
+          cookiesToSet.forEach(
+            ({ name, value }) => {
+              request.cookies.set(
+                name,
+                value
+              );
+            }
+          );
 
           response = NextResponse.next({
             request,
@@ -40,14 +45,26 @@ export async function middleware(request: NextRequest) {
   );
 
   // IMPORTANT:
-  // Refresh / validate the Supabase auth session
+  // getUser() validates the Supabase user
+  // and refreshes the auth session when needed.
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser();
 
-  const pathname = request.nextUrl.pathname;
+  console.log(
+    "🔐 Middleware:",
+    request.nextUrl.pathname,
+    "User:",
+    user?.email ?? "NO USER",
+    "Error:",
+    error?.message ?? "none"
+  );
 
-  // Protected routes
+  // =========================================================
+  // PROTECTED ROUTES
+  // =========================================================
+
   const protectedRoutes = [
     "/dashboard",
     "/profile",
@@ -57,26 +74,37 @@ export async function middleware(request: NextRequest) {
     "/cart",
   ];
 
-  const isProtectedRoute = protectedRoutes.some(
-    (route) =>
-      pathname === route ||
-      pathname.startsWith(`${route}/`)
-  );
+  const isProtectedRoute =
+    protectedRoutes.some((route) =>
+      request.nextUrl.pathname.startsWith(route)
+    );
 
-  // Not logged in → Login
+  // =========================================================
+  // NOT LOGGED IN
+  // =========================================================
+
   if (isProtectedRoute && !user) {
     const loginUrl = new URL(
       "/login",
       request.url
     );
 
-    // Optional: remember where user wanted to go
-    loginUrl.searchParams.set(
-      "next",
-      pathname
+    return NextResponse.redirect(
+      loginUrl
     );
+  }
 
-    return NextResponse.redirect(loginUrl);
+  // =========================================================
+  // LOGGED IN USER VISITS LOGIN
+  // =========================================================
+
+  if (
+    request.nextUrl.pathname === "/login" &&
+    user
+  ) {
+    return NextResponse.redirect(
+      new URL("/dashboard", request.url)
+    );
   }
 
   return response;
@@ -90,5 +118,6 @@ export const config = {
     "/checkout/:path*",
     "/wishlist/:path*",
     "/cart/:path*",
+    "/login",
   ],
 };
