@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 
 import {
   Eye,
@@ -18,19 +17,9 @@ import {
 import { toast } from "sonner";
 import { FcGoogle } from "react-icons/fc";
 
-import {
-  signInUser,
-  signInWithGoogle,
-} from "@/lib/auth/auth-client";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
-  const router = useRouter();
-  
-
-  // =========================================================
-  // STATE
-  // =========================================================
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -41,12 +30,13 @@ export default function LoginPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
 
   // =========================================================
-  // CHECK AUTH CALLBACK ERROR
+  // SUPABASE CLIENT
   // =========================================================
 
-   
+  const supabase = createClient();
+
   // =========================================================
-  // LOAD REMEMBERED EMAIL
+  // REMEMBER EMAIL
   // =========================================================
 
   useEffect(() => {
@@ -75,7 +65,9 @@ export default function LoginPage() {
   ) {
     e.preventDefault();
 
-    if (loading || googleLoading) return;
+    if (loading || googleLoading) {
+      return;
+    }
 
     const cleanEmail =
       email.trim().toLowerCase();
@@ -98,7 +90,6 @@ export default function LoginPage() {
       return;
     }
 
-    // Simple email validation
     const emailRegex =
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -113,26 +104,39 @@ export default function LoginPage() {
       setLoading(true);
 
       console.log(
-        "🔐 PrimeCart login started..."
+        "================================="
+      );
+      console.log(
+        "🔐 PRIME CART LOGIN STARTED"
+      );
+      console.log(
+        "Email:",
+        cleanEmail
+      );
+      console.log(
+        "================================="
       );
 
       // -------------------------------------------------------
       // SUPABASE LOGIN
       // -------------------------------------------------------
 
-      const { data, error } =
-        await signInUser(
-          cleanEmail,
-          password
-        );
+      const {
+        data,
+        error,
+      } =
+        await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password,
+        });
 
       // -------------------------------------------------------
-      // LOGIN ERROR
+      // ERROR
       // -------------------------------------------------------
 
       if (error) {
         console.error(
-          "❌ Login error:",
+          "❌ SUPABASE LOGIN ERROR:",
           error
         );
 
@@ -155,18 +159,10 @@ export default function LoginPage() {
           toast.error(
             "Please verify your email before logging in."
           );
-        } else if (
-          message.includes(
-            "user not found"
-          )
-        ) {
-          toast.error(
-            "No account found with this email."
-          );
         } else {
           toast.error(
             error.message ||
-              "Login failed. Please try again."
+              "Login failed."
           );
         }
 
@@ -178,13 +174,13 @@ export default function LoginPage() {
       // USER CHECK
       // -------------------------------------------------------
 
-      if (!data?.user) {
+      if (!data.user) {
         console.error(
-          "❌ Login succeeded but user was not returned."
+          "❌ USER NOT FOUND AFTER LOGIN"
         );
 
         toast.error(
-          "Login failed. Please try again."
+          "Login failed. User was not found."
         );
 
         setLoading(false);
@@ -192,8 +188,49 @@ export default function LoginPage() {
       }
 
       console.log(
-        "✅ Login successful:",
+        "✅ USER LOGGED IN:",
         data.user.email
+      );
+
+      // -------------------------------------------------------
+      // SESSION CHECK
+      // -------------------------------------------------------
+
+      const {
+        data: sessionResult,
+        error: sessionError,
+      } =
+        await supabase.auth.getSession();
+
+      if (sessionError) {
+        console.error(
+          "❌ SESSION ERROR:",
+          sessionError
+        );
+
+        toast.error(
+          "Login session could not be created."
+        );
+
+        setLoading(false);
+        return;
+      }
+
+      if (!sessionResult.session) {
+        console.error(
+          "❌ NO SESSION FOUND"
+        );
+
+        toast.error(
+          "Login session was not created."
+        );
+
+        setLoading(false);
+        return;
+      }
+
+      console.log(
+        "✅ SESSION CREATED"
       );
 
       // -------------------------------------------------------
@@ -227,20 +264,23 @@ export default function LoginPage() {
       );
 
       console.log(
-        "🚀 Redirecting to dashboard..."
+        "🚀 REDIRECTING TO DASHBOARD..."
       );
 
-      // Give Supabase a moment to persist auth state
-      await new Promise((resolve) =>
-        setTimeout(resolve, 200)
-      );
+      // -------------------------------------------------------
+      // IMPORTANT
+      // -------------------------------------------------------
+      // Full browser navigation.
+      // This makes middleware receive the new
+      // Supabase auth cookies properly.
+      // -------------------------------------------------------
 
-      router.replace("/dashboard");
-      router.refresh();
+      window.location.href =
+        "/dashboard";
 
     } catch (error) {
       console.error(
-        "❌ Unexpected login error:",
+        "❌ UNEXPECTED LOGIN ERROR:",
         error
       );
 
@@ -257,7 +297,12 @@ export default function LoginPage() {
   // =========================================================
 
   async function handleGoogleLogin() {
-    if (loading || googleLoading) return;
+    if (
+      loading ||
+      googleLoading
+    ) {
+      return;
+    }
 
     try {
       setGoogleLoading(true);
@@ -266,12 +311,20 @@ export default function LoginPage() {
         "🔐 Starting Google login..."
       );
 
-      const { error } =
-        await signInWithGoogle();
+      const {
+        error,
+      } =
+        await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo:
+              `${window.location.origin}/auth/callback`,
+          },
+        });
 
       if (error) {
         console.error(
-          "❌ Google login error:",
+          "❌ GOOGLE LOGIN ERROR:",
           error
         );
 
@@ -281,24 +334,16 @@ export default function LoginPage() {
         );
 
         setGoogleLoading(false);
-        return;
       }
-
-      // Supabase will redirect to:
-      // /auth/callback
-      //
-      // Then callback route will:
-      // exchange code for session
-      // and redirect to /dashboard
 
     } catch (error) {
       console.error(
-        "❌ Google login error:",
+        "❌ GOOGLE LOGIN ERROR:",
         error
       );
 
       toast.error(
-        "Google login failed. Please try again."
+        "Google login failed."
       );
 
       setGoogleLoading(false);
@@ -340,9 +385,7 @@ export default function LoginPage() {
           lg:grid-cols-2
         "
       >
-        {/* =====================================================
-            LEFT BANNER
-        ===================================================== */}
+        {/* LEFT */}
 
         <div
           className="
@@ -361,8 +404,6 @@ export default function LoginPage() {
             className="object-cover"
           />
 
-          {/* Overlay */}
-
           <div
             className="
               absolute
@@ -373,8 +414,6 @@ export default function LoginPage() {
               to-transparent
             "
           />
-
-          {/* Gold Glow */}
 
           <div
             className="
@@ -403,8 +442,6 @@ export default function LoginPage() {
               blur-[140px]
             "
           />
-
-          {/* Banner Content */}
 
           <div
             className="
@@ -510,9 +547,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* =====================================================
-            RIGHT LOGIN PANEL
-        ===================================================== */}
+        {/* RIGHT */}
 
         <div
           className="
@@ -531,9 +566,7 @@ export default function LoginPage() {
               max-w-md
             "
           >
-            {/* =================================================
-                LOGO
-            ================================================= */}
+            {/* LOGO */}
 
             <Link
               href="/"
@@ -569,9 +602,7 @@ export default function LoginPage() {
               </h2>
             </Link>
 
-            {/* =================================================
-                HEADING
-            ================================================= */}
+            {/* HEADING */}
 
             <p
               className="
@@ -614,9 +645,7 @@ export default function LoginPage() {
               shopping journey.
             </p>
 
-            {/* =================================================
-                CUSTOMER BADGE
-            ================================================= */}
+            {/* BADGE */}
 
             <div
               className="
@@ -647,9 +676,7 @@ export default function LoginPage() {
               </span>
             </div>
 
-            {/* =================================================
-                LOGIN FORM
-            ================================================= */}
+            {/* FORM */}
 
             <form
               onSubmit={handleLogin}
@@ -676,7 +703,9 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) =>
-                    setEmail(e.target.value)
+                    setEmail(
+                      e.target.value
+                    )
                   }
                   placeholder="Email Address"
                   autoComplete="email"
@@ -731,7 +760,9 @@ export default function LoginPage() {
                   }
                   value={password}
                   onChange={(e) =>
-                    setPassword(e.target.value)
+                    setPassword(
+                      e.target.value
+                    )
                   }
                   placeholder="Password"
                   autoComplete="current-password"
@@ -785,10 +816,7 @@ export default function LoginPage() {
                     top-1/2
                     -translate-y-1/2
                     text-gray-400
-                    transition
                     hover:text-black
-                    disabled:cursor-not-allowed
-                    disabled:opacity-40
                   "
                 >
                   {showPassword ? (
@@ -799,7 +827,7 @@ export default function LoginPage() {
                 </button>
               </div>
 
-              {/* REMEMBER + FORGOT */}
+              {/* REMEMBER */}
 
               <div
                 className="
@@ -846,7 +874,6 @@ export default function LoginPage() {
                   className="
                     font-bold
                     text-[#B28B18]
-                    transition
                     hover:text-black
                     hover:underline
                   "
@@ -881,10 +908,8 @@ export default function LoginPage() {
                   shadow-[0_12px_25px_rgba(184,134,11,0.22)]
                   transition
                   hover:-translate-y-0.5
-                  hover:shadow-[0_16px_30px_rgba(184,134,11,0.28)]
                   disabled:cursor-not-allowed
                   disabled:opacity-60
-                  disabled:hover:translate-y-0
                 "
               >
                 {loading ? (
@@ -912,9 +937,7 @@ export default function LoginPage() {
               </button>
             </form>
 
-            {/* =================================================
-                DIVIDER
-            ================================================= */}
+            {/* DIVIDER */}
 
             <div
               className="
@@ -951,13 +974,13 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* =================================================
-                GOOGLE LOGIN
-            ================================================= */}
+            {/* GOOGLE */}
 
             <button
               type="button"
-              onClick={handleGoogleLogin}
+              onClick={
+                handleGoogleLogin
+              }
               disabled={
                 googleLoading ||
                 loading
@@ -978,7 +1001,6 @@ export default function LoginPage() {
                 text-gray-700
                 transition
                 hover:bg-gray-50
-                hover:shadow-sm
                 disabled:cursor-not-allowed
                 disabled:opacity-60
               "
@@ -1001,9 +1023,7 @@ export default function LoginPage() {
               )}
             </button>
 
-            {/* =================================================
-                REGISTER
-            ================================================= */}
+            {/* REGISTER */}
 
             <p
               className="
@@ -1021,7 +1041,6 @@ export default function LoginPage() {
                   ml-2
                   font-black
                   text-[#B28B18]
-                  transition
                   hover:text-black
                   hover:underline
                 "
@@ -1030,9 +1049,7 @@ export default function LoginPage() {
               </Link>
             </p>
 
-            {/* =================================================
-                SECURITY
-            ================================================= */}
+            {/* SECURITY */}
 
             <div
               className="
