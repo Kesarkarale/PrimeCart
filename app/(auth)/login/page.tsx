@@ -20,14 +20,19 @@ import { FcGoogle } from "react-icons/fc";
 
 import { createClient } from "@/lib/supabase/client";
 
-export const dynamic = "force-dynamic";
-
 export default function LoginPage() {
   const router = useRouter();
+
+  // Create Supabase browser client
   const supabase = createClient();
+
+  // =========================================================
+  // STATE
+  // =========================================================
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [remember, setRemember] = useState(false);
 
   const [showPassword, setShowPassword] =
@@ -74,6 +79,10 @@ export default function LoginPage() {
     const cleanEmail =
       email.trim().toLowerCase();
 
+    // =======================================================
+    // VALIDATION
+    // =======================================================
+
     if (!cleanEmail) {
       toast.error(
         "Please enter your email address."
@@ -88,6 +97,15 @@ export default function LoginPage() {
       return;
     }
 
+    if (
+      !cleanEmail.includes("@")
+    ) {
+      toast.error(
+        "Please enter a valid email address."
+      );
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -95,9 +113,9 @@ export default function LoginPage() {
         "🔐 PrimeCart login started..."
       );
 
-      // -----------------------------------------------------
+      // =====================================================
       // SUPABASE LOGIN
-      // -----------------------------------------------------
+      // =====================================================
 
       const {
         data,
@@ -108,13 +126,13 @@ export default function LoginPage() {
           password,
         });
 
-      // -----------------------------------------------------
+      // =====================================================
       // LOGIN ERROR
-      // -----------------------------------------------------
+      // =====================================================
 
       if (error) {
         console.error(
-          "❌ Supabase login error:",
+          "❌ LOGIN ERROR:",
           error
         );
 
@@ -123,19 +141,19 @@ export default function LoginPage() {
 
         if (
           message.includes(
-            "email not confirmed"
-          )
-        ) {
-          toast.error(
-            "Please verify your email before logging in."
-          );
-        } else if (
-          message.includes(
             "invalid login credentials"
           )
         ) {
           toast.error(
             "Invalid email or password."
+          );
+        } else if (
+          message.includes(
+            "email not confirmed"
+          )
+        ) {
+          toast.error(
+            "Please verify your email before logging in."
           );
         } else {
           toast.error(
@@ -147,11 +165,15 @@ export default function LoginPage() {
         return;
       }
 
-      // -----------------------------------------------------
+      // =====================================================
       // USER CHECK
-      // -----------------------------------------------------
+      // =====================================================
 
       if (!data.user) {
+        console.error(
+          "❌ No user returned from Supabase."
+        );
+
         toast.error(
           "Login failed. Please try again."
         );
@@ -161,13 +183,13 @@ export default function LoginPage() {
       }
 
       console.log(
-        "✅ USER LOGIN SUCCESS:",
+        "✅ Login successful:",
         data.user.email
       );
 
-      // -----------------------------------------------------
+      // =====================================================
       // SESSION CHECK
-      // -----------------------------------------------------
+      // =====================================================
 
       const {
         data: sessionData,
@@ -182,7 +204,7 @@ export default function LoginPage() {
         );
 
         toast.error(
-          "Login session could not be created."
+          "Could not create login session."
         );
 
         setLoading(false);
@@ -191,11 +213,11 @@ export default function LoginPage() {
 
       if (!sessionData.session) {
         console.error(
-          "❌ NO SESSION FOUND"
+          "❌ SESSION NOT FOUND"
         );
 
         toast.error(
-          "Login session was not created. Please try again."
+          "Login session was not created."
         );
 
         setLoading(false);
@@ -203,12 +225,12 @@ export default function LoginPage() {
       }
 
       console.log(
-        "✅ SESSION CREATED"
+        "✅ Session created successfully."
       );
 
-      // -----------------------------------------------------
+      // =====================================================
       // REMEMBER EMAIL
-      // -----------------------------------------------------
+      // =====================================================
 
       try {
         if (remember) {
@@ -223,28 +245,26 @@ export default function LoginPage() {
         }
       } catch (error) {
         console.error(
-          "Remember email save error:",
+          "Remember email error:",
           error
         );
       }
 
-      // -----------------------------------------------------
-      // SUCCESS MESSAGE
-      // -----------------------------------------------------
+      // =====================================================
+      // SUCCESS
+      // =====================================================
 
       toast.success(
         "Login successful! Welcome back to PrimeCart ✨"
       );
 
       console.log(
-        "🚀 Redirecting to /dashboard..."
+        "🚀 Going to dashboard..."
       );
 
-      // -----------------------------------------------------
-      // DASHBOARD REDIRECT
-      // -----------------------------------------------------
-
-      router.refresh();
+      // =====================================================
+      // REDIRECT
+      // =====================================================
 
       router.replace("/dashboard");
 
@@ -268,8 +288,8 @@ export default function LoginPage() {
 
   async function handleGoogleLogin() {
     if (
-      googleLoading ||
-      loading
+      loading ||
+      googleLoading
     ) {
       return;
     }
@@ -376,7 +396,7 @@ export default function LoginPage() {
             className="object-cover"
           />
 
-          {/* OVERLAY */}
+          {/* Overlay */}
 
           <div
             className="
@@ -389,7 +409,7 @@ export default function LoginPage() {
             "
           />
 
-          {/* GOLD GLOW */}
+          {/* Gold Glow */}
 
           <div
             className="
@@ -419,7 +439,7 @@ export default function LoginPage() {
             "
           />
 
-          {/* BANNER CONTENT */}
+          {/* Banner Content */}
 
           <div
             className="
@@ -526,7 +546,7 @@ export default function LoginPage() {
         </div>
 
         {/* =====================================================
-            RIGHT LOGIN
+            RIGHT LOGIN PANEL
         ===================================================== */}
 
         <div
@@ -611,11 +631,7 @@ export default function LoginPage() {
               "
             >
               Welcome
-              <span
-                className="
-                  text-[#D4AF37]
-                "
-              >
+              <span className="text-[#D4AF37]">
                 {" "}
                 Back ✨
               </span>
@@ -633,7 +649,9 @@ export default function LoginPage() {
               shopping journey.
             </p>
 
-            {/* CUSTOMER BADGE */}
+            {/* =================================================
+                CUSTOMER BADGE
+            ================================================= */}
 
             <div
               className="
@@ -864,11 +882,16 @@ export default function LoginPage() {
                 </Link>
               </div>
 
-              {/* LOGIN BUTTON */}
+              {/* =================================================
+                  LOGIN BUTTON
+              ================================================= */}
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={
+                  loading ||
+                  googleLoading
+                }
                 className="
                   group
                   flex
