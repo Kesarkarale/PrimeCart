@@ -301,7 +301,7 @@ export default function FeaturedProducts() {
                 <div className="relative">
 
                   <Link
-                    href={`/dashboard/product/${product.id}`}
+href={`/dashboard/product?id=${product.id}`}
                     className="block"
                   >
 
@@ -455,7 +455,7 @@ export default function FeaturedProducts() {
                   {/* PRODUCT NAME */}
 
                   <Link
-                    href={`/dashboard/product/${product.id}`}
+                   href={`/dashboard/product?id=${product.id}`}
                   >
                     <h3
                       className="
