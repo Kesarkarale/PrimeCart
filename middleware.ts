@@ -2,14 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export async function middleware(
-  request: NextRequest
-) {
-  /*
-   * Create the initial response.
-   * Supabase may update cookies while refreshing
-   * the user's session.
-   */
+export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
     request,
   });
@@ -24,28 +17,17 @@ export async function middleware(
         },
 
         setAll(cookiesToSet) {
-          /*
-           * Update request cookies first.
-           */
-          cookiesToSet.forEach(
-            ({ name, value }) => {
-              request.cookies.set(
-                name,
-                value
-              );
-            }
-          );
+          // Update request cookies
+          cookiesToSet.forEach(({ name, value }) => {
+            request.cookies.set(name, value);
+          });
 
-          /*
-           * Re-create response with updated request.
-           */
+          // Create new response with updated request
           response = NextResponse.next({
             request,
           });
 
-          /*
-           * Copy refreshed cookies to response.
-           */
+          // Update response cookies
           cookiesToSet.forEach(
             ({ name, value, options }) => {
               response.cookies.set(
@@ -61,21 +43,21 @@ export async function middleware(
   );
 
   /*
-   * IMPORTANT:
-   * getUser() validates the Supabase session
-   * on the server.
+   * IMPORTANT
+   * getUser() validates the Supabase session.
    */
   const {
     data: { user },
-    error,
   } = await supabase.auth.getUser();
 
-  const pathname =
-    request.nextUrl.pathname;
+  const pathname = request.nextUrl.pathname;
 
   /*
-   * Routes that require login.
+   * ============================================================
+   * PROTECTED ROUTES
+   * ============================================================
    */
+
   const protectedRoutes = [
     "/dashboard",
     "/profile",
@@ -85,88 +67,105 @@ export async function middleware(
     "/cart",
   ];
 
-  const isProtectedRoute =
-    protectedRoutes.some(
-      (route) =>
-        pathname === route ||
-        pathname.startsWith(`${route}/`)
-    );
+  const isProtectedRoute = protectedRoutes.some(
+    (route) =>
+      pathname === route ||
+      pathname.startsWith(`${route}/`)
+  );
 
   /*
-   * ---------------------------------------------------------
-   * NOT LOGGED IN
-   * ---------------------------------------------------------
+   * ============================================================
+   * USER IS NOT LOGGED IN
+   * ============================================================
    *
-   * If someone tries to open:
+   * If user tries to access:
    *
    * /dashboard
+   * /profile
+   * /orders
+   * /checkout
+   * /wishlist
+   * /cart
    *
    * without authentication,
-   * send them to login.
+   * redirect to /login.
    */
-  if (
-    isProtectedRoute &&
-    (!user || error)
-  ) {
-    const loginUrl =
-      new URL(
-        "/login",
-        request.url
-      );
+
+  if (isProtectedRoute && !user) {
+    const loginUrl = new URL(
+      "/login",
+      request.url
+    );
 
     /*
-     * Remember where the user wanted to go.
+     * Remember the page the user wanted.
+     *
+     * Example:
+     * /dashboard
+     *
+     * becomes:
+     * /login?redirect=/dashboard
      */
+
     loginUrl.searchParams.set(
       "redirect",
       pathname
     );
 
-    return NextResponse.redirect(
-      loginUrl
-    );
+    return NextResponse.redirect(loginUrl);
   }
 
   /*
-   * ---------------------------------------------------------
-   * ALREADY LOGGED IN
-   * ---------------------------------------------------------
+   * ============================================================
+   * LOGIN / REGISTER
+   * ============================================================
    *
-   * If authenticated user manually opens:
+   * VERY IMPORTANT:
    *
+   * DO NOT redirect /login to /dashboard here.
+   *
+   * This allows:
+   *
+   * Login button
+   *      ↓
    * /login
+   *      ↓
+   * Email + Password
+   *      ↓
+   * Login Now
+   *      ↓
+   * Successful authentication
+   *      ↓
+   * /dashboard
    *
-   * or
-   *
-   * /register
-   *
-   * send them directly to dashboard.
+   * The actual login redirect is handled
+   * inside the login page after signInWithPassword().
    */
+
   if (
-    user &&
-    (
-      pathname === "/login" ||
-      pathname === "/register"
-    )
+    pathname === "/login" ||
+    pathname === "/register"
   ) {
-    return NextResponse.redirect(
-      new URL(
-        "/dashboard",
-        request.url
-      )
-    );
+    return response;
   }
 
   /*
-   * Return response containing
-   * refreshed Supabase cookies.
+   * ============================================================
+   * EVERYTHING ELSE
+   * ============================================================
    */
+
   return response;
 }
 
 /*
- * Middleware only runs on these routes.
+ * ==============================================================
+ * MIDDLEWARE MATCHER
+ * ==============================================================
+ *
+ * Middleware will run only on these routes.
  */
+
 export const config = {
   matcher: [
     "/dashboard/:path*",
