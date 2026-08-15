@@ -78,109 +78,83 @@ export default function LoginPage() {
      LOGIN
   ========================================================= */
 
-  async function login(e: React.FormEvent) {
-    e.preventDefault();
+ async function login(e: React.FormEvent<HTMLFormElement>) {
+  e.preventDefault();
 
-    if (loading) return;
+  if (loading) return;
 
-    const email = formData.email.trim().toLowerCase();
-    const password = formData.password;
+  const email = formData.email.trim().toLowerCase();
+  const password = formData.password;
 
-    if (!email || !password) {
-      toast.error("Please fill all fields");
+  if (!email) {
+    toast.error("Please enter your email.");
+    return;
+  }
+
+  if (!password) {
+    toast.error("Please enter your password.");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const { data, error } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+    if (error) {
+      console.error("LOGIN ERROR:", error);
+
+      const message = error.message.toLowerCase();
+
+      if (message.includes("email not confirmed")) {
+        toast.error(
+          "Please verify your email before logging in."
+        );
+      } else if (
+        message.includes("invalid login credentials")
+      ) {
+        toast.error("Invalid email or password.");
+      } else {
+        toast.error(error.message);
+      }
+
       return;
     }
 
-    try {
-      setLoading(true);
-
-      const {
-        data,
-        error,
-      } =
-        await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-      if (error) {
-        console.error("LOGIN ERROR:", error);
-
-        if (
-          error.message
-            .toLowerCase()
-            .includes("email not confirmed")
-        ) {
-          toast.error(
-            "Please verify your email before logging in."
-          );
-        } else if (
-          error.message
-            .toLowerCase()
-            .includes("invalid login credentials")
-        ) {
-          toast.error(
-            "Invalid email or password."
-          );
-        } else {
-          toast.error(error.message);
-        }
-
-        return;
-      }
-
-      if (!data.user) {
-        toast.error(
-          "Login failed. Please try again."
-        );
-        return;
-      }
-
-      /* =====================================================
-         REMEMBER EMAIL
-      ===================================================== */
-
-      if (formData.remember) {
-        localStorage.setItem(
-          "rememberEmail",
-          email
-        );
-      } else {
-        localStorage.removeItem(
-          "rememberEmail"
-        );
-      }
-
-      /* =====================================================
-         SUCCESS
-      ===================================================== */
-
-      toast.success(
-        "Login successful ✨"
-      );
-
-      /*
-       * Give Supabase a moment to persist the
-       * authentication session before navigation.
-       */
-
-      setTimeout(() => {
-        router.replace("/dashboard");
-        router.refresh();
-      }, 500);
-    } catch (error) {
-      console.error(
-        "Unexpected login error:",
-        error
-      );
-
-      toast.error(
-        "Something went wrong. Please try again."
-      );
-    } finally {
-      setLoading(false);
+    if (!data.user) {
+      toast.error("Login failed. Please try again.");
+      return;
     }
+
+    // Remember email
+    if (formData.remember) {
+      localStorage.setItem("rememberEmail", email);
+    } else {
+      localStorage.removeItem("rememberEmail");
+    }
+
+    console.log("LOGIN SUCCESS:", data.user);
+
+    toast.success("Login successful ✨");
+
+    // PrimeCart dashboard
+    router.replace("/dashboard");
+    router.refresh();
+
+  } catch (error) {
+    console.error("Unexpected login error:", error);
+
+    toast.error(
+      "Something went wrong. Please try again."
+    );
+  } finally {
+    setLoading(false);
   }
+}
 
   /* =========================================================
      GOOGLE LOGIN
