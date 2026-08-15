@@ -78,161 +78,28 @@ export default function LoginPage() {
   // LOGIN
   // =========================================================
 
-  async function login(
-    e: React.FormEvent<HTMLFormElement>
-  ) {
-    e.preventDefault();
+  const { data, error } =
+  await supabase.auth.signInWithPassword({
+    email: email.trim().toLowerCase(),
+    password,
+  });
 
-    if (loading) return;
+console.log("LOGIN DATA:", data);
+console.log("LOGIN ERROR:", error);
 
-    const email =
-      formData.email
-        .trim()
-        .toLowerCase();
+if (error) {
+  toast.error(error.message);
+  return;
+}
 
-    const password =
-      formData.password;
+if (!data.user) {
+  toast.error("User not found");
+  return;
+}
 
-    // Validation
-    if (!email) {
-      toast.error(
-        "Please enter your email address."
-      );
-      return;
-    }
+toast.success("Login Successful ✨");
 
-    if (!password) {
-      toast.error(
-        "Please enter your password."
-      );
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      console.log(
-        "PrimeCart login started..."
-      );
-
-      // =====================================================
-      // SUPABASE LOGIN
-      // =====================================================
-
-      const {
-        data,
-        error,
-      } =
-        await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-      // =====================================================
-      // LOGIN ERROR
-      // =====================================================
-
-      if (error) {
-        console.error(
-          "LOGIN ERROR:",
-          error
-        );
-
-        const message =
-          error.message.toLowerCase();
-
-        if (
-          message.includes(
-            "email not confirmed"
-          )
-        ) {
-          toast.error(
-            "Please verify your email before logging in."
-          );
-        } else if (
-          message.includes(
-            "invalid login credentials"
-          )
-        ) {
-          toast.error(
-            "Invalid email or password."
-          );
-        } else {
-          toast.error(
-            error.message
-          );
-        }
-
-        return;
-      }
-
-      // =====================================================
-      // USER CHECK
-      // =====================================================
-
-      if (!data.user) {
-        toast.error(
-          "Login failed. Please try again."
-        );
-        return;
-      }
-
-      console.log(
-        "PrimeCart login successful:",
-        data.user.id
-      );
-
-      // =====================================================
-      // REMEMBER EMAIL
-      // =====================================================
-
-      if (formData.remember) {
-        localStorage.setItem(
-          "rememberEmail",
-          email
-        );
-      } else {
-        localStorage.removeItem(
-          "rememberEmail"
-        );
-      }
-
-      // =====================================================
-      // SUCCESS
-      // =====================================================
-
-      toast.success(
-        "Login successful ✨"
-      );
-
-      // Give Supabase a moment to persist
-      // the authentication session.
-      await new Promise((resolve) =>
-        setTimeout(resolve, 300)
-      );
-
-      // =====================================================
-      // PRIME CART DASHBOARD
-      // =====================================================
-
-      router.replace(
-        "/dashboard"
-      );
-
-      router.refresh();
-    } catch (error) {
-      console.error(
-        "UNEXPECTED LOGIN ERROR:",
-        error
-      );
-
-      toast.error(
-        "Something went wrong. Please try again."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
+router.replace("/");
 
   // =========================================================
   // GOOGLE LOGIN
