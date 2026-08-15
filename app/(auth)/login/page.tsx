@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import {
   Eye,
@@ -18,13 +18,14 @@ import {
 import { toast } from "sonner";
 import { FcGoogle } from "react-icons/fc";
 
-import { createClient } from "@/lib/supabase/client";
+import {
+  signInUser,
+  signInWithGoogle,
+} from "@/lib/auth/auth-client";
 
 export default function LoginPage() {
   const router = useRouter();
-
-  // Create Supabase browser client
-  const supabase = createClient();
+  const searchParams = useSearchParams();
 
   // =========================================================
   // STATE
@@ -34,15 +35,24 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
 
   const [remember, setRemember] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const [showPassword, setShowPassword] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
-  const [loading, setLoading] =
-    useState(false);
+  // =========================================================
+  // CHECK AUTH CALLBACK ERROR
+  // =========================================================
 
-  const [googleLoading, setGoogleLoading] =
-    useState(false);
+  useEffect(() => {
+    const error = searchParams.get("error");
+
+    if (error === "auth") {
+      toast.error(
+        "Authentication failed. Please try again."
+      );
+    }
+  }, [searchParams]);
 
   // =========================================================
   // LOAD REMEMBERED EMAIL
@@ -74,14 +84,14 @@ export default function LoginPage() {
   ) {
     e.preventDefault();
 
-    if (loading) return;
+    if (loading || googleLoading) return;
 
     const cleanEmail =
       email.trim().toLowerCase();
 
-    // =======================================================
+    // ---------------------------------------------------------
     // VALIDATION
-    // =======================================================
+    // ---------------------------------------------------------
 
     if (!cleanEmail) {
       toast.error(
@@ -97,9 +107,11 @@ export default function LoginPage() {
       return;
     }
 
-    if (
-      !cleanEmail.includes("@")
-    ) {
+    // Simple email validation
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(cleanEmail)) {
       toast.error(
         "Please enter a valid email address."
       );
@@ -113,26 +125,23 @@ export default function LoginPage() {
         "🔐 PrimeCart login started..."
       );
 
-      // =====================================================
+      // -------------------------------------------------------
       // SUPABASE LOGIN
-      // =====================================================
+      // -------------------------------------------------------
 
-      const {
-        data,
-        error,
-      } =
-        await supabase.auth.signInWithPassword({
-          email: cleanEmail,
-          password,
-        });
+      const { data, error } =
+        await signInUser(
+          cleanEmail,
+          password
+        );
 
-      // =====================================================
+      // -------------------------------------------------------
       // LOGIN ERROR
-      // =====================================================
+      // -------------------------------------------------------
 
       if (error) {
         console.error(
-          "❌ LOGIN ERROR:",
+          "❌ Login error:",
           error
         );
 
@@ -155,9 +164,18 @@ export default function LoginPage() {
           toast.error(
             "Please verify your email before logging in."
           );
+        } else if (
+          message.includes(
+            "user not found"
+          )
+        ) {
+          toast.error(
+            "No account found with this email."
+          );
         } else {
           toast.error(
-            error.message
+            error.message ||
+              "Login failed. Please try again."
           );
         }
 
@@ -165,13 +183,13 @@ export default function LoginPage() {
         return;
       }
 
-      // =====================================================
+      // -------------------------------------------------------
       // USER CHECK
-      // =====================================================
+      // -------------------------------------------------------
 
-      if (!data.user) {
+      if (!data?.user) {
         console.error(
-          "❌ No user returned from Supabase."
+          "❌ Login succeeded but user was not returned."
         );
 
         toast.error(
@@ -187,50 +205,9 @@ export default function LoginPage() {
         data.user.email
       );
 
-      // =====================================================
-      // SESSION CHECK
-      // =====================================================
-
-      const {
-        data: sessionData,
-        error: sessionError,
-      } =
-        await supabase.auth.getSession();
-
-      if (sessionError) {
-        console.error(
-          "❌ SESSION ERROR:",
-          sessionError
-        );
-
-        toast.error(
-          "Could not create login session."
-        );
-
-        setLoading(false);
-        return;
-      }
-
-      if (!sessionData.session) {
-        console.error(
-          "❌ SESSION NOT FOUND"
-        );
-
-        toast.error(
-          "Login session was not created."
-        );
-
-        setLoading(false);
-        return;
-      }
-
-      console.log(
-        "✅ Session created successfully."
-      );
-
-      // =====================================================
+      // -------------------------------------------------------
       // REMEMBER EMAIL
-      // =====================================================
+      // -------------------------------------------------------
 
       try {
         if (remember) {
@@ -250,27 +227,29 @@ export default function LoginPage() {
         );
       }
 
-      // =====================================================
+      // -------------------------------------------------------
       // SUCCESS
-      // =====================================================
+      // -------------------------------------------------------
 
       toast.success(
         "Login successful! Welcome back to PrimeCart ✨"
       );
 
       console.log(
-        "🚀 Going to dashboard..."
+        "🚀 Redirecting to dashboard..."
       );
 
-      // =====================================================
-      // REDIRECT
-      // =====================================================
+      // Give Supabase a moment to persist auth state
+      await new Promise((resolve) =>
+        setTimeout(resolve, 200)
+      );
 
       router.replace("/dashboard");
+      router.refresh();
 
     } catch (error) {
       console.error(
-        "❌ UNEXPECTED LOGIN ERROR:",
+        "❌ Unexpected login error:",
         error
       );
 
@@ -287,12 +266,7 @@ export default function LoginPage() {
   // =========================================================
 
   async function handleGoogleLogin() {
-    if (
-      loading ||
-      googleLoading
-    ) {
-      return;
-    }
+    if (loading || googleLoading) return;
 
     try {
       setGoogleLoading(true);
@@ -301,39 +275,39 @@ export default function LoginPage() {
         "🔐 Starting Google login..."
       );
 
-      const {
-        error,
-      } =
-        await supabase.auth.signInWithOAuth({
-          provider: "google",
-
-          options: {
-            redirectTo:
-              `${window.location.origin}/auth/callback?next=/dashboard`,
-          },
-        });
+      const { error } =
+        await signInWithGoogle();
 
       if (error) {
         console.error(
-          "❌ GOOGLE LOGIN ERROR:",
+          "❌ Google login error:",
           error
         );
 
         toast.error(
-          error.message
+          error.message ||
+            "Google login failed."
         );
 
         setGoogleLoading(false);
+        return;
       }
+
+      // Supabase will redirect to:
+      // /auth/callback
+      //
+      // Then callback route will:
+      // exchange code for session
+      // and redirect to /dashboard
 
     } catch (error) {
       console.error(
-        "❌ GOOGLE LOGIN ERROR:",
+        "❌ Google login error:",
         error
       );
 
       toast.error(
-        "Google login failed."
+        "Google login failed. Please try again."
       );
 
       setGoogleLoading(false);
@@ -711,13 +685,14 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) =>
-                    setEmail(
-                      e.target.value
-                    )
+                    setEmail(e.target.value)
                   }
                   placeholder="Email Address"
                   autoComplete="email"
-                  disabled={loading}
+                  disabled={
+                    loading ||
+                    googleLoading
+                  }
                   className="
                     h-14
                     w-full
@@ -765,13 +740,14 @@ export default function LoginPage() {
                   }
                   value={password}
                   onChange={(e) =>
-                    setPassword(
-                      e.target.value
-                    )
+                    setPassword(e.target.value)
                   }
                   placeholder="Password"
                   autoComplete="current-password"
-                  disabled={loading}
+                  disabled={
+                    loading ||
+                    googleLoading
+                  }
                   className="
                     h-14
                     w-full
@@ -803,7 +779,10 @@ export default function LoginPage() {
                       (prev) => !prev
                     )
                   }
-                  disabled={loading}
+                  disabled={
+                    loading ||
+                    googleLoading
+                  }
                   aria-label={
                     showPassword
                       ? "Hide password"
@@ -857,7 +836,10 @@ export default function LoginPage() {
                         e.target.checked
                       )
                     }
-                    disabled={loading}
+                    disabled={
+                      loading ||
+                      googleLoading
+                    }
                     className="
                       h-4
                       w-4
@@ -882,9 +864,7 @@ export default function LoginPage() {
                 </Link>
               </div>
 
-              {/* =================================================
-                  LOGIN BUTTON
-              ================================================= */}
+              {/* LOGIN BUTTON */}
 
               <button
                 type="submit"
@@ -986,9 +966,7 @@ export default function LoginPage() {
 
             <button
               type="button"
-              onClick={
-                handleGoogleLogin
-              }
+              onClick={handleGoogleLogin}
               disabled={
                 googleLoading ||
                 loading
