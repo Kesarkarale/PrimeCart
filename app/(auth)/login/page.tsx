@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import {
   Eye,
@@ -25,7 +25,7 @@ import {
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  
 
   // =========================================================
   // STATE
@@ -44,16 +44,7 @@ export default function LoginPage() {
   // CHECK AUTH CALLBACK ERROR
   // =========================================================
 
-  useEffect(() => {
-    const error = searchParams.get("error");
-
-    if (error === "auth") {
-      toast.error(
-        "Authentication failed. Please try again."
-      );
-    }
-  }, [searchParams]);
-
+   
   // =========================================================
   // LOAD REMEMBERED EMAIL
   // =========================================================
