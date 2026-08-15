@@ -1,143 +1,94 @@
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { createServerClient } from "@supabase/ssr";
 
+export async function middleware(request: NextRequest) {
+  let response = NextResponse.next({
+    request,
+  });
 
-export async function middleware(
-request: NextRequest
-){
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
 
-let response = NextResponse.next({
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => {
+            request.cookies.set(name, value);
+          });
 
-request,
+          response = NextResponse.next({
+            request,
+          });
 
-});
+          cookiesToSet.forEach(
+            ({ name, value, options }) => {
+              response.cookies.set(
+                name,
+                value,
+                options
+              );
+            }
+          );
+        },
+      },
+    }
+  );
 
+  // IMPORTANT:
+  // Refresh / validate the Supabase auth session
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-const supabase =
-createServerClient(
+  const pathname = request.nextUrl.pathname;
 
-process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  // Protected routes
+  const protectedRoutes = [
+    "/dashboard",
+    "/profile",
+    "/orders",
+    "/checkout",
+    "/wishlist",
+    "/cart",
+  ];
 
-process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+  const isProtectedRoute = protectedRoutes.some(
+    (route) =>
+      pathname === route ||
+      pathname.startsWith(`${route}/`)
+  );
 
-{
+  // Not logged in → Login
+  if (isProtectedRoute && !user) {
+    const loginUrl = new URL(
+      "/login",
+      request.url
+    );
 
-cookies:{
+    // Optional: remember where user wanted to go
+    loginUrl.searchParams.set(
+      "next",
+      pathname
+    );
 
-getAll(){
+    return NextResponse.redirect(loginUrl);
+  }
 
-return request.cookies.getAll();
-
-},
-
-
-setAll(cookies){
-
-cookies.forEach(
-({name,value})=>
-request.cookies.set(
-name,
-value
-)
-);
-
-
-response =
-NextResponse.next({
-
-request
-
-});
-
-
-cookies.forEach(
-({name,value,options})=>
-response.cookies.set(
-name,
-value,
-options
-)
-);
-
+  return response;
 }
 
-}
-
-}
-
-);
-
-
-
-const {
-data:{session}
-
-}= await supabase.auth.getSession();
-
-
-
-const protectedRoutes=[
-
-"/dashboard",
-
-"/profile",
-
-"/orders",
-
-"/checkout",
-
-"/wishlist",
-
-"/cart"
-
-];
-
-
-const isProtected =
-protectedRoutes.some(
-(route)=>
-request.nextUrl.pathname.startsWith(route)
-);
-
-
-
-if(
-isProtected &&
-!session
-){
-
-return NextResponse.redirect(
-
-new URL(
-"/login",
-request.url
-)
-
-);
-
-}
-
-
-
-return response;
-
-}
-
-
-
-export const config={
-
-matcher:[
-
-"/dashboard/:path*",
-
-"/profile/:path*",
-
-"/orders/:path*",
-
-"/checkout/:path*"
-
-]
-
+export const config = {
+  matcher: [
+    "/dashboard/:path*",
+    "/profile/:path*",
+    "/orders/:path*",
+    "/checkout/:path*",
+    "/wishlist/:path*",
+    "/cart/:path*",
+  ],
 };
