@@ -1,36 +1,67 @@
+ import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
-import { createClient } from "@/lib/supabase/server";
+export async function GET(request: Request) {
+  const url = new URL(request.url);
 
+  const code = url.searchParams.get("code");
 
+  const next =
+    url.searchParams.get("next") ||
+    "/dashboard";
 
-export async function GET(request:Request){
+  if (!code) {
+    return NextResponse.redirect(
+      new URL("/login", url.origin)
+    );
+  }
 
+  const cookieStore = await cookies();
 
-const {searchParams,origin}=new URL(request.url);
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
 
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(
+            ({ name, value, options }) => {
+              cookieStore.set(
+                name,
+                value,
+                options
+              );
+            }
+          );
+        },
+      },
+    }
+  );
 
-const code=searchParams.get("code");
+  const {
+    error,
+  } =
+    await supabase.auth.exchangeCodeForSession(
+      code
+    );
 
+  if (error) {
+    console.error(
+      "Auth callback error:",
+      error
+    );
 
-if(code){
+    return NextResponse.redirect(
+      new URL("/login?error=auth", url.origin)
+    );
+  }
 
-
-const supabase=await createClient();
-
-
-await supabase.auth.exchangeCodeForSession(code);
-
-
-}
-
-
-
-return NextResponse.redirect(
-
-`${origin}/dashboard`
-
-);
-
-
+  return NextResponse.redirect(
+    new URL(next, url.origin)
+  );
 }
