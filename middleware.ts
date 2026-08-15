@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-export async function middleware(request: NextRequest) {
+export async function middleware(
+  request: NextRequest
+) {
   let response = NextResponse.next({
     request,
   });
@@ -44,26 +46,13 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // IMPORTANT:
-  // getUser() validates the Supabase user
-  // and refreshes the auth session when needed.
   const {
     data: { user },
-    error,
   } = await supabase.auth.getUser();
 
-  console.log(
-    "🔐 Middleware:",
-    request.nextUrl.pathname,
-    "User:",
-    user?.email ?? "NO USER",
-    "Error:",
-    error?.message ?? "none"
-  );
-
-  // =========================================================
+  // =====================================================
   // PROTECTED ROUTES
-  // =========================================================
+  // =====================================================
 
   const protectedRoutes = [
     "/dashboard",
@@ -79,33 +68,22 @@ export async function middleware(request: NextRequest) {
       request.nextUrl.pathname.startsWith(route)
     );
 
-  // =========================================================
-  // NOT LOGGED IN
-  // =========================================================
-
-  if (isProtectedRoute && !user) {
-    const loginUrl = new URL(
-      "/login",
-      request.url
-    );
-
-    return NextResponse.redirect(
-      loginUrl
-    );
-  }
-
-  // =========================================================
-  // LOGGED IN USER VISITS LOGIN
-  // =========================================================
+  // =====================================================
+  // NOT LOGGED IN → LOGIN
+  // =====================================================
 
   if (
-    request.nextUrl.pathname === "/login" &&
-    user
+    isProtectedRoute &&
+    !user
   ) {
     return NextResponse.redirect(
-      new URL("/dashboard", request.url)
+      new URL("/login", request.url)
     );
   }
+
+  // IMPORTANT:
+  // Do NOT redirect /login to dashboard.
+  // User should be able to open login page normally.
 
   return response;
 }
@@ -118,6 +96,5 @@ export const config = {
     "/checkout/:path*",
     "/wishlist/:path*",
     "/cart/:path*",
-    "/login",
   ],
 };
