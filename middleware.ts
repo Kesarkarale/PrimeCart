@@ -2,9 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-export async function middleware(
-  request: NextRequest
-) {
+export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
     request,
   });
@@ -19,14 +17,9 @@ export async function middleware(
         },
 
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(
-            ({ name, value }) => {
-              request.cookies.set(
-                name,
-                value
-              );
-            }
-          );
+          cookiesToSet.forEach(({ name, value }) => {
+            request.cookies.set(name, value);
+          });
 
           response = NextResponse.next({
             request,
@@ -46,9 +39,17 @@ export async function middleware(
     }
   );
 
+  /*
+   * IMPORTANT:
+   * getUser() verifies the Supabase user
+   * and also refreshes the auth session when needed.
+   */
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser();
+
+  const pathname = request.nextUrl.pathname;
 
   const protectedRoutes = [
     "/dashboard",
@@ -59,17 +60,44 @@ export async function middleware(
     "/cart",
   ];
 
-  const isProtectedRoute =
-    protectedRoutes.some((route) =>
-      request.nextUrl.pathname.startsWith(route)
+  const isProtectedRoute = protectedRoutes.some(
+    (route) =>
+      pathname === route ||
+      pathname.startsWith(`${route}/`)
+  );
+
+  /*
+   * User is not logged in
+   * → send them to login.
+   */
+  if (isProtectedRoute && (!user || error)) {
+    const loginUrl = new URL(
+      "/login",
+      request.url
     );
 
+    /*
+     * After login we can return the user
+     * to the page they originally requested.
+     */
+    loginUrl.searchParams.set(
+      "redirect",
+      pathname
+    );
+
+    return NextResponse.redirect(loginUrl);
+  }
+
+  /*
+   * Logged-in users should not stay on login/register.
+   */
   if (
-    isProtectedRoute &&
-    !user
+    (pathname === "/login" ||
+      pathname === "/register") &&
+    user
   ) {
     return NextResponse.redirect(
-      new URL("/login", request.url)
+      new URL("/dashboard", request.url)
     );
   }
 
@@ -84,5 +112,7 @@ export const config = {
     "/checkout/:path*",
     "/wishlist/:path*",
     "/cart/:path*",
+    "/login",
+    "/register",
   ],
 };
