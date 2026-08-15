@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import {
@@ -41,17 +40,35 @@ type Product = {
 };
 
 export default function ProductPage() {
-  const searchParams = useSearchParams();
+  /* =========================
+     STATE
+  ========================= */
 
-  const productId = searchParams.get("id");
+  const [productId, setProductId] = useState<string | null>(null);
 
   const [product, setProduct] = useState<Product | null>(null);
+
   const [loading, setLoading] = useState(true);
+
   const [errorMessage, setErrorMessage] = useState("");
 
   const [quantity, setQuantity] = useState(1);
+
   const [wishlist, setWishlist] = useState(false);
+
   const [addingToCart, setAddingToCart] = useState(false);
+
+  /* =========================
+     GET PRODUCT ID FROM URL
+  ========================= */
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    const id = params.get("id");
+
+    setProductId(id);
+  }, []);
 
   /* =========================
      FETCH PRODUCT
@@ -59,8 +76,6 @@ export default function ProductPage() {
 
   useEffect(() => {
     if (!productId) {
-      setErrorMessage("Product ID is missing.");
-      setLoading(false);
       return;
     }
 
@@ -83,20 +98,26 @@ export default function ProductPage() {
         console.log("PRODUCT ERROR:", error);
 
         if (error) {
+          console.error("Supabase product error:", error);
+
           setErrorMessage(error.message);
           setProduct(null);
+
           return;
         }
 
         if (!data) {
           setErrorMessage("Product not found.");
           setProduct(null);
+
           return;
         }
 
-        setProduct(data);
+        setProduct(data as Product);
+
+        setQuantity(1);
       } catch (error) {
-        console.error("Product fetch error:", error);
+        console.error("Unexpected product error:", error);
 
         setErrorMessage(
           "Something went wrong while loading this product."
@@ -112,20 +133,121 @@ export default function ProductPage() {
   }, [productId]);
 
   /* =========================
-     LOADING
+     NO PRODUCT ID
   ========================= */
 
-  if (loading) {
+  if (!productId && !loading) {
     return (
       <main className="min-h-screen bg-white">
 
         <div className="max-w-7xl mx-auto px-6 py-8">
 
-          <div className="h-5 w-32 bg-gray-200 rounded animate-pulse" />
+          <Link
+            href="/dashboard/products"
+            className="
+              inline-flex
+              items-center
+              gap-2
+              text-gray-500
+              font-bold
+              hover:text-[#D4AF37]
+              transition
+            "
+          >
+            <ArrowLeft size={18} />
+            Back to Products
+          </Link>
 
-          <div className="grid lg:grid-cols-2 gap-12 mt-10">
+        </div>
 
-            <div className="h-[550px] bg-gray-100 rounded-[32px] animate-pulse" />
+        <div className="min-h-[70vh] flex items-center justify-center px-6">
+
+          <div className="text-center max-w-md">
+
+            <div
+              className="
+                w-24
+                h-24
+                mx-auto
+                rounded-3xl
+                bg-gray-100
+                flex
+                items-center
+                justify-center
+              "
+            >
+              <ShoppingBag
+                size={42}
+                className="text-gray-400"
+              />
+            </div>
+
+            <h1 className="text-3xl font-black text-gray-900 mt-7">
+              Product Not Selected
+            </h1>
+
+            <p className="text-gray-500 mt-3">
+              Please select a product to view its details.
+            </p>
+
+            <Link
+              href="/dashboard/products"
+              className="
+                inline-flex
+                items-center
+                justify-center
+                gap-2
+                mt-7
+                px-7
+                h-12
+                rounded-2xl
+                bg-[#D4AF37]
+                hover:bg-black
+                text-white
+                font-bold
+                transition
+              "
+            >
+              <ArrowLeft size={18} />
+              View Products
+            </Link>
+
+          </div>
+
+        </div>
+
+      </main>
+    );
+  }
+
+  /* =========================
+     LOADING
+  ========================= */
+
+  if (loading || !productId) {
+    return (
+      <main className="min-h-screen bg-white">
+
+        <div className="max-w-7xl mx-auto px-6 py-8">
+
+          <div className="h-5 w-36 bg-gray-200 rounded animate-pulse" />
+
+          <div className="grid lg:grid-cols-2 gap-10 xl:gap-16 mt-10">
+
+            {/* IMAGE SKELETON */}
+
+            <div
+              className="
+                h-[420px]
+                sm:h-[520px]
+                lg:h-[600px]
+                bg-gray-100
+                rounded-[32px]
+                animate-pulse
+              "
+            />
+
+            {/* DETAILS SKELETON */}
 
             <div className="space-y-5 pt-5">
 
@@ -137,9 +259,19 @@ export default function ProductPage() {
 
               <div className="h-24 w-full bg-gray-200 rounded animate-pulse" />
 
-              <div className="h-12 w-48 bg-gray-200 rounded animate-pulse" />
+              <div className="h-12 w-52 bg-gray-200 rounded animate-pulse" />
 
               <div className="h-14 w-full bg-gray-200 rounded animate-pulse" />
+
+              <div className="grid grid-cols-3 gap-3">
+
+                <div className="h-24 bg-gray-100 rounded-2xl animate-pulse" />
+
+                <div className="h-24 bg-gray-100 rounded-2xl animate-pulse" />
+
+                <div className="h-24 bg-gray-100 rounded-2xl animate-pulse" />
+
+              </div>
 
             </div>
 
@@ -152,7 +284,7 @@ export default function ProductPage() {
   }
 
   /* =========================
-     ERROR / NOT FOUND
+     PRODUCT NOT FOUND
   ========================= */
 
   if (!product) {
@@ -206,7 +338,8 @@ export default function ProductPage() {
             </h1>
 
             <p className="text-gray-500 mt-3">
-              {errorMessage || "This product is unavailable."}
+              {errorMessage ||
+                "This product does not exist or is currently unavailable."}
             </p>
 
             <Link
@@ -239,7 +372,7 @@ export default function ProductPage() {
   }
 
   /* =========================
-     PRODUCT VALUES
+     PRODUCT CALCULATIONS
   ========================= */
 
   const price = Number(product.price || 0);
@@ -264,14 +397,20 @@ export default function ProductPage() {
 
   const isOutOfStock = stock <= 0;
 
+  const totalPrice = price * quantity;
+
   /* =========================
      QUANTITY
   ========================= */
 
   const decreaseQuantity = () => {
-    setQuantity((current) =>
-      current > 1 ? current - 1 : 1
-    );
+    setQuantity((current) => {
+      if (current <= 1) {
+        return 1;
+      }
+
+      return current - 1;
+    });
   };
 
   const increaseQuantity = () => {
@@ -285,28 +424,37 @@ export default function ProductPage() {
   ========================= */
 
   const handleAddToCart = () => {
-    if (isOutOfStock) return;
+    if (isOutOfStock || addingToCart) {
+      return;
+    }
 
     setAddingToCart(true);
 
-    console.log("ADD TO CART:", {
-      product_id: product.id,
+    const cartProduct = {
+      id: product.id,
       name: product.name,
-      price,
-      quantity,
-    });
+      price: price,
+      quantity: quantity,
+      image_url: product.image_url,
+    };
+
+    console.log("ADD TO CART:", cartProduct);
+
+    /*
+      Cart functionality can be connected here later.
+    */
 
     setTimeout(() => {
       setAddingToCart(false);
-    }, 800);
+    }, 900);
   };
 
   return (
     <main className="min-h-screen bg-white">
 
-      {/* =========================
-          BACK
-      ========================= */}
+      {/* =====================================================
+          TOP NAV / BACK
+      ===================================================== */}
 
       <div className="max-w-7xl mx-auto px-6 pt-7">
 
@@ -329,17 +477,17 @@ export default function ProductPage() {
 
       </div>
 
-      {/* =========================
-          PRODUCT SECTION
-      ========================= */}
+      {/* =====================================================
+          PRODUCT MAIN SECTION
+      ===================================================== */}
 
       <section className="max-w-7xl mx-auto px-6 py-8 lg:py-12">
 
         <div className="grid lg:grid-cols-2 gap-10 xl:gap-16">
 
-          {/* =========================
-              LEFT IMAGE
-          ========================= */}
+          {/* =================================================
+              PRODUCT IMAGE
+          ================================================= */}
 
           <div>
 
@@ -373,6 +521,7 @@ export default function ProductPage() {
                     rounded-full
                     text-xs
                     font-black
+                    shadow-lg
                   "
                 >
                   FLASH SALE
@@ -396,6 +545,7 @@ export default function ProductPage() {
                       rounded-full
                       text-xs
                       font-black
+                      shadow-lg
                     "
                   >
                     {discount}% OFF
@@ -406,6 +556,7 @@ export default function ProductPage() {
 
               <button
                 type="button"
+                aria-label="Add to wishlist"
                 onClick={() =>
                   setWishlist((current) => !current)
                 }
@@ -436,7 +587,7 @@ export default function ProductPage() {
                 />
               </button>
 
-              {/* PRODUCT IMAGE */}
+              {/* IMAGE */}
 
               {product.image_url ? (
                 <Image
@@ -449,7 +600,11 @@ export default function ProductPage() {
                     (max-width: 1024px) 50vw,
                     50vw
                   "
-                  className="object-contain p-8 sm:p-12"
+                  className="
+                    object-contain
+                    p-8
+                    sm:p-12
+                  "
                 />
               ) : (
                 <div
@@ -472,6 +627,8 @@ export default function ProductPage() {
 
             </div>
 
+            {/* IMAGE TRUST */}
+
             <div
               className="
                 flex
@@ -489,9 +646,9 @@ export default function ProductPage() {
 
           </div>
 
-          {/* =========================
-              RIGHT DETAILS
-          ========================= */}
+          {/* =================================================
+              PRODUCT INFORMATION
+          ================================================= */}
 
           <div className="flex flex-col justify-center">
 
@@ -511,7 +668,7 @@ export default function ProductPage() {
               </p>
             )}
 
-            {/* NAME */}
+            {/* PRODUCT NAME */}
 
             <h1
               className="
@@ -533,7 +690,7 @@ export default function ProductPage() {
 
               <div
                 className="
-                  flex
+                  inline-flex
                   items-center
                   gap-1.5
                   bg-green-600
@@ -558,9 +715,11 @@ export default function ProductPage() {
 
             </div>
 
+            {/* DIVIDER */}
+
             <div className="h-px bg-gray-100 my-6" />
 
-            {/* DESCRIPTION */}
+            {/* SHORT DESCRIPTION */}
 
             <p
               className="
@@ -681,6 +840,7 @@ export default function ProductPage() {
                       justify-center
                       hover:bg-gray-50
                       disabled:opacity-30
+                      transition
                     "
                   >
                     <Minus size={17} />
@@ -713,6 +873,7 @@ export default function ProductPage() {
                       justify-center
                       hover:bg-gray-50
                       disabled:opacity-30
+                      transition
                     "
                   >
                     <Plus size={17} />
@@ -723,7 +884,23 @@ export default function ProductPage() {
               </div>
             )}
 
-            {/* BUTTONS */}
+            {/* TOTAL */}
+
+            {!isOutOfStock && quantity > 1 && (
+              <div className="mt-4">
+
+                <p className="text-sm text-gray-500">
+                  Total for {quantity} items:
+                </p>
+
+                <p className="text-xl font-black text-gray-900 mt-1">
+                  ₹{totalPrice.toLocaleString("en-IN")}
+                </p>
+
+              </div>
+            )}
+
+            {/* ACTION BUTTONS */}
 
             <div
               className="
@@ -737,7 +914,9 @@ export default function ProductPage() {
               <button
                 type="button"
                 onClick={handleAddToCart}
-                disabled={isOutOfStock || addingToCart}
+                disabled={
+                  isOutOfStock || addingToCart
+                }
                 className="
                   h-14
                   rounded-2xl
@@ -783,6 +962,7 @@ export default function ProductPage() {
                 "
               >
                 <ShoppingBag size={20} />
+
                 Buy Now
               </button>
 
@@ -799,8 +979,15 @@ export default function ProductPage() {
               "
             >
 
-              <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100">
-
+              <div
+                className="
+                  p-4
+                  rounded-2xl
+                  bg-gray-50
+                  border
+                  border-gray-100
+                "
+              >
                 <Truck
                   size={21}
                   className="text-[#D4AF37]"
@@ -813,11 +1000,17 @@ export default function ProductPage() {
                 <p className="text-xs text-gray-500 mt-1">
                   Quick delivery
                 </p>
-
               </div>
 
-              <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100">
-
+              <div
+                className="
+                  p-4
+                  rounded-2xl
+                  bg-gray-50
+                  border
+                  border-gray-100
+                "
+              >
                 <ShieldCheck
                   size={21}
                   className="text-[#D4AF37]"
@@ -830,11 +1023,17 @@ export default function ProductPage() {
                 <p className="text-xs text-gray-500 mt-1">
                   Safe checkout
                 </p>
-
               </div>
 
-              <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100">
-
+              <div
+                className="
+                  p-4
+                  rounded-2xl
+                  bg-gray-50
+                  border
+                  border-gray-100
+                "
+              >
                 <RotateCcw
                   size={21}
                   className="text-[#D4AF37]"
@@ -847,7 +1046,6 @@ export default function ProductPage() {
                 <p className="text-xs text-gray-500 mt-1">
                   Hassle-free
                 </p>
-
               </div>
 
             </div>
@@ -858,15 +1056,17 @@ export default function ProductPage() {
 
       </section>
 
-      {/* =========================
-          DESCRIPTION SECTION
-      ========================= */}
+      {/* =====================================================
+          ABOUT PRODUCT
+      ===================================================== */}
 
       <section className="max-w-7xl mx-auto px-6 pb-16">
 
         <div className="border-t border-gray-100 pt-10">
 
           <div className="grid lg:grid-cols-3 gap-10">
+
+            {/* DESCRIPTION */}
 
             <div className="lg:col-span-2">
 
@@ -908,7 +1108,7 @@ export default function ProductPage() {
 
             </div>
 
-            {/* DETAILS CARD */}
+            {/* PRODUCT DETAILS */}
 
             <div
               className="
@@ -942,7 +1142,7 @@ export default function ProductPage() {
                       Brand
                     </span>
 
-                    <span className="font-bold">
+                    <span className="font-bold text-right">
                       {product.brand}
                     </span>
                   </div>
@@ -1016,9 +1216,9 @@ export default function ProductPage() {
 
       </section>
 
-      {/* =========================
+      {/* =====================================================
           TRUST SECTION
-      ========================= */}
+      ===================================================== */}
 
       <section className="border-t border-gray-100 bg-gray-50">
 
@@ -1034,9 +1234,21 @@ export default function ProductPage() {
           "
         >
 
+          {/* DELIVERY */}
+
           <div className="flex items-center gap-4">
 
-            <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center">
+            <div
+              className="
+                w-12
+                h-12
+                rounded-2xl
+                bg-white
+                flex
+                items-center
+                justify-center
+              "
+            >
               <Truck
                 size={22}
                 className="text-[#D4AF37]"
@@ -1044,6 +1256,7 @@ export default function ProductPage() {
             </div>
 
             <div>
+
               <p className="font-black">
                 Fast Delivery
               </p>
@@ -1051,13 +1264,26 @@ export default function ProductPage() {
               <p className="text-sm text-gray-500 mt-1">
                 Safe doorstep delivery
               </p>
+
             </div>
 
           </div>
 
+          {/* SECURITY */}
+
           <div className="flex items-center gap-4">
 
-            <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center">
+            <div
+              className="
+                w-12
+                h-12
+                rounded-2xl
+                bg-white
+                flex
+                items-center
+                justify-center
+              "
+            >
               <ShieldCheck
                 size={22}
                 className="text-[#D4AF37]"
@@ -1065,6 +1291,7 @@ export default function ProductPage() {
             </div>
 
             <div>
+
               <p className="font-black">
                 Secure Shopping
               </p>
@@ -1072,13 +1299,26 @@ export default function ProductPage() {
               <p className="text-sm text-gray-500 mt-1">
                 Protected checkout
               </p>
+
             </div>
 
           </div>
 
+          {/* QUALITY */}
+
           <div className="flex items-center gap-4">
 
-            <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center">
+            <div
+              className="
+                w-12
+                h-12
+                rounded-2xl
+                bg-white
+                flex
+                items-center
+                justify-center
+              "
+            >
               <Check
                 size={22}
                 className="text-[#D4AF37]"
@@ -1086,6 +1326,7 @@ export default function ProductPage() {
             </div>
 
             <div>
+
               <p className="font-black">
                 Quality Products
               </p>
@@ -1093,6 +1334,7 @@ export default function ProductPage() {
               <p className="text-sm text-gray-500 mt-1">
                 Carefully selected
               </p>
+
             </div>
 
           </div>
