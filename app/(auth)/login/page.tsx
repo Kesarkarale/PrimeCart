@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
+
+import Image from "next/image";
 
 import {
   Eye,
@@ -12,7 +13,6 @@ import {
   Lock,
   ArrowRight,
   Loader2,
-  ShieldCheck,
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -20,1099 +20,892 @@ import { FcGoogle } from "react-icons/fc";
 
 import { createClient } from "@/lib/supabase/client";
 
+
 export default function LoginPage() {
-  const router = useRouter();
-
-  const [email, setEmail] =
-    useState("");
-
-  const [password, setPassword] =
-    useState("");
-
-  const [remember, setRemember] =
-    useState(false);
-
-  const [showPassword, setShowPassword] =
-    useState(false);
-
-  const [loading, setLoading] =
-    useState(false);
-
-  const [googleLoading, setGoogleLoading] =
-    useState(false);
-
-  /*
-   * Create Supabase browser client.
-   */
-  const supabase = createClient();
-
-  // =========================================================
-  // LOAD REMEMBERED EMAIL
-  // =========================================================
-
-  useEffect(() => {
-    try {
-      const savedEmail =
-        localStorage.getItem(
-          "rememberEmail"
-        );
-
-      if (savedEmail) {
-        setEmail(savedEmail);
-        setRemember(true);
-      }
-    } catch (error) {
-      console.error(
-        "Remember email error:",
-        error
-      );
-    }
-  }, []);
-
-  // =========================================================
-  // LOGIN
-  // =========================================================
-
-  async function handleLogin(
-    e: React.FormEvent<HTMLFormElement>
-  ) {
-    e.preventDefault();
-
-    /*
-     * Prevent multiple clicks.
-     */
-    if (
-      loading ||
-      googleLoading
-    ) {
-      return;
-    }
-
-    const cleanEmail =
-      email
-        .trim()
-        .toLowerCase();
-
-    // ---------------------------------------------------------
-    // VALIDATION
-    // ---------------------------------------------------------
-
-    if (!cleanEmail) {
-      toast.error(
-        "Please enter your email address."
-      );
-      return;
-    }
-
-    if (!password) {
-      toast.error(
-        "Please enter your password."
-      );
-      return;
-    }
-
-    const emailRegex =
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (
-      !emailRegex.test(
-        cleanEmail
-      )
-    ) {
-      toast.error(
-        "Please enter a valid email address."
-      );
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      console.log(
-        "================================"
-      );
-
-      console.log(
-        "🔐 PRIME CART LOGIN START"
-      );
-
-      console.log(
-        "Email:",
-        cleanEmail
-      );
-
-      console.log(
-        "================================"
-      );
-
-      // -------------------------------------------------------
-      // SUPABASE LOGIN
-      // -------------------------------------------------------
-
-      const {
-        data,
-        error,
-      } =
-        await supabase.auth.signInWithPassword(
-          {
-            email: cleanEmail,
-            password,
-          }
-        );
-
-      // -------------------------------------------------------
-      // LOGIN ERROR
-      // -------------------------------------------------------
-
-      if (error) {
-        console.error(
-          "❌ SUPABASE LOGIN ERROR:",
-          error
-        );
-
-        const message =
-          error.message.toLowerCase();
-
-        if (
-          message.includes(
-            "invalid login credentials"
-          )
-        ) {
-          toast.error(
-            "Invalid email or password."
-          );
-        } else if (
-          message.includes(
-            "email not confirmed"
-          )
-        ) {
-          toast.error(
-            "Please verify your email before logging in."
-          );
-        } else {
-          toast.error(
-            error.message ||
-              "Login failed."
-          );
-        }
-
-        setLoading(false);
-        return;
-      }
-
-      // -------------------------------------------------------
-      // USER CHECK
-      // -------------------------------------------------------
-
-      if (!data.user) {
-        console.error(
-          "❌ USER NOT FOUND"
-        );
-
-        toast.error(
-          "Login failed. User was not found."
-        );
-
-        setLoading(false);
-        return;
-      }
-
-      console.log(
-        "✅ USER LOGGED IN:",
-        data.user.email
-      );
-
-      // -------------------------------------------------------
-      // SESSION CHECK
-      // -------------------------------------------------------
-
-      const {
-        data: sessionData,
-        error: sessionError,
-      } =
-        await supabase.auth.getSession();
-
-      if (sessionError) {
-        console.error(
-          "❌ SESSION ERROR:",
-          sessionError
-        );
-
-        toast.error(
-          "Login session could not be created."
-        );
-
-        setLoading(false);
-        return;
-      }
-
-      if (
-        !sessionData.session
-      ) {
-        console.error(
-          "❌ NO SESSION FOUND"
-        );
-
-        toast.error(
-          "Login session was not created."
-        );
-
-        setLoading(false);
-        return;
-      }
-
-      console.log(
-        "✅ SESSION CREATED"
-      );
-
-      // -------------------------------------------------------
-      // REMEMBER EMAIL
-      // -------------------------------------------------------
-
-      try {
-        if (remember) {
-          localStorage.setItem(
-            "rememberEmail",
-            cleanEmail
-          );
-        } else {
-          localStorage.removeItem(
-            "rememberEmail"
-          );
-        }
-      } catch (error) {
-        console.error(
-          "Remember email error:",
-          error
-        );
-      }
-
-      // -------------------------------------------------------
-      // SUCCESS
-      // -------------------------------------------------------
-
-      toast.success(
-        "Login successful! Welcome back to PrimeCart ✨"
-      );
-
-      console.log(
-        "🚀 REDIRECTING TO DASHBOARD..."
-      );
-
-      /*
-       * IMPORTANT:
-       *
-       * replace() navigates to dashboard
-       * without keeping login page in history.
-       */
-      router.replace(
-        "/dashboard"
-      );
-
-      /*
-       * Tell Next.js to refresh
-       * server-side auth state.
-       */
-      router.refresh();
-
-    } catch (error) {
-      console.error(
-        "❌ UNEXPECTED LOGIN ERROR:",
-        error
-      );
-
-      toast.error(
-        "Something went wrong. Please try again."
-      );
-
-      setLoading(false);
-    }
-  }
-
-  // =========================================================
-  // GOOGLE LOGIN
-  // =========================================================
-
-  async function handleGoogleLogin() {
-    if (
-      loading ||
-      googleLoading
-    ) {
-      return;
-    }
-
-    try {
-      setGoogleLoading(true);
-
-      console.log(
-        "🔐 GOOGLE LOGIN START"
-      );
-
-      const {
-        error,
-      } =
-        await supabase.auth.signInWithOAuth(
-          {
-            provider: "google",
-
-            options: {
-              redirectTo:
-                `${window.location.origin}/auth/callback`,
-            },
-          }
-        );
-
-      if (error) {
-        console.error(
-          "❌ GOOGLE LOGIN ERROR:",
-          error
-        );
-
-        toast.error(
-          error.message ||
-            "Google login failed."
-        );
-
-        setGoogleLoading(false);
-      }
-    } catch (error) {
-      console.error(
-        "❌ GOOGLE LOGIN ERROR:",
-        error
-      );
-
-      toast.error(
-        "Google login failed."
-      );
-
-      setGoogleLoading(false);
-    }
-  }
-
-  // =========================================================
-  // UI
-  // =========================================================
-
-  return (
-    <main
-      className="
-        min-h-screen
-        bg-gradient-to-br
-        from-[#f8f5ef]
-        via-white
-        to-[#efe5cf]
-        flex
-        items-center
-        justify-center
-        p-4
-        sm:p-5
-      "
-    >
-      <div
-        className="
-          w-full
-          max-w-[1200px]
-          min-h-[650px]
-          overflow-hidden
-          rounded-[32px]
-          border
-          border-white/40
-          bg-white/90
-          shadow-[0_25px_80px_rgba(0,0,0,0.12)]
-          backdrop-blur-xl
-          grid
-          lg:grid-cols-2
-        "
-      >
-
-        {/* ================================================= */}
-        {/* LEFT SIDE */}
-        {/* ================================================= */}
-
-        <div
-          className="
-            relative
-            hidden
-            min-h-[650px]
-            lg:block
-          "
-        >
-          <Image
-            src="/login-banner.png"
-            alt="PrimeCart Shopping"
-            fill
-            priority
-            sizes="50vw"
-            className="object-cover"
-          />
-
-          <div
-            className="
-              absolute
-              inset-0
-              bg-gradient-to-t
-              from-black/70
-              via-black/15
-              to-transparent
-            "
-          />
-
-          <div
-            className="
-              absolute
-              bottom-10
-              left-10
-              right-10
-              z-20
-              text-white
-            "
-          >
-            <div
-              className="
-                mb-4
-                flex
-                items-center
-                gap-2
-              "
-            >
-              <div
-                className="
-                  flex
-                  h-9
-                  w-9
-                  items-center
-                  justify-center
-                  rounded-xl
-                  bg-[#D4AF37]
-                  text-black
-                "
-              >
-                <ShieldCheck size={18} />
-              </div>
-
-              <span
-                className="
-                  text-[10px]
-                  font-black
-                  uppercase
-                  tracking-[0.2em]
-                "
-              >
-                Premium Shopping
-              </span>
-            </div>
-
-            <h2
-              className="
-                max-w-md
-                text-4xl
-                font-black
-                leading-tight
-              "
-            >
-              Welcome back to
-              <br />
-              PrimeCart.
-            </h2>
-
-            <p
-              className="
-                mt-4
-                max-w-md
-                text-sm
-                leading-6
-                text-white/75
-              "
-            >
-              Discover premium products,
-              exclusive deals and a smarter
-              shopping experience.
-            </p>
-
-            <div
-              className="
-                mt-6
-                flex
-                items-center
-                gap-3
-              "
-            >
-              <div
-                className="
-                  h-1
-                  w-10
-                  rounded-full
-                  bg-[#D4AF37]
-                "
-              />
-
-              <span
-                className="
-                  text-[10px]
-                  font-bold
-                  uppercase
-                  tracking-[0.15em]
-                  text-white/60
-                "
-              >
-                Shop smarter. Live better.
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* ================================================= */}
-        {/* RIGHT SIDE */}
-        {/* ================================================= */}
-
-        <div
-          className="
-            flex
-            items-center
-            justify-center
-            px-5
-            py-8
-            sm:px-8
-            lg:px-10
-          "
-        >
-          <div
-            className="
-              w-full
-              max-w-md
-            "
-          >
-
-            {/* LOGO */}
-
-            <Link
-              href="/"
-              className="
-                mb-8
-                flex
-                w-fit
-                items-center
-                gap-3
-              "
-            >
-              <Image
-                src="/logo.png"
-                alt="PrimeCart Logo"
-                width={100}
-                height={50}
-                priority
-                className="object-contain"
-              />
-
-              <h2
-                className="
-                  text-3xl
-                  font-black
-                  tracking-tight
-                  sm:text-4xl
-                "
-              >
-                Prime
-                <span className="text-[#D4AF37]">
-                  Cart
-                </span>
-              </h2>
-            </Link>
-
-            {/* HEADING */}
-
-            <p
-              className="
-                mb-2
-                text-[10px]
-                font-black
-                uppercase
-                tracking-[0.2em]
-                text-[#B28B18]
-              "
-            >
-              Welcome to PrimeCart
-            </p>
-
-            <h1
-              className="
-                text-3xl
-                font-black
-                tracking-tight
-                text-gray-900
-                sm:text-4xl
-              "
-            >
-              Welcome
-              <span className="text-[#D4AF37]">
-                {" "}Back ✨
-              </span>
-            </h1>
-
-            <p
-              className="
-                mt-3
-                text-sm
-                leading-6
-                text-gray-500
-              "
-            >
-              Continue your premium
-              shopping journey.
-            </p>
-
-            {/* CUSTOMER BADGE */}
-
-            <div
-              className="
-                mt-5
-                inline-flex
-                items-center
-                gap-2
-                rounded-full
-                border
-                border-[#D4AF37]/20
-                bg-[#D4AF37]/10
-                px-4
-                py-2
-              "
-            >
-              <span className="text-[#D4AF37]">
-                ⭐
-              </span>
-
-              <span
-                className="
-                  text-xs
-                  font-semibold
-                  text-gray-700
-                "
-              >
-                10,000+ Happy Customers
-              </span>
-            </div>
-
-            {/* FORM */}
-
-            <form
-              onSubmit={handleLogin}
-              className="
-                mt-6
-                space-y-4
-              "
-            >
-
-              {/* EMAIL */}
-
-              <div className="relative">
-                <Mail
-                  size={20}
-                  className="
-                    absolute
-                    left-4
-                    top-1/2
-                    -translate-y-1/2
-                    text-gray-400
-                  "
-                />
-
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) =>
-                    setEmail(
-                      e.target.value
-                    )
-                  }
-                  placeholder="Email Address"
-                  autoComplete="email"
-                  disabled={
-                    loading ||
-                    googleLoading
-                  }
-                  className="
-                    h-14
-                    w-full
-                    rounded-2xl
-                    border
-                    border-gray-200
-                    bg-gray-50
-                    pl-12
-                    pr-4
-                    text-sm
-                    font-medium
-                    text-gray-900
-                    outline-none
-                    transition
-                    placeholder:text-gray-400
-                    focus:border-[#D4AF37]
-                    focus:bg-white
-                    focus:ring-4
-                    focus:ring-[#D4AF37]/10
-                    disabled:cursor-not-allowed
-                    disabled:opacity-60
-                  "
-                />
-              </div>
-
-              {/* PASSWORD */}
-
-              <div className="relative">
-                <Lock
-                  size={20}
-                  className="
-                    absolute
-                    left-4
-                    top-1/2
-                    -translate-y-1/2
-                    text-gray-400
-                  "
-                />
-
-                <input
-                  type={
-                    showPassword
-                      ? "text"
-                      : "password"
-                  }
-                  value={password}
-                  onChange={(e) =>
-                    setPassword(
-                      e.target.value
-                    )
-                  }
-                  placeholder="Password"
-                  autoComplete="current-password"
-                  disabled={
-                    loading ||
-                    googleLoading
-                  }
-                  className="
-                    h-14
-                    w-full
-                    rounded-2xl
-                    border
-                    border-gray-200
-                    bg-gray-50
-                    pl-12
-                    pr-12
-                    text-sm
-                    font-medium
-                    text-gray-900
-                    outline-none
-                    transition
-                    placeholder:text-gray-400
-                    focus:border-[#D4AF37]
-                    focus:bg-white
-                    focus:ring-4
-                    focus:ring-[#D4AF37]/10
-                    disabled:cursor-not-allowed
-                    disabled:opacity-60
-                  "
-                />
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowPassword(
-                      (prev) =>
-                        !prev
-                    )
-                  }
-                  disabled={
-                    loading ||
-                    googleLoading
-                  }
-                  className="
-                    absolute
-                    right-4
-                    top-1/2
-                    -translate-y-1/2
-                    text-gray-400
-                    hover:text-black
-                  "
-                >
-                  {showPassword ? (
-                    <EyeOff size={20} />
-                  ) : (
-                    <Eye size={20} />
-                  )}
-                </button>
-              </div>
-
-              {/* REMEMBER */}
-
-              <div
-                className="
-                  flex
-                  items-center
-                  justify-between
-                  text-xs
-                  sm:text-sm
-                "
-              >
-                <label
-                  className="
-                    flex
-                    cursor-pointer
-                    items-center
-                    gap-2
-                    text-gray-600
-                  "
-                >
-                  <input
-                    type="checkbox"
-                    checked={remember}
-                    onChange={(e) =>
-                      setRemember(
-                        e.target.checked
-                      )
-                    }
-                    disabled={
-                      loading ||
-                      googleLoading
-                    }
-                    className="
-                      h-4
-                      w-4
-                      accent-[#D4AF37]
-                    "
-                  />
-
-                  Remember me
-                </label>
-
-                <Link
-                  href="/forgot-password"
-                  className="
-                    font-bold
-                    text-[#B28B18]
-                    hover:text-black
-                    hover:underline
-                  "
-                >
-                  Forgot Password?
-                </Link>
-              </div>
-
-              {/* LOGIN BUTTON */}
-
-              <button
-                type="submit"
-                disabled={
-                  loading ||
-                  googleLoading
-                }
-                className="
-                  group
-                  flex
-                  h-14
-                  w-full
-                  items-center
-                  justify-center
-                  gap-3
-                  rounded-2xl
-                  bg-gradient-to-r
-                  from-[#B8860B]
-                  to-[#D4AF37]
-                  text-base
-                  font-black
-                  text-white
-                  shadow-[0_12px_25px_rgba(184,134,11,0.22)]
-                  transition
-                  hover:-translate-y-0.5
-                  disabled:cursor-not-allowed
-                  disabled:opacity-60
-                "
-              >
-                {loading ? (
-                  <>
-                    <Loader2
-                      size={20}
-                      className="animate-spin"
-                    />
-
-                    Logging in...
-                  </>
-                ) : (
-                  <>
-                    Login Now
-
-                    <ArrowRight
-                      size={20}
-                      className="
-                        transition-transform
-                        group-hover:translate-x-1
-                      "
-                    />
-                  </>
-                )}
-              </button>
-            </form>
-
-            {/* DIVIDER */}
-
-            <div
-              className="
-                my-7
-                flex
-                items-center
-                gap-4
-              "
-            >
-              <div
-                className="
-                  h-px
-                  flex-1
-                  bg-gray-200
-                "
-              />
-
-              <span
-                className="
-                  text-xs
-                  font-medium
-                  text-gray-400
-                "
-              >
-                OR
-              </span>
-
-              <div
-                className="
-                  h-px
-                  flex-1
-                  bg-gray-200
-                "
-              />
-            </div>
-
-            {/* GOOGLE */}
-
-            <button
-              type="button"
-              onClick={
-                handleGoogleLogin
-              }
-              disabled={
-                googleLoading ||
-                loading
-              }
-              className="
-                flex
-                h-14
-                w-full
-                items-center
-                justify-center
-                gap-3
-                rounded-2xl
-                border
-                border-gray-200
-                bg-white
-                text-sm
-                font-bold
-                text-gray-700
-                transition
-                hover:bg-gray-50
-                disabled:cursor-not-allowed
-                disabled:opacity-60
-              "
-            >
-              {googleLoading ? (
-                <>
-                  <Loader2
-                    size={19}
-                    className="animate-spin"
-                  />
-
-                  Connecting...
-                </>
-              ) : (
-                <>
-                  <FcGoogle size={24} />
-
-                  Continue With Google
-                </>
-              )}
-            </button>
-
-            {/* REGISTER */}
-
-            <p
-              className="
-                mt-7
-                text-center
-                text-sm
-                text-gray-500
-              "
-            >
-              Don't have an account?
-
-              <Link
-                href="/register"
-                className="
-                  ml-2
-                  font-black
-                  text-[#B28B18]
-                  hover:text-black
-                  hover:underline
-                "
-              >
-                Create Account →
-              </Link>
-            </p>
-
-            {/* SECURITY */}
-
-            <div
-              className="
-                mt-7
-                flex
-                items-center
-                justify-center
-                gap-5
-                border-t
-                border-gray-100
-                pt-5
-                text-[9px]
-                font-semibold
-                text-gray-400
-              "
-            >
-              <span
-                className="
-                  flex
-                  items-center
-                  gap-1.5
-                "
-              >
-                <Lock
-                  size={12}
-                  className="text-[#D4AF37]"
-                />
-
-                Secure Login
-              </span>
-
-              <span
-                className="
-                  flex
-                  items-center
-                  gap-1.5
-                "
-              >
-                <ShieldCheck
-                  size={12}
-                  className="text-[#D4AF37]"
-                />
-
-                Protected
-              </span>
-            </div>
-
-          </div>
-        </div>
-      </div>
-    </main>
-  );
+
+
+const supabase = createClient();
+
+const router = useRouter();
+
+
+
+const [formData,setFormData] = useState({
+
+email:"",
+password:"",
+remember:false
+
+});
+
+
+
+const [showPassword,setShowPassword] =
+useState(false);
+
+
+const [loading,setLoading] =
+useState(false);
+
+
+
+
+
+
+const handleChange = (
+e:React.ChangeEvent<HTMLInputElement>
+)=>{
+
+
+const {
+name,
+value,
+type,
+checked
+}=e.target;
+
+
+
+setFormData(prev=>({
+
+...prev,
+
+[name]:
+type==="checkbox"
+?
+checked
+:
+value
+
+}));
+
+};
+
+
+
+
+
+
+
+async function login(
+e:React.FormEvent
+){
+
+
+e.preventDefault();
+
+
+const {
+email,
+password,
+remember
+}=formData;
+
+
+
+if(!email || !password){
+
+toast.error(
+"Please fill all fields"
+);
+
+return;
+
+}
+
+
+
+try{
+
+
+setLoading(true);
+
+
+
+const {error}=await supabase.auth.signInWithPassword({
+
+email,
+
+password
+
+});
+
+
+
+
+if(error){
+
+toast.error(error.message);
+
+return;
+
+}
+
+
+
+
+if(remember){
+
+localStorage.setItem(
+"rememberEmail",
+email
+);
+
+}
+
+
+
+
+toast.success(
+"Login Successful ✨"
+);
+
+
+
+router.push("/dashboard");
+
+
+
+}
+
+catch{
+
+
+toast.error(
+"Login failed"
+);
+
+
+}
+
+finally{
+
+setLoading(false);
+
+}
+
+
+}
+
+
+
+
+
+
+
+
+return (
+
+<div className="
+min-h-screen
+bg-gradient-to-br
+from-[#f8f5ef]
+via-[#ffffff]
+to-[#efe5cf]
+flex
+items-center
+justify-center
+p-5
+">
+
+
+<div className="
+w-full
+max-w-[1200px]
+min-h-[650px]
+bg-white/90
+backdrop-blur-xl
+rounded-[40px]
+shadow-2xl
+overflow-hidden
+grid
+grid-cols-2
+border border-white/30
+">
+
+
+
+{/* LEFT BANNER */}
+
+
+<div className="
+relative
+min-h-[650px]
+">
+
+   {/* GOLD GLOW TOP LEFT */}
+  <div
+    className="
+    absolute
+    top-10
+    left-10
+    w-52
+    h-52
+    bg-[#D4AF37]/20
+    blur-[120px]
+    rounded-full
+    z-10
+    "
+  />
+
+  {/* GOLD GLOW BOTTOM RIGHT */}
+  <div
+    className="
+    absolute
+    bottom-10
+    right-10
+    w-64
+    h-64
+    bg-[#D4AF37]/15
+    blur-[140px]
+    rounded-full
+    z-10
+    "
+  />
+
+
+<Image
+
+src="/login-banner.png"
+
+alt="Banner"
+
+fill
+
+priority
+
+className="
+object-cover
+"
+
+/>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* RIGHT LOGIN */}
+
+
+
+<div className="
+flex
+items-center
+justify-center
+px-5 py-8 sm:px-8 lg:px-10
+">
+
+
+
+
+
+<div className="
+w-full
+max-w-md mx-auto
+">
+
+
+{/* LOGO */}
+
+
+<div className="
+mb-8
+flex
+items-center
+gap-3
+  -ml-6
+">
+
+<Image
+src="/logo.png"
+alt="PrimeCart Logo"
+width={100}
+height={50}
+priority
+className="object-contain"
+/>
+
+
+<div>
+
+<h2 className="
+text-3xl sm:text-4xl lg:text-5xl
+font-bold
+text-black
+">
+
+Prime
+<span className="text-[#D4AF37]">
+Cart
+</span>
+
+</h2>
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<h1 className="
+text-2xl sm:text-3xl lg:text-4xl
+font-bold
+text-gray-900
+">
+
+
+Welcome
+
+
+<span className="
+text-[#D4AF37]
+">
+
+ Back ✨
+
+</span>
+
+
+</h1>
+
+
+
+
+
+<p className="
+mt-3
+text-gray-500
+">
+
+
+Continue your premium shopping journey.
+
+
+</p>
+
+<div className="
+mt-5
+inline-flex
+items-center
+gap-2
+px-4
+py-2
+rounded-full
+bg-[#D4AF37]/10
+border
+border-[#D4AF37]/20
+">
+
+<span className="text-[#D4AF37]">
+⭐
+</span>
+
+<span className="
+text-sm
+font-medium
+text-gray-700
+">
+10,000+ Happy Customers
+</span>
+
+</div>
+
+
+
+
+
+
+<form
+
+onSubmit={login}
+
+className="
+mt-6
+space-y-4
+"
+
+>
+
+
+
+
+
+
+
+
+
+
+{/* EMAIL */}
+
+
+
+<div className="
+relative
+">
+
+
+<Mail
+
+size={20}
+
+className="
+absolute
+left-4
+top-1/2
+-translate-y-1/2
+text-gray-400
+"
+
+/>
+
+
+
+
+<input
+
+type="email"
+
+name="email"
+
+value={formData.email}
+
+onChange={handleChange}
+
+placeholder="Email Address"
+
+className="
+w-full
+h-12 sm:h-14
+rounded-2xl
+bg-gray-50
+border
+border-gray-200
+pl-12
+outline-none
+focus:border-[#D4AF37]
+focus:ring-4
+focus:ring-[#D4AF37]/10
+transition
+"
+
+/>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* PASSWORD */}
+
+
+
+<div className="
+relative
+">
+
+
+<Lock
+
+size={20}
+
+className="
+absolute
+left-4
+top-1/2
+-translate-y-1/2
+text-gray-400
+"
+
+/>
+
+
+
+
+
+<input
+
+type={
+showPassword
+?
+"text"
+:
+"password"
+}
+
+name="password"
+
+value={formData.password}
+
+onChange={handleChange}
+
+placeholder="Password"
+
+className="
+w-full
+h-12 sm:h-14
+rounded-2xl
+bg-gray-50
+border
+border-gray-200
+pl-12
+pr-12
+outline-none
+focus:border-[#D4AF37]
+focus:ring-4
+focus:ring-[#D4AF37]/10
+transition
+"
+
+/>
+
+
+
+
+
+
+
+<button
+
+type="button"
+
+onClick={()=>setShowPassword(!showPassword)}
+
+className="
+absolute
+right-4
+top-1/2
+-translate-y-1/2
+text-gray-400
+"
+
+>
+
+
+{
+
+showPassword
+
+?
+
+<EyeOff size={20}/>
+
+:
+
+<Eye size={20}/>
+
+}
+
+
+</button>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* REMEMBER */}
+
+
+
+<div className="
+flex
+justify-between
+items-center
+text-sm
+">
+
+
+<label className="
+flex
+items-center
+gap-2
+text-gray-600
+">
+
+
+<input
+
+type="checkbox"
+
+name="remember"
+
+checked={formData.remember}
+
+onChange={handleChange}
+
+className="
+accent-[#D4AF37]
+"
+
+/>
+
+
+Remember me
+
+
+</label>
+
+
+
+
+
+<Link
+
+href="/forgot-password"
+
+className="
+text-[#D4AF37]
+font-semibold
+hover:underline
+"
+
+>
+
+Forgot Password?
+
+</Link>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<button
+
+disabled={loading}
+
+className="
+w-full
+h-14
+rounded-2xl
+bg-gradient-to-r
+from-[#B8860B]
+to-[#D4AF37]
+text-white
+font-semibold
+text-base sm:text-lg
+flex
+items-center
+justify-center
+gap-3
+shadow-lg
+hover:scale-[1.02]
+transition
+disabled:opacity-70
+"
+
+>
+
+
+{
+
+loading
+
+?
+
+<>
+
+<Loader2
+className="animate-spin"
+/>
+
+Logging in...
+
+</>
+
+
+:
+
+<>
+
+Login Now
+
+<ArrowRight size={20}/>
+
+</>
+
+
+}
+
+
+</button>
+
+
+
+
+
+
+</form>
+
+
+
+
+
+
+
+
+<div className="
+flex
+items-center
+gap-4
+my-8
+">
+
+
+<div className="
+flex-1
+h-px
+bg-gray-200
+"/>
+
+
+
+<span className="
+text-gray-400
+text-sm
+">
+
+OR
+
+</span>
+
+
+
+<div className="
+flex-1
+h-px
+bg-gray-200
+"/>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<button
+
+className="
+w-full
+h-14
+rounded-2xl
+border
+border-gray-200
+flex
+items-center
+justify-center
+gap-3
+font-semibold
+hover:bg-gray-50
+transition
+"
+
+>
+
+
+<FcGoogle size={24}/>
+
+Continue With Google
+
+
+</button>
+
+
+
+
+
+
+
+
+<p className="
+text-center
+text-gray-500
+mt-8
+">
+
+
+Don't have an account?
+
+
+<Link
+
+href="/register"
+
+className="
+ml-2
+text-[#D4AF37]
+font-semibold
+hover:underline
+"
+
+>
+
+Create Account →
+
+</Link>
+
+
+</p>
+
+
+
+
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+</div>
+
+
+
+</div>
+
+
+);
+
 }
