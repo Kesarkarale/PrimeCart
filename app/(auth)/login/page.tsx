@@ -21,8 +21,8 @@ import { FcGoogle } from "react-icons/fc";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
-  const supabase = createClient();
   const router = useRouter();
+  const supabase = createClient();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -34,9 +34,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  /* =========================================================
-     LOAD REMEMBERED EMAIL
-  ========================================================= */
+  // =========================================================
+  // LOAD REMEMBERED EMAIL
+  // =========================================================
 
   useEffect(() => {
     const rememberedEmail =
@@ -51,13 +51,13 @@ export default function LoginPage() {
     }
   }, []);
 
-  /* =========================================================
-     HANDLE INPUT
-  ========================================================= */
+  // =========================================================
+  // HANDLE INPUT
+  // =========================================================
 
-  const handleChange = (
+  function handleChange(
     e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  ) {
     const {
       name,
       value,
@@ -72,96 +72,179 @@ export default function LoginPage() {
           ? checked
           : value,
     }));
-  };
-
-  /* =========================================================
-     LOGIN
-  ========================================================= */
-
- async function login(e: React.FormEvent<HTMLFormElement>) {
-  e.preventDefault();
-
-  if (loading) return;
-
-  const email = formData.email.trim().toLowerCase();
-  const password = formData.password;
-
-  if (!email) {
-    toast.error("Please enter your email.");
-    return;
   }
 
-  if (!password) {
-    toast.error("Please enter your password.");
-    return;
-  }
+  // =========================================================
+  // LOGIN
+  // =========================================================
 
-  try {
-    setLoading(true);
+  async function login(
+    e: React.FormEvent<HTMLFormElement>
+  ) {
+    e.preventDefault();
 
-    const { data, error } =
-      await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+    if (loading) return;
 
-    if (error) {
-      console.error("LOGIN ERROR:", error);
+    const email =
+      formData.email
+        .trim()
+        .toLowerCase();
 
-      const message = error.message.toLowerCase();
+    const password =
+      formData.password;
 
-      if (message.includes("email not confirmed")) {
-        toast.error(
-          "Please verify your email before logging in."
+    // Validation
+    if (!email) {
+      toast.error(
+        "Please enter your email address."
+      );
+      return;
+    }
+
+    if (!password) {
+      toast.error(
+        "Please enter your password."
+      );
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      console.log(
+        "PrimeCart login started..."
+      );
+
+      // =====================================================
+      // SUPABASE LOGIN
+      // =====================================================
+
+      const {
+        data,
+        error,
+      } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+      // =====================================================
+      // LOGIN ERROR
+      // =====================================================
+
+      if (error) {
+        console.error(
+          "LOGIN ERROR:",
+          error
         );
-      } else if (
-        message.includes("invalid login credentials")
-      ) {
-        toast.error("Invalid email or password.");
-      } else {
-        toast.error(error.message);
+
+        const message =
+          error.message.toLowerCase();
+
+        if (
+          message.includes(
+            "email not confirmed"
+          )
+        ) {
+          toast.error(
+            "Please verify your email before logging in."
+          );
+        } else if (
+          message.includes(
+            "invalid login credentials"
+          )
+        ) {
+          toast.error(
+            "Invalid email or password."
+          );
+        } else {
+          toast.error(
+            error.message
+          );
+        }
+
+        return;
       }
 
-      return;
+      // =====================================================
+      // USER CHECK
+      // =====================================================
+
+      if (!data.user) {
+        toast.error(
+          "Login failed. Please try again."
+        );
+        return;
+      }
+
+      console.log(
+        "PrimeCart login successful:",
+        data.user.id
+      );
+
+      // =====================================================
+      // REMEMBER EMAIL
+      // =====================================================
+
+      if (formData.remember) {
+        localStorage.setItem(
+          "rememberEmail",
+          email
+        );
+      } else {
+        localStorage.removeItem(
+          "rememberEmail"
+        );
+      }
+
+      // =====================================================
+      // SUCCESS
+      // =====================================================
+
+      toast.success(
+        "Login successful ✨"
+      );
+
+      // Give Supabase a moment to persist
+      // the authentication session.
+      await new Promise((resolve) =>
+        setTimeout(resolve, 300)
+      );
+
+      // =====================================================
+      // PRIME CART DASHBOARD
+      // =====================================================
+
+      router.replace(
+        "/dashboard"
+      );
+
+      router.refresh();
+    } catch (error) {
+      console.error(
+        "UNEXPECTED LOGIN ERROR:",
+        error
+      );
+
+      toast.error(
+        "Something went wrong. Please try again."
+      );
+    } finally {
+      setLoading(false);
     }
-
-    if (!data.user) {
-      toast.error("Login failed. Please try again.");
-      return;
-    }
-
-    // Remember email
-    if (formData.remember) {
-      localStorage.setItem("rememberEmail", email);
-    } else {
-      localStorage.removeItem("rememberEmail");
-    }
-
-    console.log("LOGIN SUCCESS:", data.user);
-
-    toast.success("Login successful ✨");
-
-    // PrimeCart dashboard
-    router.replace("/dashboard");
-    router.refresh();
-
-  } catch (error) {
-    console.error("Unexpected login error:", error);
-
-    toast.error(
-      "Something went wrong. Please try again."
-    );
-  } finally {
-    setLoading(false);
   }
-}
 
-  /* =========================================================
-     GOOGLE LOGIN
-  ========================================================= */
+  // =========================================================
+  // GOOGLE LOGIN
+  // =========================================================
 
   async function loginWithGoogle() {
-    if (googleLoading) return;
+    if (
+      googleLoading ||
+      loading
+    ) {
+      return;
+    }
 
     try {
       setGoogleLoading(true);
@@ -173,7 +256,7 @@ export default function LoginPage() {
           provider: "google",
           options: {
             redirectTo:
-              `${window.location.origin}/auth/callback?next=/`,
+              `${window.location.origin}/auth/callback?next=/dashboard`,
           },
         });
 
@@ -183,11 +266,13 @@ export default function LoginPage() {
           error
         );
 
-        toast.error(error.message);
+        toast.error(
+          error.message
+        );
       }
     } catch (error) {
       console.error(
-        "Google login error:",
+        "GOOGLE LOGIN ERROR:",
         error
       );
 
@@ -199,9 +284,9 @@ export default function LoginPage() {
     }
   }
 
-  /* =========================================================
-     UI
-  ========================================================= */
+  // =========================================================
+  // UI
+  // =========================================================
 
   return (
     <main
@@ -257,7 +342,16 @@ export default function LoginPage() {
 
           {/* Overlay */}
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+          <div
+            className="
+              absolute
+              inset-0
+              bg-gradient-to-t
+              from-black/60
+              via-black/10
+              to-transparent
+            "
+          />
 
           {/* Gold Glow */}
 
@@ -289,10 +383,83 @@ export default function LoginPage() {
             "
           />
 
-          
+          {/* Banner Content */}
+
+          <div
+            className="
+              absolute
+              bottom-10
+              left-10
+              right-10
+              z-20
+              text-white
+            "
+          >
+            <div
+              className="
+                mb-4
+                flex
+                items-center
+                gap-2
+              "
+            >
+              <div
+                className="
+                  flex
+                  h-9
+                  w-9
+                  items-center
+                  justify-center
+                  rounded-xl
+                  bg-[#D4AF37]
+                "
+              >
+                <ShieldCheck size={18} />
+              </div>
+
+              <span
+                className="
+                  text-[10px]
+                  font-black
+                  uppercase
+                  tracking-[0.2em]
+                "
+              >
+                Premium Shopping
+              </span>
+            </div>
+
+            <h2
+              className="
+                max-w-md
+                text-4xl
+                font-black
+                leading-tight
+              "
+            >
+              Welcome back to
+              <br />
+              PrimeCart.
+            </h2>
+
+            <p
+              className="
+                mt-4
+                max-w-md
+                text-sm
+                leading-6
+                text-white/75
+              "
+            >
+              Discover premium products,
+              exclusive deals and a smarter
+              shopping experience.
+            </p>
+          </div>
+        </div>
 
         {/* =====================================================
-            RIGHT LOGIN
+            RIGHT LOGIN PANEL
         ===================================================== */}
 
         <div
@@ -306,7 +473,12 @@ export default function LoginPage() {
             lg:px-10
           "
         >
-          <div className="w-full max-w-md">
+          <div
+            className="
+              w-full
+              max-w-md
+            "
+          >
             {/* =================================================
                 LOGO
             ================================================= */}
@@ -316,10 +488,9 @@ export default function LoginPage() {
               className="
                 mb-8
                 flex
+                w-fit
                 items-center
                 gap-3
-                -ml-5
-                w-fit
               "
             >
               <Image
@@ -331,7 +502,13 @@ export default function LoginPage() {
                 className="object-contain"
               />
 
-              <h2 className="text-3xl font-black sm:text-4xl">
+              <h2
+                className="
+                  text-3xl
+                  font-black
+                  sm:text-4xl
+                "
+              >
                 Prime
                 <span className="text-[#D4AF37]">
                   Cart
@@ -343,7 +520,16 @@ export default function LoginPage() {
                 HEADING
             ================================================= */}
 
-            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#B28B18]">
+            <p
+              className="
+                mb-2
+                text-[10px]
+                font-black
+                uppercase
+                tracking-[0.2em]
+                text-[#B28B18]
+              "
+            >
               Welcome to PrimeCart
             </p>
 
@@ -363,11 +549,18 @@ export default function LoginPage() {
               </span>
             </h1>
 
-            <p className="mt-3 text-sm text-gray-500">
-              Continue your premium shopping journey.
+            <p
+              className="
+                mt-3
+                text-sm
+                text-gray-500
+              "
+            >
+              Continue your premium
+              shopping journey.
             </p>
 
-            {/* Customer Badge */}
+            {/* CUSTOMER BADGE */}
 
             <div
               className="
@@ -387,18 +580,27 @@ export default function LoginPage() {
                 ⭐
               </span>
 
-              <span className="text-xs font-semibold text-gray-700">
+              <span
+                className="
+                  text-xs
+                  font-semibold
+                  text-gray-700
+                "
+              >
                 10,000+ Happy Customers
               </span>
             </div>
 
             {/* =================================================
-                FORM
+                LOGIN FORM
             ================================================= */}
 
             <form
               onSubmit={login}
-              className="mt-6 space-y-4"
+              className="
+                mt-6
+                space-y-4
+              "
             >
               {/* EMAIL */}
 
@@ -439,6 +641,7 @@ export default function LoginPage() {
                     focus:bg-white
                     focus:ring-4
                     focus:ring-[#D4AF37]/10
+                    disabled:cursor-not-allowed
                     disabled:opacity-60
                   "
                 />
@@ -487,6 +690,7 @@ export default function LoginPage() {
                     focus:bg-white
                     focus:ring-4
                     focus:ring-[#D4AF37]/10
+                    disabled:cursor-not-allowed
                     disabled:opacity-60
                   "
                 />
@@ -495,7 +699,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={() =>
                     setShowPassword(
-                      !showPassword
+                      (prev) => !prev
                     )
                   }
                   disabled={loading}
@@ -507,7 +711,13 @@ export default function LoginPage() {
                     text-gray-400
                     transition
                     hover:text-black
+                    disabled:opacity-40
                   "
+                  aria-label={
+                    showPassword
+                      ? "Hide password"
+                      : "Show password"
+                  }
                 >
                   {showPassword ? (
                     <EyeOff size={20} />
@@ -519,7 +729,15 @@ export default function LoginPage() {
 
               {/* REMEMBER / FORGOT */}
 
-              <div className="flex items-center justify-between text-xs sm:text-sm">
+              <div
+                className="
+                  flex
+                  items-center
+                  justify-between
+                  text-xs
+                  sm:text-sm
+                "
+              >
                 <label
                   className="
                     flex
@@ -532,9 +750,15 @@ export default function LoginPage() {
                   <input
                     type="checkbox"
                     name="remember"
-                    checked={formData.remember}
+                    checked={
+                      formData.remember
+                    }
                     onChange={handleChange}
-                    className="h-4 w-4 accent-[#D4AF37]"
+                    className="
+                      h-4
+                      w-4
+                      accent-[#D4AF37]
+                    "
                   />
 
                   Remember me
@@ -589,7 +813,6 @@ export default function LoginPage() {
                       size={20}
                       className="animate-spin"
                     />
-
                     Logging in...
                   </>
                 ) : (
@@ -609,28 +832,54 @@ export default function LoginPage() {
             </form>
 
             {/* =================================================
-                OR
+                OR DIVIDER
             ================================================= */}
 
-            <div className="my-7 flex items-center gap-4">
-              <div className="h-px flex-1 bg-gray-200" />
+            <div
+              className="
+                my-7
+                flex
+                items-center
+                gap-4
+              "
+            >
+              <div
+                className="
+                  h-px
+                  flex-1
+                  bg-gray-200
+                "
+              />
 
-              <span className="text-xs font-medium text-gray-400">
+              <span
+                className="
+                  text-xs
+                  font-medium
+                  text-gray-400
+                "
+              >
                 OR
               </span>
 
-              <div className="h-px flex-1 bg-gray-200" />
+              <div
+                className="
+                  h-px
+                  flex-1
+                  bg-gray-200
+                "
+              />
             </div>
 
             {/* =================================================
-                GOOGLE
+                GOOGLE LOGIN
             ================================================= */}
 
             <button
               type="button"
               onClick={loginWithGoogle}
               disabled={
-                googleLoading || loading
+                googleLoading ||
+                loading
               }
               className="
                 flex
@@ -675,7 +924,14 @@ export default function LoginPage() {
                 REGISTER
             ================================================= */}
 
-            <p className="mt-7 text-center text-sm text-gray-500">
+            <p
+              className="
+                mt-7
+                text-center
+                text-sm
+                text-gray-500
+              "
+            >
               Don't have an account?
 
               <Link
@@ -697,8 +953,28 @@ export default function LoginPage() {
                 SECURITY
             ================================================= */}
 
-            <div className="mt-7 flex items-center justify-center gap-5 border-t border-gray-100 pt-5 text-[9px] font-semibold text-gray-400">
-              <span className="flex items-center gap-1.5">
+            <div
+              className="
+                mt-7
+                flex
+                items-center
+                justify-center
+                gap-5
+                border-t
+                border-gray-100
+                pt-5
+                text-[9px]
+                font-semibold
+                text-gray-400
+              "
+            >
+              <span
+                className="
+                  flex
+                  items-center
+                  gap-1.5
+                "
+              >
                 <Lock
                   size={12}
                   className="text-[#D4AF37]"
@@ -706,7 +982,13 @@ export default function LoginPage() {
                 Secure Login
               </span>
 
-              <span className="flex items-center gap-1.5">
+              <span
+                className="
+                  flex
+                  items-center
+                  gap-1.5
+                "
+              >
                 <ShieldCheck
                   size={12}
                   className="text-[#D4AF37]"
