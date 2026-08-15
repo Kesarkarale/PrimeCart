@@ -23,18 +23,26 @@ import { createClient } from "@/lib/supabase/client";
 export default function LoginPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] =
+    useState("");
 
-  const [remember, setRemember] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [password, setPassword] =
+    useState("");
 
-  const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
+  const [remember, setRemember] =
+    useState(false);
+
+  const [showPassword, setShowPassword] =
+    useState(false);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [googleLoading, setGoogleLoading] =
+    useState(false);
 
   /*
-   * IMPORTANT:
-   * Create the Supabase browser client once.
+   * Create Supabase browser client.
    */
   const supabase = createClient();
 
@@ -44,14 +52,20 @@ export default function LoginPage() {
 
   useEffect(() => {
     try {
-      const savedEmail = localStorage.getItem("rememberEmail");
+      const savedEmail =
+        localStorage.getItem(
+          "rememberEmail"
+        );
 
       if (savedEmail) {
         setEmail(savedEmail);
         setRemember(true);
       }
     } catch (error) {
-      console.error("Remember email error:", error);
+      console.error(
+        "Remember email error:",
+        error
+      );
     }
   }, []);
 
@@ -64,41 +78,72 @@ export default function LoginPage() {
   ) {
     e.preventDefault();
 
-    if (loading || googleLoading) {
+    /*
+     * Prevent multiple clicks.
+     */
+    if (
+      loading ||
+      googleLoading
+    ) {
       return;
     }
 
-    const cleanEmail = email.trim().toLowerCase();
+    const cleanEmail =
+      email
+        .trim()
+        .toLowerCase();
 
-    // -------------------------------------------------------
+    // ---------------------------------------------------------
     // VALIDATION
-    // -------------------------------------------------------
+    // ---------------------------------------------------------
 
     if (!cleanEmail) {
-      toast.error("Please enter your email address.");
+      toast.error(
+        "Please enter your email address."
+      );
       return;
     }
 
     if (!password) {
-      toast.error("Please enter your password.");
+      toast.error(
+        "Please enter your password."
+      );
       return;
     }
 
     const emailRegex =
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!emailRegex.test(cleanEmail)) {
-      toast.error("Please enter a valid email address.");
+    if (
+      !emailRegex.test(
+        cleanEmail
+      )
+    ) {
+      toast.error(
+        "Please enter a valid email address."
+      );
       return;
     }
 
     try {
       setLoading(true);
 
-      console.log("=================================");
-      console.log("🔐 PRIME CART LOGIN");
-      console.log("Email:", cleanEmail);
-      console.log("=================================");
+      console.log(
+        "================================"
+      );
+
+      console.log(
+        "🔐 PRIME CART LOGIN START"
+      );
+
+      console.log(
+        "Email:",
+        cleanEmail
+      );
+
+      console.log(
+        "================================"
+      );
 
       // -------------------------------------------------------
       // SUPABASE LOGIN
@@ -107,38 +152,47 @@ export default function LoginPage() {
       const {
         data,
         error,
-      } = await supabase.auth.signInWithPassword({
-        email: cleanEmail,
-        password,
-      });
+      } =
+        await supabase.auth.signInWithPassword(
+          {
+            email: cleanEmail,
+            password,
+          }
+        );
 
       // -------------------------------------------------------
-      // SUPABASE ERROR
+      // LOGIN ERROR
       // -------------------------------------------------------
 
       if (error) {
         console.error(
-          "❌ Supabase login error:",
+          "❌ SUPABASE LOGIN ERROR:",
           error
         );
 
-        const message = error.message.toLowerCase();
+        const message =
+          error.message.toLowerCase();
 
         if (
-          message.includes("invalid login credentials")
+          message.includes(
+            "invalid login credentials"
+          )
         ) {
           toast.error(
             "Invalid email or password."
           );
         } else if (
-          message.includes("email not confirmed")
+          message.includes(
+            "email not confirmed"
+          )
         ) {
           toast.error(
             "Please verify your email before logging in."
           );
         } else {
           toast.error(
-            error.message || "Login failed."
+            error.message ||
+              "Login failed."
           );
         }
 
@@ -152,7 +206,7 @@ export default function LoginPage() {
 
       if (!data.user) {
         console.error(
-          "❌ No user returned after login."
+          "❌ USER NOT FOUND"
         );
 
         toast.error(
@@ -164,7 +218,7 @@ export default function LoginPage() {
       }
 
       console.log(
-        "✅ User logged in:",
+        "✅ USER LOGGED IN:",
         data.user.email
       );
 
@@ -175,25 +229,28 @@ export default function LoginPage() {
       const {
         data: sessionData,
         error: sessionError,
-      } = await supabase.auth.getSession();
+      } =
+        await supabase.auth.getSession();
 
       if (sessionError) {
         console.error(
-          "❌ Session error:",
+          "❌ SESSION ERROR:",
           sessionError
         );
 
         toast.error(
-          "Unable to create login session."
+          "Login session could not be created."
         );
 
         setLoading(false);
         return;
       }
 
-      if (!sessionData.session) {
+      if (
+        !sessionData.session
+      ) {
         console.error(
-          "❌ No active session found."
+          "❌ NO SESSION FOUND"
         );
 
         toast.error(
@@ -205,7 +262,7 @@ export default function LoginPage() {
       }
 
       console.log(
-        "✅ Active session confirmed."
+        "✅ SESSION CREATED"
       );
 
       // -------------------------------------------------------
@@ -239,26 +296,28 @@ export default function LoginPage() {
       );
 
       console.log(
-        "🚀 Redirecting to /dashboard..."
+        "🚀 REDIRECTING TO DASHBOARD..."
       );
 
       /*
        * IMPORTANT:
        *
-       * replace() prevents user from coming back
-       * to login page using browser back button.
-       *
-       * refresh() makes Next.js re-check the
-       * authenticated session.
+       * replace() navigates to dashboard
+       * without keeping login page in history.
        */
+      router.replace(
+        "/dashboard"
+      );
 
-      router.replace("/dashboard");
-
+      /*
+       * Tell Next.js to refresh
+       * server-side auth state.
+       */
       router.refresh();
 
     } catch (error) {
       console.error(
-        "❌ Unexpected login error:",
+        "❌ UNEXPECTED LOGIN ERROR:",
         error
       );
 
@@ -275,7 +334,10 @@ export default function LoginPage() {
   // =========================================================
 
   async function handleGoogleLogin() {
-    if (loading || googleLoading) {
+    if (
+      loading ||
+      googleLoading
+    ) {
       return;
     }
 
@@ -283,23 +345,26 @@ export default function LoginPage() {
       setGoogleLoading(true);
 
       console.log(
-        "🔐 Starting Google login..."
+        "🔐 GOOGLE LOGIN START"
       );
 
       const {
         error,
-      } = await supabase.auth.signInWithOAuth({
-        provider: "google",
+      } =
+        await supabase.auth.signInWithOAuth(
+          {
+            provider: "google",
 
-        options: {
-          redirectTo:
-            `${window.location.origin}/auth/callback`,
-        },
-      });
+            options: {
+              redirectTo:
+                `${window.location.origin}/auth/callback`,
+            },
+          }
+        );
 
       if (error) {
         console.error(
-          "❌ Google login error:",
+          "❌ GOOGLE LOGIN ERROR:",
           error
         );
 
@@ -310,10 +375,9 @@ export default function LoginPage() {
 
         setGoogleLoading(false);
       }
-
     } catch (error) {
       console.error(
-        "❌ Google login error:",
+        "❌ GOOGLE LOGIN ERROR:",
         error
       );
 
@@ -360,6 +424,7 @@ export default function LoginPage() {
           lg:grid-cols-2
         "
       >
+
         {/* ================================================= */}
         {/* LEFT SIDE */}
         {/* ================================================= */}
@@ -389,34 +454,6 @@ export default function LoginPage() {
               from-black/70
               via-black/15
               to-transparent
-            "
-          />
-
-          <div
-            className="
-              absolute
-              left-10
-              top-10
-              z-10
-              h-52
-              w-52
-              rounded-full
-              bg-[#D4AF37]/20
-              blur-[120px]
-            "
-          />
-
-          <div
-            className="
-              absolute
-              bottom-10
-              right-10
-              z-10
-              h-64
-              w-64
-              rounded-full
-              bg-[#D4AF37]/15
-              blur-[140px]
             "
           />
 
@@ -545,9 +582,8 @@ export default function LoginPage() {
               max-w-md
             "
           >
-            {/* ================================================= */}
+
             {/* LOGO */}
-            {/* ================================================= */}
 
             <Link
               href="/"
@@ -583,9 +619,7 @@ export default function LoginPage() {
               </h2>
             </Link>
 
-            {/* ================================================= */}
             {/* HEADING */}
-            {/* ================================================= */}
 
             <p
               className="
@@ -627,9 +661,7 @@ export default function LoginPage() {
               shopping journey.
             </p>
 
-            {/* ================================================= */}
             {/* CUSTOMER BADGE */}
-            {/* ================================================= */}
 
             <div
               className="
@@ -660,9 +692,7 @@ export default function LoginPage() {
               </span>
             </div>
 
-            {/* ================================================= */}
-            {/* LOGIN FORM */}
-            {/* ================================================= */}
+            {/* FORM */}
 
             <form
               onSubmit={handleLogin}
@@ -671,6 +701,7 @@ export default function LoginPage() {
                 space-y-4
               "
             >
+
               {/* EMAIL */}
 
               <div className="relative">
@@ -689,7 +720,9 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) =>
-                    setEmail(e.target.value)
+                    setEmail(
+                      e.target.value
+                    )
                   }
                   placeholder="Email Address"
                   autoComplete="email"
@@ -744,7 +777,9 @@ export default function LoginPage() {
                   }
                   value={password}
                   onChange={(e) =>
-                    setPassword(e.target.value)
+                    setPassword(
+                      e.target.value
+                    )
                   }
                   placeholder="Password"
                   autoComplete="current-password"
@@ -780,17 +815,13 @@ export default function LoginPage() {
                   type="button"
                   onClick={() =>
                     setShowPassword(
-                      (prev) => !prev
+                      (prev) =>
+                        !prev
                     )
                   }
                   disabled={
                     loading ||
                     googleLoading
-                  }
-                  aria-label={
-                    showPassword
-                      ? "Hide password"
-                      : "Show password"
                   }
                   className="
                     absolute
@@ -798,7 +829,6 @@ export default function LoginPage() {
                     top-1/2
                     -translate-y-1/2
                     text-gray-400
-                    transition
                     hover:text-black
                   "
                 >
@@ -810,7 +840,7 @@ export default function LoginPage() {
                 </button>
               </div>
 
-              {/* REMEMBER / FORGOT */}
+              {/* REMEMBER */}
 
               <div
                 className="
@@ -857,7 +887,6 @@ export default function LoginPage() {
                   className="
                     font-bold
                     text-[#B28B18]
-                    transition
                     hover:text-black
                     hover:underline
                   "
@@ -866,9 +895,7 @@ export default function LoginPage() {
                 </Link>
               </div>
 
-              {/* ================================================= */}
               {/* LOGIN BUTTON */}
-              {/* ================================================= */}
 
               <button
                 type="submit"
@@ -894,8 +921,6 @@ export default function LoginPage() {
                   shadow-[0_12px_25px_rgba(184,134,11,0.22)]
                   transition
                   hover:-translate-y-0.5
-                  hover:shadow-[0_16px_30px_rgba(184,134,11,0.28)]
-                  active:translate-y-0
                   disabled:cursor-not-allowed
                   disabled:opacity-60
                 "
@@ -925,9 +950,7 @@ export default function LoginPage() {
               </button>
             </form>
 
-            {/* ================================================= */}
             {/* DIVIDER */}
-            {/* ================================================= */}
 
             <div
               className="
@@ -964,13 +987,13 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* ================================================= */}
             {/* GOOGLE */}
-            {/* ================================================= */}
 
             <button
               type="button"
-              onClick={handleGoogleLogin}
+              onClick={
+                handleGoogleLogin
+              }
               disabled={
                 googleLoading ||
                 loading
@@ -991,7 +1014,6 @@ export default function LoginPage() {
                 text-gray-700
                 transition
                 hover:bg-gray-50
-                hover:shadow-sm
                 disabled:cursor-not-allowed
                 disabled:opacity-60
               "
@@ -1014,9 +1036,7 @@ export default function LoginPage() {
               )}
             </button>
 
-            {/* ================================================= */}
             {/* REGISTER */}
-            {/* ================================================= */}
 
             <p
               className="
@@ -1042,9 +1062,7 @@ export default function LoginPage() {
               </Link>
             </p>
 
-            {/* ================================================= */}
             {/* SECURITY */}
-            {/* ================================================= */}
 
             <div
               className="
@@ -1091,6 +1109,7 @@ export default function LoginPage() {
                 Protected
               </span>
             </div>
+
           </div>
         </div>
       </div>
