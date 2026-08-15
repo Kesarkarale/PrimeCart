@@ -165,7 +165,7 @@ export default function LoginPage() {
        */
 
       setTimeout(() => {
-        router.replace("/");
+        router.replace("/dashboard");
         router.refresh();
       }, 500);
     } catch (error) {
@@ -315,31 +315,7 @@ export default function LoginPage() {
             "
           />
 
-          {/* Banner Text */}
-
-          <div className="absolute bottom-10 left-10 right-10 z-20 text-white">
-            <div className="mb-4 flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#D4AF37]">
-                <ShieldCheck size={18} />
-              </div>
-
-              <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-                Premium Shopping
-              </span>
-            </div>
-
-            <h2 className="max-w-md text-4xl font-black leading-tight">
-              Welcome back to
-              <br />
-              PrimeCart.
-            </h2>
-
-            <p className="mt-4 max-w-md text-sm leading-6 text-white/75">
-              Discover premium products, exclusive
-              deals and a smarter shopping experience.
-            </p>
-          </div>
-        </div>
+          
 
         {/* =====================================================
             RIGHT LOGIN
