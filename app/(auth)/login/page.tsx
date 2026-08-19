@@ -27,11 +27,13 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // =========================
-  // EMAIL / PASSWORD LOGIN
-  // =========================
+  // =========================================================
+  // EMAIL + PASSWORD LOGIN
+  // =========================================================
 
-  async function handleLogin(e: FormEvent<HTMLFormElement>) {
+  const handleLogin = async (
+    e: FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
 
     setError("");
@@ -39,8 +41,13 @@ export default function LoginPage() {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    if (!cleanEmail || !password) {
-      setError("Please enter your email and password.");
+    if (!cleanEmail) {
+      setError("Please enter your email address.");
+      return;
+    }
+
+    if (!password) {
+      setError("Please enter your password.");
       return;
     }
 
@@ -54,16 +61,19 @@ export default function LoginPage() {
         });
 
       if (loginError) {
-        const message = loginError.message.toLowerCase();
+        const message =
+          loginError.message.toLowerCase();
 
-        if (message.includes("email not confirmed")) {
-          setError(
-            "Please verify your email address before logging in."
-          );
-        } else if (
+        if (
           message.includes("invalid login credentials")
         ) {
           setError("Invalid email or password.");
+        } else if (
+          message.includes("email not confirmed")
+        ) {
+          setError(
+            "Please verify your email before logging in."
+          );
         } else {
           setError(loginError.message);
         }
@@ -72,31 +82,36 @@ export default function LoginPage() {
       }
 
       if (!data.session) {
-        setError("Login session could not be created.");
+        setError(
+          "Login session could not be created. Please try again."
+        );
         return;
       }
 
       setSuccess("Login successful. Redirecting...");
 
-      // Full navigation makes sure cookies/session are available
-      // to middleware and server components.
+      /*
+       * Full navigation is intentional.
+       * It allows Supabase auth cookies to be available
+       * to middleware/server components before dashboard loads.
+       */
       window.location.replace("/dashboard");
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error("Login error:", error);
 
       setError(
-        "Something went wrong while logging in. Please try again."
+        "Something went wrong. Please try again."
       );
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  // =========================
+  // =========================================================
   // GOOGLE LOGIN
-  // =========================
+  // =========================================================
 
-  async function handleGoogleLogin() {
+  const handleGoogleLogin = async () => {
     setError("");
     setSuccess("");
 
@@ -112,64 +127,68 @@ export default function LoginPage() {
           options: {
             redirectTo,
             queryParams: {
-              access_type: "offline",
               prompt: "select_account",
             },
           },
         });
 
       if (googleError) {
-        console.error(googleError);
+        console.error(
+          "Google login error:",
+          googleError
+        );
+
         setError(googleError.message);
         setGoogleLoading(false);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(
+        "Google authentication error:",
+        error
+      );
 
       setError(
-        "Unable to continue with Google. Please try again."
+        "Unable to continue with Google."
       );
 
       setGoogleLoading(false);
     }
-  }
+  };
 
   return (
-    <main className="min-h-screen bg-[#f7f5f0] p-3 sm:p-5 lg:p-7">
+    <main className="min-h-screen bg-[#f8f6f1] p-3 sm:p-5 lg:p-6">
 
       <div
         className="
           mx-auto
           grid
           min-h-[calc(100vh-24px)]
-          max-w-[1280px]
+          max-w-[1370px]
           overflow-hidden
-          rounded-[24px]
+          rounded-[22px]
           bg-white
-          shadow-[0_12px_50px_rgba(0,0,0,0.08)]
-          lg:min-h-[760px]
-          lg:grid-cols-2
+          shadow-[0_8px_40px_rgba(0,0,0,0.08)]
+          lg:min-h-[720px]
+          lg:grid-cols-[1fr_1fr]
         "
       >
 
         {/* =====================================================
-            LEFT IMAGE
+            LEFT SIDE — BANNER IMAGE ONLY
         ====================================================== */}
 
         <div
           className="
             relative
             hidden
-            min-h-[760px]
             overflow-hidden
-            bg-[#f5f0e8]
+            bg-[#f4efe7]
             lg:block
           "
         >
-
           <img
             src="/login-banner.png"
-            alt="PrimeCart shopping"
+            alt="PrimeCart"
             className="
               absolute
               inset-0
@@ -178,25 +197,23 @@ export default function LoginPage() {
               object-cover
             "
           />
-
         </div>
 
         {/* =====================================================
-            RIGHT LOGIN SECTION
+            RIGHT SIDE — LOGIN
         ====================================================== */}
 
         <div
           className="
             flex
-            min-h-[calc(100vh-24px)]
             items-center
             justify-center
-            px-5
+            bg-white
+            px-6
             py-10
             sm:px-10
-            lg:min-h-[760px]
-            lg:px-14
-            xl:px-20
+            lg:px-12
+            xl:px-16
           "
         >
 
@@ -213,16 +230,15 @@ export default function LoginPage() {
                 inline-flex
                 items-center
                 transition-opacity
-                hover:opacity-80
+                hover:opacity-85
               "
             >
               <img
-                src="/primecart-logo.png"
+                src="/logo.png"
                 alt="PrimeCart"
                 className="
-                  h-[72px]
+                  h-[58px]
                   w-auto
-                  max-w-[180px]
                   object-contain
                 "
               />
@@ -232,16 +248,16 @@ export default function LoginPage() {
                 HEADING
             ================================================= */}
 
-            <div className="mb-8">
+            <div className="mb-7">
 
               <h1
                 className="
                   text-[28px]
                   font-bold
-                  leading-tight
+                  leading-[1.2]
                   tracking-[-0.5px]
-                  text-[#151515]
-                  sm:text-[32px]
+                  text-[#111111]
+                  sm:text-[30px]
                 "
               >
                 Login to your account
@@ -250,14 +266,15 @@ export default function LoginPage() {
               <p
                 className="
                   mt-2
+                  max-w-[360px]
                   text-[13px]
-                  leading-5
-                  text-[#777]
+                  leading-[1.6]
+                  text-[#777777]
                   sm:text-[14px]
                 "
               >
                 Enter your email and password to access
-                your account.
+                your account
               </p>
 
             </div>
@@ -270,13 +287,13 @@ export default function LoginPage() {
               <div
                 className="
                   mb-5
-                  rounded-[10px]
+                  rounded-[9px]
                   border
                   border-red-200
                   bg-red-50
                   px-4
                   py-3
-                  text-[13px]
+                  text-[12px]
                   leading-5
                   text-red-700
                 "
@@ -293,13 +310,13 @@ export default function LoginPage() {
               <div
                 className="
                   mb-5
-                  rounded-[10px]
+                  rounded-[9px]
                   border
                   border-green-200
                   bg-green-50
                   px-4
                   py-3
-                  text-[13px]
+                  text-[12px]
                   leading-5
                   text-green-700
                 "
@@ -309,7 +326,7 @@ export default function LoginPage() {
             )}
 
             {/* =================================================
-                LOGIN FORM
+                FORM
             ================================================= */}
 
             <form
@@ -328,7 +345,7 @@ export default function LoginPage() {
                     block
                     text-[12px]
                     font-semibold
-                    text-[#222]
+                    text-[#222222]
                     sm:text-[13px]
                   "
                 >
@@ -341,11 +358,12 @@ export default function LoginPage() {
                     size={17}
                     strokeWidth={1.8}
                     className="
+                      pointer-events-none
                       absolute
                       left-4
                       top-1/2
                       -translate-y-1/2
-                      text-[#888]
+                      text-[#777777]
                     "
                   />
 
@@ -361,26 +379,26 @@ export default function LoginPage() {
                     disabled={
                       loading || googleLoading
                     }
+                    required
                     className="
                       h-[52px]
                       w-full
-                      rounded-[10px]
+                      rounded-[9px]
                       border
-                      border-[#dedede]
+                      border-[#dddddd]
                       bg-white
-                      pl-11
+                      pl-[43px]
                       pr-4
                       text-[13px]
-                      text-[#222]
+                      text-[#222222]
                       outline-none
-                      transition
-                      placeholder:text-[#999]
-                      focus:border-[#c9961a]
-                      focus:ring-4
-                      focus:ring-[#c9961a]/10
+                      transition-all
+                      placeholder:text-[#999999]
+                      focus:border-[#d19a18]
+                      focus:ring-[3px]
+                      focus:ring-[#d19a18]/10
                       disabled:bg-[#fafafa]
                     "
-                    required
                   />
 
                 </div>
@@ -391,38 +409,41 @@ export default function LoginPage() {
 
               <div>
 
-                <div className="mb-2 flex items-center justify-between">
+                <div
+                  className="
+                    mb-2
+                    flex
+                    items-center
+                    justify-between
+                  "
+                >
 
                   <label
                     htmlFor="password"
                     className="
                       text-[12px]
                       font-semibold
-                      text-[#222]
+                      text-[#222222]
                       sm:text-[13px]
                     "
                   >
                     Password
                   </label>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setError(
-                        "Password reset can be added from Supabase Auth."
-                      );
-                    }}
+                  <Link
+                    href="/forgot-password"
                     className="
                       text-[11px]
                       font-semibold
-                      text-[#c28c12]
+                      text-[#c18b13]
                       transition
+                      hover:text-[#a8750b]
                       hover:underline
                       sm:text-[12px]
                     "
                   >
                     Forgot Password?
-                  </button>
+                  </Link>
 
                 </div>
 
@@ -432,11 +453,12 @@ export default function LoginPage() {
                     size={17}
                     strokeWidth={1.8}
                     className="
+                      pointer-events-none
                       absolute
                       left-4
                       top-1/2
                       -translate-y-1/2
-                      text-[#888]
+                      text-[#777777]
                     "
                   />
 
@@ -456,26 +478,26 @@ export default function LoginPage() {
                     disabled={
                       loading || googleLoading
                     }
+                    required
                     className="
                       h-[52px]
                       w-full
-                      rounded-[10px]
+                      rounded-[9px]
                       border
-                      border-[#dedede]
+                      border-[#dddddd]
                       bg-white
-                      pl-11
-                      pr-12
+                      pl-[43px]
+                      pr-[45px]
                       text-[13px]
-                      text-[#222]
+                      text-[#222222]
                       outline-none
-                      transition
-                      placeholder:text-[#999]
-                      focus:border-[#c9961a]
-                      focus:ring-4
-                      focus:ring-[#c9961a]/10
+                      transition-all
+                      placeholder:text-[#999999]
+                      focus:border-[#d19a18]
+                      focus:ring-[3px]
+                      focus:ring-[#d19a18]/10
                       disabled:bg-[#fafafa]
                     "
-                    required
                   />
 
                   <button
@@ -485,14 +507,17 @@ export default function LoginPage() {
                         (value) => !value
                       )
                     }
+                    disabled={
+                      loading || googleLoading
+                    }
                     className="
                       absolute
                       right-4
                       top-1/2
                       -translate-y-1/2
-                      text-[#888]
+                      text-[#777777]
                       transition
-                      hover:text-[#222]
+                      hover:text-[#222222]
                     "
                     aria-label={
                       showPassword
@@ -520,7 +545,7 @@ export default function LoginPage() {
                   items-center
                   gap-2
                   text-[12px]
-                  text-[#555]
+                  text-[#555555]
                 "
               >
 
@@ -528,7 +553,9 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) =>
-                    setRememberMe(e.target.checked)
+                    setRememberMe(
+                      e.target.checked
+                    )
                   }
                   disabled={
                     loading || googleLoading
@@ -537,15 +564,15 @@ export default function LoginPage() {
                     h-[16px]
                     w-[16px]
                     cursor-pointer
-                    accent-[#c9961a]
+                    accent-[#c99516]
                   "
                 />
 
-                Remember Me
+                <span>Remember Me</span>
 
               </label>
 
-              {/* LOGIN BUTTON */}
+              {/* LOGIN */}
 
               <button
                 type="submit"
@@ -559,14 +586,14 @@ export default function LoginPage() {
                   items-center
                   justify-center
                   gap-2
-                  rounded-[10px]
+                  rounded-[9px]
                   bg-[#d99d08]
                   text-[14px]
                   font-semibold
                   text-white
-                  shadow-[0_7px_18px_rgba(217,157,8,0.20)]
-                  transition
-                  hover:bg-[#c98f05]
+                  shadow-[0_6px_16px_rgba(217,157,8,0.20)]
+                  transition-all
+                  hover:bg-[#c88f05]
                   active:scale-[0.99]
                   disabled:cursor-not-allowed
                   disabled:opacity-60
@@ -576,14 +603,16 @@ export default function LoginPage() {
                 {loading ? (
                   <>
                     <Loader2
-                      size={18}
+                      size={17}
                       className="animate-spin"
                     />
+
                     Logging in...
                   </>
                 ) : (
                   <>
-                    <LogIn size={18} />
+                    <LogIn size={17} />
+
                     Login
                   </>
                 )}
@@ -593,23 +622,29 @@ export default function LoginPage() {
             </form>
 
             {/* =================================================
-                DIVIDER
+                OR
             ================================================= */}
 
             <div className="my-7 flex items-center gap-4">
 
-              <div className="h-px flex-1 bg-[#e7e7e7]" />
+              <div className="h-px flex-1 bg-[#e6e6e6]" />
 
-              <span className="text-[11px] font-medium text-[#999]">
+              <span
+                className="
+                  text-[11px]
+                  font-medium
+                  text-[#888888]
+                "
+              >
                 OR
               </span>
 
-              <div className="h-px flex-1 bg-[#e7e7e7]" />
+              <div className="h-px flex-1 bg-[#e6e6e6]" />
 
             </div>
 
             {/* =================================================
-                GOOGLE LOGIN
+                GOOGLE
             ================================================= */}
 
             <button
@@ -625,14 +660,14 @@ export default function LoginPage() {
                 items-center
                 justify-center
                 gap-3
-                rounded-[10px]
+                rounded-[9px]
                 border
-                border-[#dedede]
+                border-[#dddddd]
                 bg-white
                 text-[13px]
                 font-semibold
-                text-[#333]
-                transition
+                text-[#333333]
+                transition-all
                 hover:bg-[#fafafa]
                 active:scale-[0.99]
                 disabled:cursor-not-allowed
@@ -650,7 +685,7 @@ export default function LoginPage() {
               )}
 
               {googleLoading
-                ? "Connecting to Google..."
+                ? "Connecting..."
                 : "Continue with Google"}
 
             </button>
@@ -664,7 +699,7 @@ export default function LoginPage() {
                 mt-7
                 text-center
                 text-[12px]
-                text-[#777]
+                text-[#777777]
                 sm:text-[13px]
               "
             >
@@ -675,7 +710,7 @@ export default function LoginPage() {
                 href="/register"
                 className="
                   font-semibold
-                  text-[#c28c12]
+                  text-[#c18b13]
                   hover:underline
                 "
               >
@@ -723,7 +758,7 @@ function GoogleIcon() {
 
       <path
         fill="#EA4335"
-        d="M12 6.34c1.43 0 2.71.49 3.72 1.45l2.79-2.79C16.84 3.43 14.63 2.5 12 2.5a9.74 9.74 0 0 0-8.73 5.36l3.24 2.51C7.29 8.06 9.45 6.34 12 6.34Z"
+        d="M12 6.34c1.43 0 2.71.49 3.72 1.45l2.79-2.79C16.84 3.43 14.63 2.5 12 2.5a9.74 9.74 0 0 0-8.73 5.36l3.24 2.51 3.24 2.51C7.29 8.06 9.45 6.34 12 6.34Z"
       />
     </svg>
   );
