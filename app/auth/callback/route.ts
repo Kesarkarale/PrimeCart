@@ -1,4 +1,4 @@
- import { createServerClient } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
@@ -8,12 +8,11 @@ export async function GET(request: Request) {
   const code = url.searchParams.get("code");
 
   const next =
-    url.searchParams.get("next") ||
-    "/dashboard";
+    url.searchParams.get("next") || "/dashboard";
 
   if (!code) {
     return NextResponse.redirect(
-      new URL("/login", url.origin)
+      new URL("/login?error=google_auth_failed", url.origin)
     );
   }
 
@@ -29,35 +28,38 @@ export async function GET(request: Request) {
         },
 
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(
-            ({ name, value, options }) => {
-              cookieStore.set(
-                name,
-                value,
-                options
-              );
-            }
-          );
+          try {
+            cookiesToSet.forEach(
+              ({ name, value, options }) => {
+                cookieStore.set(
+                  name,
+                  value,
+                  options
+                );
+              }
+            );
+          } catch {
+            // Middleware/server component may handle cookies.
+          }
         },
       },
     }
   );
 
-  const {
-    error,
-  } =
-    await supabase.auth.exchangeCodeForSession(
-      code
-    );
+  const { error } =
+    await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
     console.error(
-      "Auth callback error:",
+      "Google auth callback error:",
       error
     );
 
     return NextResponse.redirect(
-      new URL("/login?error=auth", url.origin)
+      new URL(
+        "/login?error=google_auth_failed",
+        url.origin
+      )
     );
   }
 
