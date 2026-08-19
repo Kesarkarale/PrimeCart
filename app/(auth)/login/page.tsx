@@ -1,911 +1,297 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-
-import Image from "next/image";
-
+import { FormEvent, useState } from "react";
 import {
+  ArrowRight,
   Eye,
   EyeOff,
+  LockKeyhole,
   Mail,
-  Lock,
-  ArrowRight,
-  Loader2,
+  ShoppingBag,
 } from "lucide-react";
-
-import { toast } from "sonner";
-import { FcGoogle } from "react-icons/fc";
-
 import { createClient } from "@/lib/supabase/client";
 
-
 export default function LoginPage() {
-
-
-const supabase = createClient();
-
-const router = useRouter();
-
-
-
-const [formData,setFormData] = useState({
-
-email:"",
-password:"",
-remember:false
-
-});
-
-
-
-const [showPassword,setShowPassword] =
-useState(false);
-
-
-const [loading,setLoading] =
-useState(false);
-
-
-
-
-
-
-const handleChange = (
-e:React.ChangeEvent<HTMLInputElement>
-)=>{
-
-
-const {
-name,
-value,
-type,
-checked
-}=e.target;
-
-
-
-setFormData(prev=>({
-
-...prev,
-
-[name]:
-type==="checkbox"
-?
-checked
-:
-value
-
-}));
-
-};
-
-
-
-
-
-
-
-async function login(
-e:React.FormEvent
-){
-
-
-e.preventDefault();
-
-
-const {
-email,
-password,
-remember
-}=formData;
-
-
-
-if(!email || !password){
-
-toast.error(
-"Please fill all fields"
-);
-
-return;
-
-}
-
-
-
-try{
-
-
-setLoading(true);
-
-
-
-const {error}=await supabase.auth.signInWithPassword({
-
-email,
-
-password
-
-});
-
-
-
-
-if(error){
-
-toast.error(error.message);
-
-return;
-
-}
-
-
-
-
-if(remember){
-
-localStorage.setItem(
-"rememberEmail",
-email
-);
-
-}
-
-
-
-
-toast.success(
-"Login Successful ✨"
-);
-
-
-
-router.push("/dashboard");
-
-
-
-}
-
-catch{
-
-
-toast.error(
-"Login failed"
-);
-
-
-}
-
-finally{
-
-setLoading(false);
-
-}
-
-
-}
-
-
-
-
-
-
-
-
-return (
-
-<div className="
-min-h-screen
-bg-gradient-to-br
-from-[#f8f5ef]
-via-[#ffffff]
-to-[#efe5cf]
-flex
-items-center
-justify-center
-p-5
-">
-
-
-<div className="
-w-full
-max-w-[1200px]
-min-h-[650px]
-bg-white/90
-backdrop-blur-xl
-rounded-[40px]
-shadow-2xl
-overflow-hidden
-grid
-grid-cols-2
-border border-white/30
-">
-
-
-
-{/* LEFT BANNER */}
-
-
-<div className="
-relative
-min-h-[650px]
-">
-
-   {/* GOLD GLOW TOP LEFT */}
-  <div
-    className="
-    absolute
-    top-10
-    left-10
-    w-52
-    h-52
-    bg-[#D4AF37]/20
-    blur-[120px]
-    rounded-full
-    z-10
-    "
-  />
-
-  {/* GOLD GLOW BOTTOM RIGHT */}
-  <div
-    className="
-    absolute
-    bottom-10
-    right-10
-    w-64
-    h-64
-    bg-[#D4AF37]/15
-    blur-[140px]
-    rounded-full
-    z-10
-    "
-  />
-
-
-<Image
-
-src="/login-banner.png"
-
-alt="Banner"
-
-fill
-
-priority
-
-className="
-object-cover
-"
-
-/>
-
-
-</div>
-
-
-
-
-
-
-
-
-
-{/* RIGHT LOGIN */}
-
-
-
-<div className="
-flex
-items-center
-justify-center
-px-5 py-8 sm:px-8 lg:px-10
-">
-
-
-
-
-
-<div className="
-w-full
-max-w-md mx-auto
-">
-
-
-{/* LOGO */}
-
-
-<div className="
-mb-8
-flex
-items-center
-gap-3
-  -ml-6
-">
-
-<Image
-src="/logo.png"
-alt="PrimeCart Logo"
-width={100}
-height={50}
-priority
-className="object-contain"
-/>
-
-
-<div>
-
-<h2 className="
-text-3xl sm:text-4xl lg:text-5xl
-font-bold
-text-black
-">
-
-Prime
-<span className="text-[#D4AF37]">
-Cart
-</span>
-
-</h2>
-
-</div>
-
-
-</div>
-
-
-
-
-
-
-
-<h1 className="
-text-2xl sm:text-3xl lg:text-4xl
-font-bold
-text-gray-900
-">
-
-
-Welcome
-
-
-<span className="
-text-[#D4AF37]
-">
-
- Back ✨
-
-</span>
-
-
-</h1>
-
-
-
-
-
-<p className="
-mt-3
-text-gray-500
-">
-
-
-Continue your premium shopping journey.
-
-
-</p>
-
-<div className="
-mt-5
-inline-flex
-items-center
-gap-2
-px-4
-py-2
-rounded-full
-bg-[#D4AF37]/10
-border
-border-[#D4AF37]/20
-">
-
-<span className="text-[#D4AF37]">
-⭐
-</span>
-
-<span className="
-text-sm
-font-medium
-text-gray-700
-">
-10,000+ Happy Customers
-</span>
-
-</div>
-
-
-
-
-
-
-<form
-
-onSubmit={login}
-
-className="
-mt-6
-space-y-4
-"
-
->
-
-
-
-
-
-
-
-
-
-
-{/* EMAIL */}
-
-
-
-<div className="
-relative
-">
-
-
-<Mail
-
-size={20}
-
-className="
-absolute
-left-4
-top-1/2
--translate-y-1/2
-text-gray-400
-"
-
-/>
-
-
-
-
-<input
-
-type="email"
-
-name="email"
-
-value={formData.email}
-
-onChange={handleChange}
-
-placeholder="Email Address"
-
-className="
-w-full
-h-12 sm:h-14
-rounded-2xl
-bg-gray-50
-border
-border-gray-200
-pl-12
-outline-none
-focus:border-[#D4AF37]
-focus:ring-4
-focus:ring-[#D4AF37]/10
-transition
-"
-
-/>
-
-
-</div>
-
-
-
-
-
-
-
-
-
-{/* PASSWORD */}
-
-
-
-<div className="
-relative
-">
-
-
-<Lock
-
-size={20}
-
-className="
-absolute
-left-4
-top-1/2
--translate-y-1/2
-text-gray-400
-"
-
-/>
-
-
-
-
-
-<input
-
-type={
-showPassword
-?
-"text"
-:
-"password"
-}
-
-name="password"
-
-value={formData.password}
-
-onChange={handleChange}
-
-placeholder="Password"
-
-className="
-w-full
-h-12 sm:h-14
-rounded-2xl
-bg-gray-50
-border
-border-gray-200
-pl-12
-pr-12
-outline-none
-focus:border-[#D4AF37]
-focus:ring-4
-focus:ring-[#D4AF37]/10
-transition
-"
-
-/>
-
-
-
-
-
-
-
-<button
-
-type="button"
-
-onClick={()=>setShowPassword(!showPassword)}
-
-className="
-absolute
-right-4
-top-1/2
--translate-y-1/2
-text-gray-400
-"
-
->
-
-
-{
-
-showPassword
-
-?
-
-<EyeOff size={20}/>
-
-:
-
-<Eye size={20}/>
-
-}
-
-
-</button>
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-{/* REMEMBER */}
-
-
-
-<div className="
-flex
-justify-between
-items-center
-text-sm
-">
-
-
-<label className="
-flex
-items-center
-gap-2
-text-gray-600
-">
-
-
-<input
-
-type="checkbox"
-
-name="remember"
-
-checked={formData.remember}
-
-onChange={handleChange}
-
-className="
-accent-[#D4AF37]
-"
-
-/>
-
-
-Remember me
-
-
-</label>
-
-
-
-
-
-<Link
-
-href="/forgot-password"
-
-className="
-text-[#D4AF37]
-font-semibold
-hover:underline
-"
-
->
-
-Forgot Password?
-
-</Link>
-
-
-</div>
-
-
-
-
-
-
-
-
-
-<button
-
-disabled={loading}
-
-className="
-w-full
-h-14
-rounded-2xl
-bg-gradient-to-r
-from-[#B8860B]
-to-[#D4AF37]
-text-white
-font-semibold
-text-base sm:text-lg
-flex
-items-center
-justify-center
-gap-3
-shadow-lg
-hover:scale-[1.02]
-transition
-disabled:opacity-70
-"
-
->
-
-
-{
-
-loading
-
-?
-
-<>
-
-<Loader2
-className="animate-spin"
-/>
-
-Logging in...
-
-</>
-
-
-:
-
-<>
-
-Login Now
-
-<ArrowRight size={20}/>
-
-</>
-
-
-}
-
-
-</button>
-
-
-
-
-
-
-</form>
-
-
-
-
-
-
-
-
-<div className="
-flex
-items-center
-gap-4
-my-8
-">
-
-
-<div className="
-flex-1
-h-px
-bg-gray-200
-"/>
-
-
-
-<span className="
-text-gray-400
-text-sm
-">
-
-OR
-
-</span>
-
-
-
-<div className="
-flex-1
-h-px
-bg-gray-200
-"/>
-
-
-</div>
-
-
-
-
-
-
-
-
-
-<button
-
-className="
-w-full
-h-14
-rounded-2xl
-border
-border-gray-200
-flex
-items-center
-justify-center
-gap-3
-font-semibold
-hover:bg-gray-50
-transition
-"
-
->
-
-
-<FcGoogle size={24}/>
-
-Continue With Google
-
-
-</button>
-
-
-
-
-
-
-
-
-<p className="
-text-center
-text-gray-500
-mt-8
-">
-
-
-Don't have an account?
-
-
-<Link
-
-href="/register"
-
-className="
-ml-2
-text-[#D4AF37]
-font-semibold
-hover:underline
-"
-
->
-
-Create Account →
-
-</Link>
-
-
-</p>
-
-
-
-
-
-
-
-</div>
-
-
-
-</div>
-
-
-
-
-
-</div>
-
-
-
-</div>
-
-
-);
-
+  const supabase = createClient();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (!cleanEmail || !password) {
+      setErrorMessage("Please enter your email and password.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const { data, error } =
+        await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password,
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data.user) {
+        throw new Error("Unable to sign in. Please try again.");
+      }
+
+      setSuccessMessage("Login successful. Redirecting...");
+
+      /*
+       * Full page navigation ensures the new auth cookies/session
+       * are picked up by the next request.
+       */
+      window.location.replace("/");
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Invalid email or password.";
+
+      if (
+        message.toLowerCase().includes("email not confirmed")
+      ) {
+        setErrorMessage(
+          "Please verify your email address before signing in."
+        );
+      } else if (
+        message.toLowerCase().includes("invalid login credentials")
+      ) {
+        setErrorMessage(
+          "Incorrect email or password. Please try again."
+        );
+      } else {
+        setErrorMessage(message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <main className="min-h-screen bg-[#faf9f7] text-zinc-900">
+      <div className="grid min-h-screen lg:grid-cols-2">
+
+        {/* LEFT */}
+        <section className="relative hidden overflow-hidden bg-zinc-950 lg:flex">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(212,175,55,0.18),transparent_32%),radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.06),transparent_30%)]" />
+
+          <div className="relative z-10 flex w-full flex-col justify-between p-12 xl:p-16">
+
+            <Link
+              href="/"
+              className="flex w-fit items-center gap-3 text-white"
+            >
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#d4af37] text-black">
+                <ShoppingBag size={22} />
+              </div>
+
+              <span className="text-2xl font-bold tracking-tight">
+                Prime<span className="text-[#d4af37]">Cart</span>
+              </span>
+            </Link>
+
+            <div className="max-w-xl">
+              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-[#d4af37]">
+                Welcome back
+              </p>
+
+              <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight text-white xl:text-6xl">
+                Your shopping
+                <br />
+                <span className="text-[#d4af37]">
+                  starts here.
+                </span>
+              </h1>
+
+              <p className="mt-7 max-w-lg text-lg leading-8 text-zinc-400">
+                Sign in to continue shopping, manage your account
+                and keep everything in one place.
+              </p>
+            </div>
+
+            <p className="text-xs text-zinc-600">
+              © {new Date().getFullYear()} PrimeCart. All rights reserved.
+            </p>
+          </div>
+        </section>
+
+        {/* LOGIN */}
+        <section className="flex items-center justify-center px-5 py-10 sm:px-8">
+          <div className="w-full max-w-md">
+
+            {/* MOBILE LOGO */}
+            <Link
+              href="/"
+              className="mb-10 flex items-center justify-center gap-3 lg:hidden"
+            >
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-950 text-[#d4af37]">
+                <ShoppingBag size={22} />
+              </div>
+
+              <span className="text-2xl font-bold">
+                Prime<span className="text-[#b89124]">Cart</span>
+              </span>
+            </Link>
+
+            <div className="mb-8">
+              <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-[#b89124]">
+                Sign in
+              </p>
+
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                Welcome back
+              </h2>
+
+              <p className="mt-3 text-sm leading-6 text-zinc-500">
+                Sign in to your PrimeCart account to continue.
+              </p>
+            </div>
+
+            {errorMessage && (
+              <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
+                {errorMessage}
+              </div>
+            )}
+
+            {successMessage && (
+              <div className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                {successMessage}
+              </div>
+            )}
+
+            <form onSubmit={handleLogin} className="space-y-5">
+
+              {/* EMAIL */}
+              <div>
+                <label className="mb-2 block text-sm font-medium">
+                  Email address
+                </label>
+
+                <div className="relative">
+                  <Mail
+                    size={18}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
+                  />
+
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    className="h-12 w-full rounded-xl border border-zinc-200 bg-white pl-11 pr-4 text-sm outline-none transition focus:border-[#c6a227] focus:ring-4 focus:ring-[#d4af37]/10"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* PASSWORD */}
+              <div>
+                <div className="mb-2 flex items-center justify-between">
+                  <label className="text-sm font-medium">
+                    Password
+                  </label>
+
+                  <Link
+                    href="/forgot-password"
+                    className="text-xs font-semibold text-[#a47f16] hover:text-[#7d5f0e]"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+
+                <div className="relative">
+                  <LockKeyhole
+                    size={18}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
+                  />
+
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    className="h-12 w-full rounded-xl border border-zinc-200 bg-white pl-11 pr-12 text-sm outline-none transition focus:border-[#c6a227] focus:ring-4 focus:ring-[#d4af37]/10"
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700"
+                    aria-label="Toggle password visibility"
+                  >
+                    {showPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* LOGIN */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {loading ? (
+                  <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    Signing in...
+                  </>
+                ) : (
+                  <>
+                    Sign in
+                    <ArrowRight
+                      size={17}
+                      className="transition-transform group-hover:translate-x-1"
+                    />
+                  </>
+                )}
+              </button>
+            </form>
+
+            <div className="my-8 flex items-center gap-4">
+              <div className="h-px flex-1 bg-zinc-200" />
+              <span className="text-xs text-zinc-400">
+                NEW TO PRIMECART?
+              </span>
+              <div className="h-px flex-1 bg-zinc-200" />
+            </div>
+
+            <Link
+              href="/register"
+              className="flex h-12 w-full items-center justify-center rounded-xl border border-zinc-300 bg-white text-sm font-semibold transition hover:border-zinc-950 hover:bg-zinc-50"
+            >
+              Create a new account
+            </Link>
+
+          </div>
+        </section>
+      </div>
+    </main>
+  );
 }
