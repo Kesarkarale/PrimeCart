@@ -28,15 +28,16 @@ export default function RegisterPage() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [agree, setAgree] = useState(true);
+
+  const [agree, setAgree] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const handleRegister = async (
+  async function handleRegister(
     e: FormEvent<HTMLFormElement>
-  ) => {
+  ) {
     e.preventDefault();
 
     setError("");
@@ -56,13 +57,20 @@ export default function RegisterPage() {
       return;
     }
 
-    if (cleanMobile && !/^[0-9]{10}$/.test(cleanMobile)) {
-      setError("Please enter a valid 10-digit mobile number.");
+    if (
+      cleanMobile &&
+      !/^[0-9]{10}$/.test(cleanMobile)
+    ) {
+      setError(
+        "Please enter a valid 10-digit mobile number."
+      );
       return;
     }
 
     if (password.length < 6) {
-      setError("Password must contain at least 6 characters.");
+      setError(
+        "Password must contain at least 6 characters."
+      );
       return;
     }
 
@@ -73,7 +81,7 @@ export default function RegisterPage() {
 
     if (!agree) {
       setError(
-        "Please agree to the Terms & Conditions and Privacy Policy."
+        "Please accept the Terms & Conditions and Privacy Policy."
       );
       return;
     }
@@ -90,27 +98,49 @@ export default function RegisterPage() {
               full_name: name,
               mobile: cleanMobile,
             },
-            emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+
+            emailRedirectTo:
+              `${window.location.origin}/auth/callback?next=/dashboard`,
           },
         });
 
       if (signUpError) {
+        if (
+          signUpError.message
+            .toLowerCase()
+            .includes("already registered")
+        ) {
+          throw new Error(
+            "An account with this email already exists."
+          );
+        }
+
         throw signUpError;
       }
 
-      // If email confirmation is OFF
+      /*
+       * If Confirm Email is OFF,
+       * Supabase immediately returns a session.
+       */
       if (data.session) {
-        window.location.href = "/dashboard";
+        window.location.replace("/dashboard");
         return;
       }
 
-      // If email confirmation is ON
+      /*
+       * If Confirm Email is ON,
+       * user needs to verify email first.
+       */
       setSuccess(
-        "Account created successfully! Please check your email and verify your account."
+        "Account created successfully! Please check your email and verify your account before logging in."
       );
 
+      setFullName("");
+      setEmail("");
+      setMobile("");
       setPassword("");
       setConfirmPassword("");
+      setAgree(false);
     } catch (err) {
       setError(
         err instanceof Error
@@ -120,123 +150,103 @@ export default function RegisterPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
-    <main className="min-h-screen bg-[#faf8f4] px-3 py-4 sm:px-5 sm:py-6">
-      <div className="mx-auto max-w-[1400px] overflow-hidden rounded-[24px] bg-white shadow-[0_8px_40px_rgba(0,0,0,0.08)]">
+    <main className="min-h-screen bg-[#f8f6f1] p-3 sm:p-5 lg:p-7">
 
-        <div className="grid min-h-[760px] lg:grid-cols-[48%_52%]">
+      <div className="mx-auto max-w-[1380px] overflow-hidden rounded-[24px] bg-white shadow-[0_10px_50px_rgba(0,0,0,0.08)]">
 
-          {/* LEFT BANNER */}
-          <section className="relative hidden overflow-hidden lg:block">
+        {/* ================= MAIN ================= */}
+
+        <div className="grid min-h-[760px] lg:grid-cols-2">
+
+          {/* ================= IMAGE ================= */}
+
+          <div className="relative min-h-[250px] bg-[#f5f1e9] lg:min-h-[760px]">
+
             <img
               src="/login-banner.png"
-              alt="PrimeCart shopping"
+              alt="PrimeCart"
               className="absolute inset-0 h-full w-full object-cover"
             />
 
-            <Link
-              href="/"
-              className="absolute left-9 top-9 z-10"
-            >
-              <div className="flex items-center gap-2">
-                <div className="text-[30px] text-[#c99516]">
-                  🛒
-                </div>
+          </div>
 
-                <div>
-                  <div className="text-[27px] font-extrabold tracking-tight">
-                    Prime<span className="text-[#c99516]">
-                      Cart
-                    </span>
-                  </div>
+          {/* ================= REGISTER FORM ================= */}
 
-                  <p className="-mt-1 text-[9px] text-[#444]">
-                    Shop More. Pay Less.
-                  </p>
-                </div>
-              </div>
-            </Link>
+          <div className="flex items-center justify-center px-5 py-10 sm:px-10 lg:px-14 xl:px-20">
 
-            <div className="absolute left-9 top-[190px] z-10 max-w-[310px]">
-              <div className="mb-5 inline-flex items-center gap-2 rounded-lg bg-[#fff1d4] px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#b27b05]">
-                <span>♛</span>
-                Join PrimeCart
-              </div>
+            <div className="w-full max-w-[470px]">
 
-              <h1 className="text-[47px] font-extrabold leading-[1.04] tracking-tight">
-                Create Your
-                <br />
-                <span className="text-[#c99516]">
-                  Account
-                </span>
-              </h1>
+              {/* LOGO */}
 
-              <p className="mt-5 max-w-[280px] text-[15px] leading-6 text-[#555]">
-                Join PrimeCart and start shopping
-                <br />
-                the best products online
-              </p>
-            </div>
-          </section>
-
-          {/* REGISTER */}
-          <section className="flex items-center justify-center bg-white px-6 py-10 sm:px-12 lg:px-16 xl:px-20">
-            <div className="w-full max-w-[500px]">
-
-              {/* MOBILE LOGO */}
               <Link
                 href="/"
-                className="mb-9 flex items-center justify-center lg:hidden"
+                className="mb-8 flex w-fit items-center gap-2"
               >
-                <div className="text-[28px] text-[#c99516]">
-                  🛒
-                </div>
 
-                <div className="ml-2">
-                  <div className="text-[25px] font-extrabold">
+                <span className="text-[28px] leading-none">
+                  🛒
+                </span>
+
+                <div>
+                  <div className="text-[25px] font-extrabold tracking-tight text-[#111]">
                     Prime<span className="text-[#c99516]">
                       Cart
                     </span>
                   </div>
 
-                  <p className="-mt-1 text-[8px] text-gray-500">
-                    Shop More. Pay Less.
+                  <p className="-mt-1 text-[8px] font-medium tracking-wide text-[#777]">
+                    SHOP MORE. PAY LESS.
                   </p>
                 </div>
+
               </Link>
 
+              {/* HEADING */}
+
               <div className="mb-7">
-                <h2 className="text-[31px] font-extrabold tracking-tight text-[#111]">
+
+                <h1 className="text-[30px] font-extrabold tracking-tight text-[#111] sm:text-[34px]">
                   Create your account
-                </h2>
+                </h1>
 
                 <p className="mt-2 text-[14px] text-[#777]">
                   Fill in the details below to get started
                 </p>
+
               </div>
 
+              {/* ERROR */}
+
               {error && (
-                <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-5 text-red-700">
                   {error}
                 </div>
               )}
 
+              {/* SUCCESS */}
+
               {success && (
-                <div className="mb-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm leading-6 text-green-700">
+                <div className="mb-5 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm leading-6 text-green-700">
                   {success}
                 </div>
               )}
+
+              {/* FORM */}
 
               <form
                 onSubmit={handleRegister}
                 className="space-y-4"
               >
 
-                {/* NAME */}
-                <FieldLabel label="Full Name">
+                {/* FULL NAME */}
+
+                <Field label="Full Name">
+
                   <div className="relative">
+
                     <User
                       size={17}
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
@@ -250,15 +260,21 @@ export default function RegisterPage() {
                       }
                       placeholder="Enter your full name"
                       autoComplete="name"
+                      disabled={loading}
                       className="auth-input pl-11"
                       required
                     />
+
                   </div>
-                </FieldLabel>
+
+                </Field>
 
                 {/* EMAIL */}
-                <FieldLabel label="Email Address">
+
+                <Field label="Email Address">
+
                   <div className="relative">
+
                     <Mail
                       size={17}
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
@@ -272,15 +288,21 @@ export default function RegisterPage() {
                       }
                       placeholder="Enter your email"
                       autoComplete="email"
+                      disabled={loading}
                       className="auth-input pl-11"
                       required
                     />
+
                   </div>
-                </FieldLabel>
+
+                </Field>
 
                 {/* MOBILE */}
-                <FieldLabel label="Mobile Number">
+
+                <Field label="Mobile Number">
+
                   <div className="relative">
+
                     <Phone
                       size={17}
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
@@ -291,32 +313,45 @@ export default function RegisterPage() {
                       value={mobile}
                       onChange={(e) =>
                         setMobile(
-                          e.target.value.replace(/\D/g, "").slice(0, 10)
+                          e.target.value
+                            .replace(/\D/g, "")
+                            .slice(0, 10)
                         )
                       }
                       placeholder="Enter your mobile number"
                       autoComplete="tel"
+                      disabled={loading}
                       className="auth-input pl-11"
                     />
+
                   </div>
-                </FieldLabel>
+
+                </Field>
 
                 {/* PASSWORD */}
-                <FieldLabel label="Password">
+
+                <Field label="Password">
+
                   <div className="relative">
+
                     <LockKeyhole
                       size={17}
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
                     />
 
                     <input
-                      type={showPassword ? "text" : "password"}
+                      type={
+                        showPassword
+                          ? "text"
+                          : "password"
+                      }
                       value={password}
                       onChange={(e) =>
                         setPassword(e.target.value)
                       }
                       placeholder="Create a password"
                       autoComplete="new-password"
+                      disabled={loading}
                       className="auth-input pl-11 pr-11"
                       required
                     />
@@ -324,7 +359,9 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() =>
-                        setShowPassword(!showPassword)
+                        setShowPassword(
+                          (value) => !value
+                        )
                       }
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-[#777]"
                     >
@@ -334,25 +371,37 @@ export default function RegisterPage() {
                         <Eye size={17} />
                       )}
                     </button>
-                  </div>
-                </FieldLabel>
 
-                {/* CONFIRM */}
-                <FieldLabel label="Confirm Password">
+                  </div>
+
+                </Field>
+
+                {/* CONFIRM PASSWORD */}
+
+                <Field label="Confirm Password">
+
                   <div className="relative">
+
                     <LockKeyhole
                       size={17}
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
                     />
 
                     <input
-                      type={showConfirm ? "text" : "password"}
+                      type={
+                        showConfirm
+                          ? "text"
+                          : "password"
+                      }
                       value={confirmPassword}
                       onChange={(e) =>
-                        setConfirmPassword(e.target.value)
+                        setConfirmPassword(
+                          e.target.value
+                        )
                       }
                       placeholder="Confirm your password"
                       autoComplete="new-password"
+                      disabled={loading}
                       className="auth-input pl-11 pr-11"
                       required
                     />
@@ -360,7 +409,9 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() =>
-                        setShowConfirm(!showConfirm)
+                        setShowConfirm(
+                          (value) => !value
+                        )
                       }
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-[#777]"
                     >
@@ -370,47 +421,49 @@ export default function RegisterPage() {
                         <Eye size={17} />
                       )}
                     </button>
+
                   </div>
-                </FieldLabel>
+
+                </Field>
 
                 {/* TERMS */}
+
                 <label className="flex cursor-pointer items-start gap-2 pt-1 text-[11px] leading-5 text-[#666]">
+
                   <input
                     type="checkbox"
                     checked={agree}
                     onChange={(e) =>
                       setAgree(e.target.checked)
                     }
-                    className="mt-1 h-4 w-4 accent-[#c99516]"
+                    disabled={loading}
+                    className="mt-[2px] h-4 w-4 shrink-0 cursor-pointer accent-[#c99516]"
                   />
 
                   <span>
                     I agree to the{" "}
-                    <Link
-                      href="/terms"
-                      className="font-semibold text-[#c28b12]"
-                    >
+                    <span className="font-semibold text-[#c28b12]">
                       Terms & Conditions
-                    </Link>{" "}
+                    </span>{" "}
                     and{" "}
-                    <Link
-                      href="/privacy"
-                      className="font-semibold text-[#c28b12]"
-                    >
+                    <span className="font-semibold text-[#c28b12]">
                       Privacy Policy
-                    </Link>
+                    </span>
                   </span>
+
                 </label>
 
-                {/* CREATE */}
+                {/* CREATE ACCOUNT */}
+
                 <button
                   type="submit"
                   disabled={loading}
-                  className="mt-2 flex h-[52px] w-full items-center justify-center gap-2 rounded-lg bg-[#d99e08] text-[14px] font-bold text-white shadow-[0_5px_15px_rgba(217,158,8,0.18)] transition hover:bg-[#c58e05] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="mt-2 flex h-[53px] w-full items-center justify-center gap-2 rounded-xl bg-[#d99d08] text-[14px] font-bold text-white shadow-[0_7px_18px_rgba(217,157,8,0.20)] transition hover:bg-[#c68e05] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
                 >
+
                   {loading ? (
                     <>
-                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                       Creating Account...
                     </>
                   ) : (
@@ -419,106 +472,140 @@ export default function RegisterPage() {
                       Create Account
                     </>
                   )}
+
                 </button>
+
               </form>
 
-              {/* OR */}
-              <div className="my-6 flex items-center gap-4">
-                <div className="h-px flex-1 bg-[#e5e5e5]" />
+              {/* DIVIDER */}
 
-                <span className="text-[12px] text-[#777]">
+              <div className="my-7 flex items-center gap-4">
+
+                <div className="h-px flex-1 bg-[#e7e7e7]" />
+
+                <span className="text-[12px] font-medium text-[#888]">
                   OR
                 </span>
 
-                <div className="h-px flex-1 bg-[#e5e5e5]" />
+                <div className="h-px flex-1 bg-[#e7e7e7]" />
+
               </div>
 
               {/* GOOGLE */}
+
               <button
                 type="button"
-                className="flex h-[51px] w-full items-center justify-center gap-3 rounded-lg border border-[#ddd] bg-white text-[14px] font-semibold text-[#333] hover:bg-[#fafafa]"
+                onClick={() => {
+                  setError(
+                    "Google sign-up is not configured yet."
+                  );
+                }}
+                className="flex h-[52px] w-full items-center justify-center gap-3 rounded-xl border border-[#dedede] bg-white text-[14px] font-semibold text-[#333] transition hover:bg-[#fafafa]"
               >
-                <span className="text-[18px] font-bold text-[#4285F4]">
+                <span className="text-[18px] font-bold text-[#4285f4]">
                   G
                 </span>
+
                 Sign up with Google
               </button>
 
+              {/* LOGIN */}
+
               <p className="mt-7 text-center text-[13px] text-[#777]">
+
                 Already have an account?{" "}
+
                 <Link
                   href="/login"
                   className="font-bold text-[#c28b12] hover:underline"
                 >
                   Login
                 </Link>
+
               </p>
+
             </div>
-          </section>
+
+          </div>
+
         </div>
 
-        {/* FEATURES */}
-        <div className="border-t border-[#eee] bg-white px-6 py-7">
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+        {/* ================= FEATURES ================= */}
+
+        <div className="border-t border-[#eeeeee] bg-white px-5 py-7 sm:px-10">
+
+          <div className="grid grid-cols-2 gap-y-7 md:grid-cols-4 md:gap-5">
+
             <Feature
-              icon={<Truck size={23} />}
+              icon={<Truck size={22} />}
               title="Free Delivery"
               text="On orders above ₹499"
             />
 
             <Feature
-              icon={<RotateCcw size={23} />}
+              icon={<RotateCcw size={22} />}
               title="7-Day Returns"
               text="Easy return & refund"
             />
 
             <Feature
-              icon={<ShieldCheck size={23} />}
+              icon={<ShieldCheck size={22} />}
               title="Secure Payment"
               text="100% secure payment"
             />
 
             <Feature
-              icon={<Headphones size={23} />}
+              icon={<Headphones size={22} />}
               title="24/7 Support"
               text="Always here to help"
             />
+
           </div>
 
-          <p className="mt-7 text-center text-[12px] text-[#777]">
+          <p className="mt-7 text-center text-[11px] text-[#888]">
             © {new Date().getFullYear()} PrimeCart. All rights reserved.
           </p>
+
         </div>
+
       </div>
 
       <style jsx global>{`
+
         .auth-input {
           height: 50px;
           width: 100%;
-          border-radius: 8px;
-          border: 1px solid #d9d9d9;
-          background: white;
+          border-radius: 10px;
+          border: 1px solid #dedede;
+          background: #ffffff;
           padding-right: 16px;
           font-size: 13px;
-          color: #222;
+          color: #222222;
           outline: none;
           transition: all 0.2s ease;
         }
 
-        .auth-input:focus {
-          border-color: #d19b1d;
-          box-shadow: 0 0 0 3px rgba(209, 155, 29, 0.08);
+        .auth-input::placeholder {
+          color: #999999;
         }
 
-        .auth-input::placeholder {
-          color: #999;
+        .auth-input:focus {
+          border-color: #c99516;
+          box-shadow: 0 0 0 4px rgba(201, 149, 22, 0.09);
         }
+
+        .auth-input:disabled {
+          background: #fafafa;
+          cursor: not-allowed;
+        }
+
       `}</style>
+
     </main>
   );
 }
 
-function FieldLabel({
+function Field({
   label,
   children,
 }: {
@@ -527,11 +614,13 @@ function FieldLabel({
 }) {
   return (
     <div>
+
       <label className="mb-2 block text-[12px] font-bold text-[#222]">
         {label}
       </label>
 
       {children}
+
     </div>
   );
 }
@@ -547,7 +636,10 @@ function Feature({
 }) {
   return (
     <div className="flex items-center justify-center gap-3">
-      <div className="text-[#c99516]">{icon}</div>
+
+      <div className="shrink-0 text-[#c99516]">
+        {icon}
+      </div>
 
       <div>
         <p className="text-[12px] font-bold text-[#222]">
@@ -558,6 +650,7 @@ function Feature({
           {text}
         </p>
       </div>
+
     </div>
   );
 }
