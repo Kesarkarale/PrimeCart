@@ -3,14 +3,17 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import {
-  ArrowRight,
-  Check,
   Eye,
   EyeOff,
   LockKeyhole,
   Mail,
-  ShoppingBag,
   User,
+  Phone,
+  UserPlus,
+  Truck,
+  RotateCcw,
+  ShieldCheck,
+  Headphones,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -19,364 +22,542 @@ export default function RegisterPage() {
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [agree, setAgree] = useState(true);
 
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
+  const handleRegister = async (
+    e: FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
 
-    setErrorMessage("");
-    setSuccessMessage("");
+    setError("");
+    setSuccess("");
 
     const name = fullName.trim();
     const cleanEmail = email.trim().toLowerCase();
+    const cleanMobile = mobile.trim();
 
     if (!name) {
-      setErrorMessage("Please enter your full name.");
+      setError("Please enter your full name.");
       return;
     }
 
     if (!cleanEmail) {
-      setErrorMessage("Please enter your email address.");
+      setError("Please enter your email address.");
+      return;
+    }
+
+    if (cleanMobile && !/^[0-9]{10}$/.test(cleanMobile)) {
+      setError("Please enter a valid 10-digit mobile number.");
       return;
     }
 
     if (password.length < 6) {
-      setErrorMessage("Password must contain at least 6 characters.");
+      setError("Password must contain at least 6 characters.");
       return;
     }
 
     if (password !== confirmPassword) {
-      setErrorMessage("Passwords do not match.");
+      setError("Passwords do not match.");
+      return;
+    }
+
+    if (!agree) {
+      setError(
+        "Please agree to the Terms & Conditions and Privacy Policy."
+      );
       return;
     }
 
     try {
       setLoading(true);
 
-      const { data, error } = await supabase.auth.signUp({
-        email: cleanEmail,
-        password,
-        options: {
-          data: {
-            full_name: name,
+      const { data, error: signUpError } =
+        await supabase.auth.signUp({
+          email: cleanEmail,
+          password,
+          options: {
+            data: {
+              full_name: name,
+              mobile: cleanMobile,
+            },
+            emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/`,
-        },
-      });
+        });
 
-      if (error) {
-        throw error;
+      if (signUpError) {
+        throw signUpError;
       }
 
+      // If email confirmation is OFF
       if (data.session) {
-        window.location.href = "/";
+        window.location.href = "/dashboard";
         return;
       }
 
-      setSuccessMessage(
-        "Account created successfully! Please check your email to verify your account."
+      // If email confirmation is ON
+      setSuccess(
+        "Account created successfully! Please check your email and verify your account."
       );
 
       setPassword("");
       setConfirmPassword("");
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Something went wrong. Please try again.";
-
-      setErrorMessage(message);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to create your account."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen bg-[#faf9f7] text-zinc-900">
-      <div className="grid min-h-screen lg:grid-cols-2">
+    <main className="min-h-screen bg-[#faf8f4] px-3 py-4 sm:px-5 sm:py-6">
+      <div className="mx-auto max-w-[1400px] overflow-hidden rounded-[24px] bg-white shadow-[0_8px_40px_rgba(0,0,0,0.08)]">
 
-        {/* LEFT BRAND SECTION */}
-        <section className="relative hidden overflow-hidden bg-zinc-950 lg:flex">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(212,175,55,0.18),transparent_32%),radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.06),transparent_30%)]" />
+        <div className="grid min-h-[760px] lg:grid-cols-[48%_52%]">
 
-          <div className="relative z-10 flex w-full flex-col justify-between p-12 xl:p-16">
+          {/* LEFT BANNER */}
+          <section className="relative hidden overflow-hidden lg:block">
+            <img
+              src="/login-banner.png"
+              alt="PrimeCart shopping"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+
             <Link
               href="/"
-              className="flex w-fit items-center gap-3 text-white"
+              className="absolute left-9 top-9 z-10"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#d4af37] text-black">
-                <ShoppingBag size={22} strokeWidth={2.2} />
-              </div>
+              <div className="flex items-center gap-2">
+                <div className="text-[30px] text-[#c99516]">
+                  🛒
+                </div>
 
-              <span className="text-2xl font-bold tracking-tight">
-                Prime<span className="text-[#d4af37]">Cart</span>
-              </span>
+                <div>
+                  <div className="text-[27px] font-extrabold tracking-tight">
+                    Prime<span className="text-[#c99516]">
+                      Cart
+                    </span>
+                  </div>
+
+                  <p className="-mt-1 text-[9px] text-[#444]">
+                    Shop More. Pay Less.
+                  </p>
+                </div>
+              </div>
             </Link>
 
-            <div className="max-w-xl">
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-[#d4af37]">
-                Welcome to PrimeCart
-              </p>
+            <div className="absolute left-9 top-[190px] z-10 max-w-[310px]">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-lg bg-[#fff1d4] px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#b27b05]">
+                <span>♛</span>
+                Join PrimeCart
+              </div>
 
-              <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight text-white xl:text-6xl">
-                Everything you love,
+              <h1 className="text-[47px] font-extrabold leading-[1.04] tracking-tight">
+                Create Your
                 <br />
-                <span className="text-[#d4af37]">
-                  all in one place.
+                <span className="text-[#c99516]">
+                  Account
                 </span>
               </h1>
 
-              <p className="mt-7 max-w-lg text-lg leading-8 text-zinc-400">
-                Create your PrimeCart account and enjoy a simple,
-                secure and premium shopping experience.
+              <p className="mt-5 max-w-[280px] text-[15px] leading-6 text-[#555]">
+                Join PrimeCart and start shopping
+                <br />
+                the best products online
               </p>
+            </div>
+          </section>
 
-              <div className="mt-10 space-y-4">
-                {[
-                  "Discover products you'll love",
-                  "Save your favourite products",
-                  "Track your orders easily",
-                ].map((item) => (
-                  <div
-                    key={item}
-                    className="flex items-center gap-3 text-sm text-zinc-300"
-                  >
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#d4af37]/15 text-[#d4af37]">
-                      <Check size={14} />
+          {/* REGISTER */}
+          <section className="flex items-center justify-center bg-white px-6 py-10 sm:px-12 lg:px-16 xl:px-20">
+            <div className="w-full max-w-[500px]">
+
+              {/* MOBILE LOGO */}
+              <Link
+                href="/"
+                className="mb-9 flex items-center justify-center lg:hidden"
+              >
+                <div className="text-[28px] text-[#c99516]">
+                  🛒
+                </div>
+
+                <div className="ml-2">
+                  <div className="text-[25px] font-extrabold">
+                    Prime<span className="text-[#c99516]">
+                      Cart
                     </span>
-
-                    {item}
                   </div>
-                ))}
-              </div>
-            </div>
 
-            <p className="text-xs text-zinc-600">
-              © {new Date().getFullYear()} PrimeCart. All rights reserved.
-            </p>
-          </div>
-        </section>
-
-        {/* REGISTER FORM */}
-        <section className="flex items-center justify-center px-5 py-10 sm:px-8">
-          <div className="w-full max-w-md">
-
-            {/* Mobile Logo */}
-            <Link
-              href="/"
-              className="mb-10 flex items-center justify-center gap-3 lg:hidden"
-            >
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-950 text-[#d4af37]">
-                <ShoppingBag size={22} />
-              </div>
-
-              <span className="text-2xl font-bold">
-                Prime<span className="text-[#b89124]">Cart</span>
-              </span>
-            </Link>
-
-            <div className="mb-8">
-              <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-[#b89124]">
-                Create account
-              </p>
-
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Join PrimeCart
-              </h2>
-
-              <p className="mt-3 text-sm leading-6 text-zinc-500">
-                Create your account and start shopping with PrimeCart.
-              </p>
-            </div>
-
-            {errorMessage && (
-              <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                {errorMessage}
-              </div>
-            )}
-
-            {successMessage && (
-              <div className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-700">
-                {successMessage}
-              </div>
-            )}
-
-            <form onSubmit={handleRegister} className="space-y-5">
-
-              {/* NAME */}
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Full name
-                </label>
-
-                <div className="relative">
-                  <User
-                    size={18}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
-                  />
-
-                  <input
-                    type="text"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Enter your full name"
-                    autoComplete="name"
-                    className="h-12 w-full rounded-xl border border-zinc-200 bg-white pl-11 pr-4 text-sm outline-none transition focus:border-[#c6a227] focus:ring-4 focus:ring-[#d4af37]/10"
-                    required
-                  />
+                  <p className="-mt-1 text-[8px] text-gray-500">
+                    Shop More. Pay Less.
+                  </p>
                 </div>
-              </div>
+              </Link>
 
-              {/* EMAIL */}
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Email address
-                </label>
+              <div className="mb-7">
+                <h2 className="text-[31px] font-extrabold tracking-tight text-[#111]">
+                  Create your account
+                </h2>
 
-                <div className="relative">
-                  <Mail
-                    size={18}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
-                  />
-
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    autoComplete="email"
-                    className="h-12 w-full rounded-xl border border-zinc-200 bg-white pl-11 pr-4 text-sm outline-none transition focus:border-[#c6a227] focus:ring-4 focus:ring-[#d4af37]/10"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* PASSWORD */}
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Password
-                </label>
-
-                <div className="relative">
-                  <LockKeyhole
-                    size={18}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
-                  />
-
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Create a password"
-                    autoComplete="new-password"
-                    className="h-12 w-full rounded-xl border border-zinc-200 bg-white pl-11 pr-12 text-sm outline-none transition focus:border-[#c6a227] focus:ring-4 focus:ring-[#d4af37]/10"
-                    required
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700"
-                    aria-label="Toggle password visibility"
-                  >
-                    {showPassword ? (
-                      <EyeOff size={18} />
-                    ) : (
-                      <Eye size={18} />
-                    )}
-                  </button>
-                </div>
-
-                <p className="mt-2 text-xs text-zinc-400">
-                  Minimum 6 characters
+                <p className="mt-2 text-[14px] text-[#777]">
+                  Fill in the details below to get started
                 </p>
               </div>
 
-              {/* CONFIRM PASSWORD */}
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Confirm password
+              {error && (
+                <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {error}
+                </div>
+              )}
+
+              {success && (
+                <div className="mb-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm leading-6 text-green-700">
+                  {success}
+                </div>
+              )}
+
+              <form
+                onSubmit={handleRegister}
+                className="space-y-4"
+              >
+
+                {/* NAME */}
+                <FieldLabel label="Full Name">
+                  <div className="relative">
+                    <User
+                      size={17}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
+                    />
+
+                    <input
+                      type="text"
+                      value={fullName}
+                      onChange={(e) =>
+                        setFullName(e.target.value)
+                      }
+                      placeholder="Enter your full name"
+                      autoComplete="name"
+                      className="auth-input pl-11"
+                      required
+                    />
+                  </div>
+                </FieldLabel>
+
+                {/* EMAIL */}
+                <FieldLabel label="Email Address">
+                  <div className="relative">
+                    <Mail
+                      size={17}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
+                    />
+
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) =>
+                        setEmail(e.target.value)
+                      }
+                      placeholder="Enter your email"
+                      autoComplete="email"
+                      className="auth-input pl-11"
+                      required
+                    />
+                  </div>
+                </FieldLabel>
+
+                {/* MOBILE */}
+                <FieldLabel label="Mobile Number">
+                  <div className="relative">
+                    <Phone
+                      size={17}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
+                    />
+
+                    <input
+                      type="tel"
+                      value={mobile}
+                      onChange={(e) =>
+                        setMobile(
+                          e.target.value.replace(/\D/g, "").slice(0, 10)
+                        )
+                      }
+                      placeholder="Enter your mobile number"
+                      autoComplete="tel"
+                      className="auth-input pl-11"
+                    />
+                  </div>
+                </FieldLabel>
+
+                {/* PASSWORD */}
+                <FieldLabel label="Password">
+                  <div className="relative">
+                    <LockKeyhole
+                      size={17}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
+                    />
+
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) =>
+                        setPassword(e.target.value)
+                      }
+                      placeholder="Create a password"
+                      autoComplete="new-password"
+                      className="auth-input pl-11 pr-11"
+                      required
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowPassword(!showPassword)
+                      }
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#777]"
+                    >
+                      {showPassword ? (
+                        <EyeOff size={17} />
+                      ) : (
+                        <Eye size={17} />
+                      )}
+                    </button>
+                  </div>
+                </FieldLabel>
+
+                {/* CONFIRM */}
+                <FieldLabel label="Confirm Password">
+                  <div className="relative">
+                    <LockKeyhole
+                      size={17}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
+                    />
+
+                    <input
+                      type={showConfirm ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) =>
+                        setConfirmPassword(e.target.value)
+                      }
+                      placeholder="Confirm your password"
+                      autoComplete="new-password"
+                      className="auth-input pl-11 pr-11"
+                      required
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowConfirm(!showConfirm)
+                      }
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#777]"
+                    >
+                      {showConfirm ? (
+                        <EyeOff size={17} />
+                      ) : (
+                        <Eye size={17} />
+                      )}
+                    </button>
+                  </div>
+                </FieldLabel>
+
+                {/* TERMS */}
+                <label className="flex cursor-pointer items-start gap-2 pt-1 text-[11px] leading-5 text-[#666]">
+                  <input
+                    type="checkbox"
+                    checked={agree}
+                    onChange={(e) =>
+                      setAgree(e.target.checked)
+                    }
+                    className="mt-1 h-4 w-4 accent-[#c99516]"
+                  />
+
+                  <span>
+                    I agree to the{" "}
+                    <Link
+                      href="/terms"
+                      className="font-semibold text-[#c28b12]"
+                    >
+                      Terms & Conditions
+                    </Link>{" "}
+                    and{" "}
+                    <Link
+                      href="/privacy"
+                      className="font-semibold text-[#c28b12]"
+                    >
+                      Privacy Policy
+                    </Link>
+                  </span>
                 </label>
 
-                <div className="relative">
-                  <LockKeyhole
-                    size={18}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
-                  />
+                {/* CREATE */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="mt-2 flex h-[52px] w-full items-center justify-center gap-2 rounded-lg bg-[#d99e08] text-[14px] font-bold text-white shadow-[0_5px_15px_rgba(217,158,8,0.18)] transition hover:bg-[#c58e05] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {loading ? (
+                    <>
+                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus size={18} />
+                      Create Account
+                    </>
+                  )}
+                </button>
+              </form>
 
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) =>
-                      setConfirmPassword(e.target.value)
-                    }
-                    placeholder="Confirm your password"
-                    autoComplete="new-password"
-                    className="h-12 w-full rounded-xl border border-zinc-200 bg-white pl-11 pr-12 text-sm outline-none transition focus:border-[#c6a227] focus:ring-4 focus:ring-[#d4af37]/10"
-                    required
-                  />
+              {/* OR */}
+              <div className="my-6 flex items-center gap-4">
+                <div className="h-px flex-1 bg-[#e5e5e5]" />
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setShowConfirmPassword(!showConfirmPassword)
-                    }
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700"
-                    aria-label="Toggle confirm password visibility"
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff size={18} />
-                    ) : (
-                      <Eye size={18} />
-                    )}
-                  </button>
-                </div>
+                <span className="text-[12px] text-[#777]">
+                  OR
+                </span>
+
+                <div className="h-px flex-1 bg-[#e5e5e5]" />
               </div>
 
-              {/* SUBMIT */}
+              {/* GOOGLE */}
               <button
-                type="submit"
-                disabled={loading}
-                className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
+                type="button"
+                className="flex h-[51px] w-full items-center justify-center gap-3 rounded-lg border border-[#ddd] bg-white text-[14px] font-semibold text-[#333] hover:bg-[#fafafa]"
               >
-                {loading ? (
-                  <>
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                    Creating account...
-                  </>
-                ) : (
-                  <>
-                    Create account
-                    <ArrowRight
-                      size={17}
-                      className="transition-transform group-hover:translate-x-1"
-                    />
-                  </>
-                )}
+                <span className="text-[18px] font-bold text-[#4285F4]">
+                  G
+                </span>
+                Sign up with Google
               </button>
-            </form>
 
-            <p className="mt-8 text-center text-sm text-zinc-500">
-              Already have an account?{" "}
-              <Link
-                href="/login"
-                className="font-semibold text-zinc-900 hover:text-[#b89124]"
-              >
-                Sign in
-              </Link>
-            </p>
+              <p className="mt-7 text-center text-[13px] text-[#777]">
+                Already have an account?{" "}
+                <Link
+                  href="/login"
+                  className="font-bold text-[#c28b12] hover:underline"
+                >
+                  Login
+                </Link>
+              </p>
+            </div>
+          </section>
+        </div>
 
+        {/* FEATURES */}
+        <div className="border-t border-[#eee] bg-white px-6 py-7">
+          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+            <Feature
+              icon={<Truck size={23} />}
+              title="Free Delivery"
+              text="On orders above ₹499"
+            />
+
+            <Feature
+              icon={<RotateCcw size={23} />}
+              title="7-Day Returns"
+              text="Easy return & refund"
+            />
+
+            <Feature
+              icon={<ShieldCheck size={23} />}
+              title="Secure Payment"
+              text="100% secure payment"
+            />
+
+            <Feature
+              icon={<Headphones size={23} />}
+              title="24/7 Support"
+              text="Always here to help"
+            />
           </div>
-        </section>
+
+          <p className="mt-7 text-center text-[12px] text-[#777]">
+            © {new Date().getFullYear()} PrimeCart. All rights reserved.
+          </p>
+        </div>
       </div>
+
+      <style jsx global>{`
+        .auth-input {
+          height: 50px;
+          width: 100%;
+          border-radius: 8px;
+          border: 1px solid #d9d9d9;
+          background: white;
+          padding-right: 16px;
+          font-size: 13px;
+          color: #222;
+          outline: none;
+          transition: all 0.2s ease;
+        }
+
+        .auth-input:focus {
+          border-color: #d19b1d;
+          box-shadow: 0 0 0 3px rgba(209, 155, 29, 0.08);
+        }
+
+        .auth-input::placeholder {
+          color: #999;
+        }
+      `}</style>
     </main>
+  );
+}
+
+function FieldLabel({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-[12px] font-bold text-[#222]">
+        {label}
+      </label>
+
+      {children}
+    </div>
+  );
+}
+
+function Feature({
+  icon,
+  title,
+  text,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="flex items-center justify-center gap-3">
+      <div className="text-[#c99516]">{icon}</div>
+
+      <div>
+        <p className="text-[12px] font-bold text-[#222]">
+          {title}
+        </p>
+
+        <p className="mt-1 text-[10px] text-[#777]">
+          {text}
+        </p>
+      </div>
+    </div>
   );
 }
