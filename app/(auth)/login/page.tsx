@@ -60,7 +60,7 @@ export default function LoginPage() {
        * Full page navigation ensures the new auth cookies/session
        * are picked up by the next request.
        */
-      window.location.replace("/");
+      window.location.replace("/dashboard");
     } catch (error: unknown) {
       const message =
         error instanceof Error
