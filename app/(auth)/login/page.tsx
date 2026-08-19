@@ -122,28 +122,8 @@ export default function LoginPage() {
                 </div>
               </div>
             </Link>
-
-            {/* Welcome text */}
-            <div className="absolute left-9 top-[190px] z-10 max-w-[300px]">
-              <div className="mb-5 inline-flex items-center gap-2 rounded-lg bg-[#fff1d4] px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#b27b05]">
-                <span>♛</span>
-                Premium Experience
-              </div>
-
-              <h1 className="text-[48px] font-extrabold leading-[1.03] tracking-tight text-[#111]">
-                Welcome
-                <br />
-                <span className="text-[#c99516]">Back!</span>
-              </h1>
-
-              <p className="mt-5 max-w-[260px] text-[15px] leading-6 text-[#555]">
-                Sign in to continue shopping
-                <br />
-                your favorite products
-              </p>
-            </div>
-          </section>
-
+ 
+        
           {/* LOGIN FORM */}
           <section className="flex items-center justify-center bg-white px-6 py-10 sm:px-12 lg:px-16 xl:px-20">
             <div className="w-full max-w-[500px]">
