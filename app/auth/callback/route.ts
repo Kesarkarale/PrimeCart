@@ -3,16 +3,19 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 export async function GET(request: Request) {
-  const url = new URL(request.url);
+  const requestUrl = new URL(request.url);
 
-  const code = url.searchParams.get("code");
+  const code = requestUrl.searchParams.get("code");
 
   const next =
-    url.searchParams.get("next") || "/dashboard";
+    requestUrl.searchParams.get("next") || "/dashboard";
 
   if (!code) {
     return NextResponse.redirect(
-      new URL("/login?error=google_auth_failed", url.origin)
+      new URL(
+        "/login?error=google_auth_failed",
+        requestUrl.origin
+      )
     );
   }
 
@@ -28,19 +31,15 @@ export async function GET(request: Request) {
         },
 
         setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(
-              ({ name, value, options }) => {
-                cookieStore.set(
-                  name,
-                  value,
-                  options
-                );
-              }
-            );
-          } catch {
-            // Middleware/server component may handle cookies.
-          }
+          cookiesToSet.forEach(
+            ({ name, value, options }) => {
+              cookieStore.set(
+                name,
+                value,
+                options
+              );
+            }
+          );
         },
       },
     }
@@ -51,19 +50,19 @@ export async function GET(request: Request) {
 
   if (error) {
     console.error(
-      "Google auth callback error:",
+      "Auth callback error:",
       error
     );
 
     return NextResponse.redirect(
       new URL(
         "/login?error=google_auth_failed",
-        url.origin
+        requestUrl.origin
       )
     );
   }
 
   return NextResponse.redirect(
-    new URL(next, url.origin)
+    new URL(next, requestUrl.origin)
   );
 }
