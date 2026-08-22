@@ -106,39 +106,65 @@ export default function LoginPage() {
   // =========================================================
 
   const handleGoogleLogin = async () => {
-  setError("");
-  setSuccess("");
+    setError("");
+    setSuccess("");
 
-  try {
-    setGoogleLoading(true);
+    try {
+      setGoogleLoading(true);
 
-    const redirectTo =
-      `${window.location.origin}/auth/callback?next=/dashboard`;
+      const redirectTo =
+        `${window.location.origin}/auth/callback?next=/dashboard`;
 
-    const { error: googleError } =
-      await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo,
-          queryParams: {
-            prompt: "select_account",
+      const { error: googleError } =
+        await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo,
+            queryParams: {
+              prompt: "select_account",
+            },
           },
-        },
-      });
+        });
 
-    if (googleError) {
-      console.error("Google login error:", googleError);
+      if (googleError) {
+        console.error(
+          "Google login error:",
+          googleError
+        );
 
-      setError(googleError.message);
+        setError(googleError.message);
+        setGoogleLoading(false);
+      }
+    } catch (err) {
+      console.error(
+        "Google authentication error:",
+        err
+      );
+
+      setError(
+        "Unable to continue with Google."
+      );
+
       setGoogleLoading(false);
     }
-  } catch (err) {
-    console.error("Google authentication error:", err);
+  };
 
-    setError("Unable to continue with Google.");
-    setGoogleLoading(false);
-  }
-};
+  // =========================================================
+  // PAGE UI
+  // =========================================================
+
+  return (
+    <main
+      className="
+        min-h-screen
+        bg-[#f8f6f1]
+        px-3
+        py-3
+        sm:px-5
+        sm:py-5
+        lg:p-6
+      "
+    >
       {/* =====================================================
           MAIN CONTAINER
       ====================================================== */}
@@ -156,13 +182,10 @@ export default function LoginPage() {
 
           lg:min-h-[720px]
           lg:grid-cols-[1fr_1fr]
-          lg:rounded-[22px]
         "
       >
-
         {/* =====================================================
             DESKTOP BANNER
-            Hidden only below lg
         ====================================================== */}
 
         <div
@@ -171,7 +194,6 @@ export default function LoginPage() {
             hidden
             overflow-hidden
             bg-[#f4efe7]
-
             lg:block
           "
         >
@@ -219,7 +241,6 @@ export default function LoginPage() {
               max-w-[430px]
             "
           >
-
             {/* =================================================
                 LOGO + PRIME CART
             ================================================= */}
@@ -238,7 +259,6 @@ export default function LoginPage() {
                 hover:opacity-85
 
                 sm:mb-9
-
                 lg:mb-10
               "
             >
@@ -279,7 +299,6 @@ export default function LoginPage() {
             <div
               className="
                 mb-7
-
                 sm:mb-8
               "
             >
@@ -293,7 +312,6 @@ export default function LoginPage() {
                   text-[#111111]
 
                   sm:text-[31px]
-
                   lg:text-[30px]
                 "
               >
@@ -373,10 +391,7 @@ export default function LoginPage() {
               onSubmit={handleLogin}
               className="space-y-5"
             >
-
-              {/* =================================================
-                  EMAIL
-              ================================================= */}
+              {/* EMAIL */}
 
               <div>
                 <label
@@ -453,9 +468,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* =================================================
-                  PASSWORD
-              ================================================= */}
+              {/* PASSWORD */}
 
               <div>
                 <div
@@ -592,9 +605,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* =================================================
-                  REMEMBER ME
-              ================================================= */}
+              {/* REMEMBER ME */}
 
               <label
                 className="
@@ -631,9 +642,7 @@ export default function LoginPage() {
                 <span>Remember Me</span>
               </label>
 
-              {/* =================================================
-                  LOGIN BUTTON
-              ================================================= */}
+              {/* LOGIN BUTTON */}
 
               <button
                 type="submit"
@@ -792,7 +801,6 @@ export default function LoginPage() {
                 Register
               </Link>
             </p>
-
           </div>
         </div>
       </div>
@@ -824,7 +832,7 @@ function GoogleIcon() {
 
       <path
         fill="#FBBC05"
-        d="M6.51 13.63A5.85 5.85 0 0 1 6.2 12c0-.57.11-1.12.31-1.63V7.86H3.27A9.75 9.75 0 0 0 2.25 12c0 1.57.38 3.05 1.02 4.14l3.24-2.51 3.24 2.51C7.29 8.06 9.45 6.34 12 6.34Z"
+        d="M6.51 13.63A5.85 5.85 0 0 1 6.2 12c0-.57.11-1.12.31-1.63V7.86H3.27A9.75 9.75 0 0 0 2.25 12c0 1.57.38 3.05 1.02 4.14l3.24-2.51Z"
       />
 
       <path
