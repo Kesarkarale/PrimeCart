@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
@@ -19,7 +19,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -61,7 +61,8 @@ export default function LoginPage() {
         });
 
       if (loginError) {
-        const message = loginError.message.toLowerCase();
+        const message =
+          loginError.message.toLowerCase();
 
         if (
           message.includes("invalid login credentials")
@@ -153,612 +154,542 @@ export default function LoginPage() {
     <main
       className="
         min-h-screen
-        bg-[#f8f6f1]
-        px-3
-        py-3
-        sm:px-5
-        sm:py-5
-        lg:p-6
+        bg-[#f7f6f1]
+        px-[22px]
+        py-[20px]
+        sm:px-6
+        sm:py-6
       "
     >
       {/* =====================================================
-          MAIN CONTAINER
+          MAIN WHITE CONTAINER
       ====================================================== */}
 
       <div
         className="
           mx-auto
-          grid
-          min-h-[calc(100vh-24px)]
           w-full
-          max-w-[1370px]
+          max-w-[620px]
           overflow-hidden
-          rounded-[20px]
+          rounded-[30px]
           bg-white
-          shadow-[0_8px_40px_rgba(0,0,0,0.08)]
-
-          sm:rounded-[22px]
-
-          lg:min-h-[720px]
-          lg:grid-cols-[1fr_1fr]
+          shadow-[0_5px_25px_rgba(0,0,0,0.05)]
         "
       >
-        {/* =====================================================
-            LEFT BANNER
-        ====================================================== */}
-
         <div
           className="
-            relative
-            hidden
-            overflow-hidden
-            bg-[#f4efe7]
-            lg:block
+            px-[38px]
+            pb-[40px]
+            pt-[54px]
+
+            sm:px-12
+            sm:pb-12
+            sm:pt-14
           "
         >
-          <img
-            src="/login-banner.png"
-            alt="PrimeCart"
+
+          {/* =================================================
+              LOGO + NAME
+          ================================================= */}
+
+          <Link
+            href="/"
+            aria-label="PrimeCart Home"
             className="
-              absolute
-              inset-0
-              h-full
-              w-full
-              object-cover
-            "
-          />
-        </div>
-
-        {/* =====================================================
-            RIGHT LOGIN SECTION
-        ====================================================== */}
-
-        <div
-          className="
-            flex
-            min-h-full
-            items-center
-            justify-center
-            bg-white
-            px-5
-            py-9
-
-            sm:px-8
-            sm:py-10
-
-            md:px-12
-
-            lg:px-12
-            xl:px-16
-          "
-        >
-          <div
-            className="
-              w-full
-              max-w-[430px]
+              mb-[60px]
+              flex
+              w-fit
+              items-center
+              gap-[16px]
+              transition-opacity
+              hover:opacity-85
             "
           >
-
-            {/* =================================================
-                LOGO + PRIME CART NAME
-            ================================================= */}
-
-            <Link
-              href="/"
-              aria-label="PrimeCart Home"
+            <img
+              src="/logo.png"
+              alt="PrimeCart Logo"
               className="
-                mb-8
-                flex
-                w-fit
-                items-center
-                gap-3
-                transition-all
-                duration-200
-                hover:opacity-85
+                h-[58px]
+                w-[58px]
+                object-contain
+              "
+            />
+
+            <span
+              className="
+                font-serif
+                text-[30px]
+                font-bold
+                tracking-[-1px]
+                text-[#111111]
+
+                sm:text-[34px]
               "
             >
-              {/* LOGO */}
+              PrimeCart
+            </span>
+          </Link>
 
-              <img
-                src="/logo.png"
-                alt="PrimeCart Logo"
-                width={58}
-                height={58}
+          {/* =================================================
+              HEADING
+          ================================================= */}
+
+          <div className="mb-[58px]">
+            <h1
+              className="
+                font-serif
+                text-[38px]
+                font-bold
+                leading-[1.12]
+                tracking-[-1px]
+                text-[#111111]
+
+                sm:text-[42px]
+              "
+            >
+              Login to your account
+            </h1>
+
+            <p
+              className="
+                mt-[22px]
+                max-w-[550px]
+                font-serif
+                text-[19px]
+                leading-[1.55]
+                text-[#858585]
+
+                sm:text-[21px]
+              "
+            >
+              Enter your email and password to access
+              your account
+            </p>
+          </div>
+
+          {/* =================================================
+              ERROR
+          ================================================= */}
+
+          {error && (
+            <div
+              role="alert"
+              className="
+                mb-6
+                rounded-[10px]
+                border
+                border-red-200
+                bg-red-50
+                px-4
+                py-3
+                text-[13px]
+                text-red-700
+              "
+            >
+              {error}
+            </div>
+          )}
+
+          {/* =================================================
+              SUCCESS
+          ================================================= */}
+
+          {success && (
+            <div
+              role="status"
+              className="
+                mb-6
+                rounded-[10px]
+                border
+                border-green-200
+                bg-green-50
+                px-4
+                py-3
+                text-[13px]
+                text-green-700
+              "
+            >
+              {success}
+            </div>
+          )}
+
+          {/* =================================================
+              FORM
+          ================================================= */}
+
+          <form
+            onSubmit={handleLogin}
+            className="space-y-[39px]"
+          >
+
+            {/* EMAIL */}
+
+            <div>
+              <label
+                htmlFor="email"
                 className="
-                  h-[48px]
-                  w-[48px]
-                  object-contain
-
-                  sm:h-[52px]
-                  sm:w-[52px]
-                "
-              />
-
-              {/* PRIME CART NAME */}
-
-              <span
-                className="
-                  text-[25px]
+                  mb-[16px]
+                  block
+                  font-serif
+                  text-[20px]
                   font-bold
-                  tracking-[-0.7px]
-                  text-[#111111]
-
-                  sm:text-[27px]
+                  text-[#222222]
                 "
               >
-                PrimeCart
-              </span>
-            </Link>
+                Email Address
+              </label>
 
-            {/* =================================================
-                HEADING
-            ================================================= */}
+              <div className="relative">
+                <Mail
+                  size={29}
+                  strokeWidth={1.6}
+                  className="
+                    pointer-events-none
+                    absolute
+                    left-[30px]
+                    top-1/2
+                    -translate-y-1/2
+                    text-[#777777]
+                  "
+                />
 
-            <div className="mb-7">
-              <h1
-                className="
-                  text-[27px]
-                  font-bold
-                  leading-[1.2]
-                  tracking-[-0.5px]
-                  text-[#111111]
-
-                  sm:text-[30px]
-                "
-              >
-                Login to your account
-              </h1>
-
-              <p
-                className="
-                  mt-2
-                  max-w-[360px]
-                  text-[13px]
-                  leading-[1.6]
-                  text-[#777777]
-
-                  sm:text-[14px]
-                "
-              >
-                Enter your email and password to access
-                your account
-              </p>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) =>
+                    setEmail(e.target.value)
+                  }
+                  placeholder="Enter your email"
+                  autoComplete="email"
+                  disabled={
+                    loading || googleLoading
+                  }
+                  required
+                  className="
+                    h-[96px]
+                    w-full
+                    rounded-[16px]
+                    border
+                    border-[#d8d8d8]
+                    bg-white
+                    pl-[82px]
+                    pr-5
+                    font-serif
+                    text-[20px]
+                    text-[#222222]
+                    outline-none
+                    transition
+                    placeholder:text-[#a1a1a1]
+                    focus:border-[#d59b00]
+                    focus:ring-[3px]
+                    focus:ring-[#d59b00]/10
+                    disabled:bg-[#fafafa]
+                  "
+                />
+              </div>
             </div>
 
-            {/* =================================================
-                ERROR
-            ================================================= */}
+            {/* PASSWORD */}
 
-            {error && (
+            <div>
               <div
-                role="alert"
                 className="
-                  mb-5
-                  rounded-[9px]
-                  border
-                  border-red-200
-                  bg-red-50
-                  px-4
-                  py-3
-                  text-[12px]
-                  leading-5
-                  text-red-700
+                  mb-[16px]
+                  flex
+                  items-center
+                  justify-between
                 "
               >
-                {error}
-              </div>
-            )}
-
-            {/* =================================================
-                SUCCESS
-            ================================================= */}
-
-            {success && (
-              <div
-                role="status"
-                className="
-                  mb-5
-                  rounded-[9px]
-                  border
-                  border-green-200
-                  bg-green-50
-                  px-4
-                  py-3
-                  text-[12px]
-                  leading-5
-                  text-green-700
-                "
-              >
-                {success}
-              </div>
-            )}
-
-            {/* =================================================
-                FORM
-            ================================================= */}
-
-            <form
-              onSubmit={handleLogin}
-              className="space-y-5"
-            >
-              {/* EMAIL */}
-
-              <div>
                 <label
-                  htmlFor="email"
+                  htmlFor="password"
                   className="
-                    mb-2
-                    block
-                    text-[12px]
-                    font-semibold
+                    font-serif
+                    text-[20px]
+                    font-bold
                     text-[#222222]
-
-                    sm:text-[13px]
                   "
                 >
-                  Email Address
+                  Password
                 </label>
 
-                <div className="relative">
-                  <Mail
-                    size={17}
-                    strokeWidth={1.8}
-                    className="
-                      pointer-events-none
-                      absolute
-                      left-4
-                      top-1/2
-                      -translate-y-1/2
-                      text-[#777777]
-                    "
-                  />
-
-                  <input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) =>
-                      setEmail(e.target.value)
-                    }
-                    placeholder="Enter your email"
-                    autoComplete="email"
-                    disabled={
-                      loading || googleLoading
-                    }
-                    required
-                    className="
-                      h-[51px]
-                      w-full
-                      rounded-[9px]
-                      border
-                      border-[#dddddd]
-                      bg-white
-                      pl-[43px]
-                      pr-4
-                      text-[13px]
-                      text-[#222222]
-                      outline-none
-                      transition-all
-                      placeholder:text-[#999999]
-                      focus:border-[#d19a18]
-                      focus:ring-[3px]
-                      focus:ring-[#d19a18]/10
-                      disabled:cursor-not-allowed
-                      disabled:bg-[#fafafa]
-
-                      sm:h-[52px]
-                    "
-                  />
-                </div>
-              </div>
-
-              {/* PASSWORD */}
-
-              <div>
-                <div
+                <Link
+                  href="/forgot-password"
                   className="
-                    mb-2
-                    flex
-                    items-center
-                    justify-between
+                    font-serif
+                    text-[18px]
+                    font-bold
+                    text-[#b4881d]
+                    transition
+                    hover:text-[#8f6a10]
+                    hover:underline
                   "
                 >
-                  <label
-                    htmlFor="password"
-                    className="
-                      text-[12px]
-                      font-semibold
-                      text-[#222222]
-
-                      sm:text-[13px]
-                    "
-                  >
-                    Password
-                  </label>
-
-                  <Link
-                    href="/forgot-password"
-                    className="
-                      text-[11px]
-                      font-semibold
-                      text-[#c18b13]
-                      transition
-                      hover:text-[#a8750b]
-                      hover:underline
-
-                      sm:text-[12px]
-                    "
-                  >
-                    Forgot Password?
-                  </Link>
-                </div>
-
-                <div className="relative">
-                  <LockKeyhole
-                    size={17}
-                    strokeWidth={1.8}
-                    className="
-                      pointer-events-none
-                      absolute
-                      left-4
-                      top-1/2
-                      -translate-y-1/2
-                      text-[#777777]
-                    "
-                  />
-
-                  <input
-                    id="password"
-                    type={
-                      showPassword
-                        ? "text"
-                        : "password"
-                    }
-                    value={password}
-                    onChange={(e) =>
-                      setPassword(e.target.value)
-                    }
-                    placeholder="Enter your password"
-                    autoComplete="current-password"
-                    disabled={
-                      loading || googleLoading
-                    }
-                    required
-                    className="
-                      h-[51px]
-                      w-full
-                      rounded-[9px]
-                      border
-                      border-[#dddddd]
-                      bg-white
-                      pl-[43px]
-                      pr-[45px]
-                      text-[13px]
-                      text-[#222222]
-                      outline-none
-                      transition-all
-                      placeholder:text-[#999999]
-                      focus:border-[#d19a18]
-                      focus:ring-[3px]
-                      focus:ring-[#d19a18]/10
-                      disabled:cursor-not-allowed
-                      disabled:bg-[#fafafa]
-
-                      sm:h-[52px]
-                    "
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setShowPassword(
-                        (value) => !value
-                      )
-                    }
-                    disabled={
-                      loading || googleLoading
-                    }
-                    aria-label={
-                      showPassword
-                        ? "Hide password"
-                        : "Show password"
-                    }
-                    className="
-                      absolute
-                      right-4
-                      top-1/2
-                      -translate-y-1/2
-                      text-[#777777]
-                      transition
-                      hover:text-[#222222]
-                    "
-                  >
-                    {showPassword ? (
-                      <EyeOff size={17} />
-                    ) : (
-                      <Eye size={17} />
-                    )}
-                  </button>
-                </div>
+                  Forgot Password?
+                </Link>
               </div>
 
-              {/* REMEMBER ME */}
+              <div className="relative">
+                <LockKeyhole
+                  size={29}
+                  strokeWidth={1.6}
+                  className="
+                    pointer-events-none
+                    absolute
+                    left-[30px]
+                    top-1/2
+                    -translate-y-1/2
+                    text-[#777777]
+                  "
+                />
 
-              <label
-                className="
-                  flex
-                  cursor-pointer
-                  items-center
-                  gap-2
-                  text-[12px]
-                  text-[#555555]
-                "
-              >
                 <input
-                  type="checkbox"
-                  checked={rememberMe}
+                  id="password"
+                  type={
+                    showPassword
+                      ? "text"
+                      : "password"
+                  }
+                  value={password}
                   onChange={(e) =>
-                    setRememberMe(
-                      e.target.checked
+                    setPassword(e.target.value)
+                  }
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                  disabled={
+                    loading || googleLoading
+                  }
+                  required
+                  className="
+                    h-[96px]
+                    w-full
+                    rounded-[16px]
+                    border
+                    border-[#d8d8d8]
+                    bg-white
+                    pl-[82px]
+                    pr-[75px]
+                    font-serif
+                    text-[20px]
+                    text-[#222222]
+                    outline-none
+                    transition
+                    placeholder:text-[#a1a1a1]
+                    focus:border-[#d59b00]
+                    focus:ring-[3px]
+                    focus:ring-[#d59b00]/10
+                    disabled:bg-[#fafafa]
+                  "
+                />
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowPassword(
+                      (value) => !value
                     )
                   }
                   disabled={
                     loading || googleLoading
                   }
+                  aria-label={
+                    showPassword
+                      ? "Hide password"
+                      : "Show password"
+                  }
                   className="
-                    h-[16px]
-                    w-[16px]
-                    cursor-pointer
-                    accent-[#c99516]
+                    absolute
+                    right-[28px]
+                    top-1/2
+                    -translate-y-1/2
+                    text-[#777777]
+                    transition
+                    hover:text-[#222222]
                   "
-                />
+                >
+                  {showPassword ? (
+                    <EyeOff size={29} />
+                  ) : (
+                    <Eye size={29} />
+                  )}
+                </button>
+              </div>
+            </div>
 
-                <span>Remember Me</span>
-              </label>
+            {/* REMEMBER ME */}
 
-              {/* LOGIN BUTTON */}
-
-              <button
-                type="submit"
+            <label
+              className="
+                flex
+                cursor-pointer
+                items-center
+                gap-[16px]
+                font-serif
+                text-[20px]
+                text-[#555555]
+              "
+            >
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) =>
+                  setRememberMe(
+                    e.target.checked
+                  )
+                }
                 disabled={
                   loading || googleLoading
                 }
                 className="
-                  flex
-                  h-[51px]
-                  w-full
-                  items-center
-                  justify-center
-                  gap-2
-                  rounded-[9px]
-                  bg-[#d99d08]
-                  text-[14px]
-                  font-semibold
-                  text-white
-                  shadow-[0_6px_16px_rgba(217,157,8,0.20)]
-                  transition-all
-                  hover:bg-[#c88f05]
-                  active:scale-[0.99]
-                  disabled:cursor-not-allowed
-                  disabled:opacity-60
-
-                  sm:h-[52px]
+                  h-[30px]
+                  w-[30px]
+                  cursor-pointer
+                  accent-[#d99d00]
                 "
-              >
-                {loading ? (
-                  <>
-                    <Loader2
-                      size={17}
-                      className="animate-spin"
-                    />
-                    Logging in...
-                  </>
-                ) : (
-                  <>
-                    <LogIn size={17} />
-                    Login
-                  </>
-                )}
-              </button>
-            </form>
+              />
 
-            {/* =================================================
-                OR
-            ================================================= */}
+              <span>Remember Me</span>
+            </label>
 
-            <div className="my-7 flex items-center gap-4">
-              <div className="h-px flex-1 bg-[#e6e6e6]" />
-
-              <span
-                className="
-                  text-[11px]
-                  font-medium
-                  text-[#888888]
-                "
-              >
-                OR
-              </span>
-
-              <div className="h-px flex-1 bg-[#e6e6e6]" />
-            </div>
-
-            {/* =================================================
-                GOOGLE
-            ================================================= */}
+            {/* LOGIN BUTTON */}
 
             <button
-              type="button"
-              onClick={handleGoogleLogin}
+              type="submit"
               disabled={
                 loading || googleLoading
               }
               className="
                 flex
-                h-[51px]
+                h-[98px]
                 w-full
                 items-center
                 justify-center
-                gap-3
-                rounded-[9px]
-                border
-                border-[#dddddd]
-                bg-white
-                text-[13px]
-                font-semibold
-                text-[#333333]
+                gap-[16px]
+                rounded-[17px]
+                bg-[#e0a000]
+                font-serif
+                text-[22px]
+                font-bold
+                text-white
+                shadow-[0_8px_25px_rgba(224,160,0,0.20)]
                 transition-all
-                hover:bg-[#fafafa]
+                hover:bg-[#cd9000]
                 active:scale-[0.99]
                 disabled:cursor-not-allowed
                 disabled:opacity-60
-
-                sm:h-[52px]
               "
             >
-              {googleLoading ? (
-                <Loader2
-                  size={18}
-                  className="animate-spin"
-                />
+              {loading ? (
+                <>
+                  <Loader2
+                    size={28}
+                    className="animate-spin"
+                  />
+                  Logging in...
+                </>
               ) : (
-                <GoogleIcon />
+                <>
+                  <LogIn size={29} />
+                  Login
+                </>
               )}
-
-              {googleLoading
-                ? "Connecting..."
-                : "Continue with Google"}
             </button>
+          </form>
 
-            {/* =================================================
-                REGISTER
-            ================================================= */}
+          {/* =================================================
+              OR
+          ================================================= */}
 
-            <p
+          <div className="my-[48px] flex items-center gap-[28px]">
+            <div className="h-[2px] flex-1 bg-[#e0e0e0]" />
+
+            <span
               className="
-                mt-7
-                text-center
-                text-[12px]
-                text-[#777777]
-
-                sm:text-[13px]
+                font-serif
+                text-[18px]
+                text-[#858585]
               "
             >
-              Don't have an account?{" "}
+              OR
+            </span>
 
-              <Link
-                href="/register"
-                className="
-                  font-semibold
-                  text-[#c18b13]
-                  transition
-                  hover:underline
-                "
-              >
-                Register
-              </Link>
-            </p>
-
+            <div className="h-[2px] flex-1 bg-[#e0e0e0]" />
           </div>
+
+          {/* =================================================
+              GOOGLE
+          ================================================= */}
+
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={
+              loading || googleLoading
+            }
+            className="
+              flex
+              h-[96px]
+              w-full
+              items-center
+              justify-center
+              gap-[22px]
+              rounded-[16px]
+              border
+              border-[#d8d8d8]
+              bg-white
+              font-serif
+              text-[20px]
+              font-bold
+              text-[#333333]
+              transition
+              hover:bg-[#fafafa]
+              active:scale-[0.99]
+              disabled:cursor-not-allowed
+              disabled:opacity-60
+            "
+          >
+            {googleLoading ? (
+              <Loader2
+                size={27}
+                className="animate-spin"
+              />
+            ) : (
+              <GoogleIcon />
+            )}
+
+            {googleLoading
+              ? "Connecting..."
+              : "Continue with Google"}
+          </button>
+
+          {/* =================================================
+              REGISTER
+          ================================================= */}
+
+          <p
+            className="
+              mt-[58px]
+              pb-[12px]
+              text-center
+              font-serif
+              text-[18px]
+              text-[#777777]
+            "
+          >
+            Don't have an account?{" "}
+
+            <Link
+              href="/register"
+              className="
+                font-bold
+                text-[#b4881d]
+                hover:underline
+              "
+            >
+              Register
+            </Link>
+          </p>
+
         </div>
       </div>
     </main>
@@ -772,8 +703,8 @@ export default function LoginPage() {
 function GoogleIcon() {
   return (
     <svg
-      width="19"
-      height="19"
+      width="28"
+      height="28"
       viewBox="0 0 24 24"
       aria-hidden="true"
     >
