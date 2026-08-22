@@ -106,63 +106,39 @@ export default function LoginPage() {
   // =========================================================
 
   const handleGoogleLogin = async () => {
-    setError("");
-    setSuccess("");
+  setError("");
+  setSuccess("");
 
-    try {
-      setGoogleLoading(true);
+  try {
+    setGoogleLoading(true);
 
-      const redirectTo =
-        `${window.location.origin}/auth/callback?next=/dashboard`;
+    const redirectTo =
+      `${window.location.origin}/auth/callback?next=/dashboard`;
 
-      const { error: googleError } =
-        await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: {
-            redirectTo,
-            queryParams: {
-              prompt: "select_account",
-            },
+    const { error: googleError } =
+      await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+          queryParams: {
+            prompt: "select_account",
           },
-        });
+        },
+      });
 
-      if (googleError) {
-        console.error(
-          "Google login error:",
-          googleError
-        );
+    if (googleError) {
+      console.error("Google login error:", googleError);
 
-        setError(googleError.message);
-        setGoogleLoading(false);
-      }
-    } catch (err) {
-      console.error(
-        "Google authentication error:",
-        err
-      );
-
-      setError(
-        "Unable to continue with Google."
-      );
-
+      setError(googleError.message);
       setGoogleLoading(false);
     }
-  };
+  } catch (err) {
+    console.error("Google authentication error:", err);
 
-  return (
-    <main
-      className="
-        min-h-screen
-        bg-[#f8f6f1]
-        px-3
-        py-3
-
-        sm:px-5
-        sm:py-5
-
-        lg:p-6
-      "
-    >
+    setError("Unable to continue with Google.");
+    setGoogleLoading(false);
+  }
+};
       {/* =====================================================
           MAIN CONTAINER
       ====================================================== */}
