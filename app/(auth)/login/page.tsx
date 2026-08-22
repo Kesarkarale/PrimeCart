@@ -61,8 +61,7 @@ export default function LoginPage() {
         });
 
       if (loginError) {
-        const message =
-          loginError.message.toLowerCase();
+        const message = loginError.message.toLowerCase();
 
         if (
           message.includes("invalid login credentials")
@@ -90,14 +89,11 @@ export default function LoginPage() {
 
       setSuccess("Login successful. Redirecting...");
 
-      /*
-       * Full navigation is intentional.
-       * It allows Supabase auth cookies to be available
-       * to middleware/server components before dashboard loads.
-       */
+      // Full navigation ensures the auth session is available
+      // before the dashboard loads.
       window.location.replace("/dashboard");
-    } catch (error) {
-      console.error("Login error:", error);
+    } catch (err) {
+      console.error("Login error:", err);
 
       setError(
         "Something went wrong. Please try again."
@@ -141,10 +137,10 @@ export default function LoginPage() {
         setError(googleError.message);
         setGoogleLoading(false);
       }
-    } catch (error) {
+    } catch (err) {
       console.error(
         "Google authentication error:",
-        error
+        err
       );
 
       setError(
@@ -157,7 +153,6 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen bg-[#f8f6f1] p-3 sm:p-5 lg:p-6">
-
       <div
         className="
           mx-auto
@@ -172,9 +167,8 @@ export default function LoginPage() {
           lg:grid-cols-[1fr_1fr]
         "
       >
-
         {/* =====================================================
-            LEFT SIDE — BANNER IMAGE ONLY
+            LEFT SIDE — LOGIN BANNER
         ====================================================== */}
 
         <div
@@ -197,10 +191,13 @@ export default function LoginPage() {
               object-cover
             "
           />
+
+          {/* Soft overlay */}
+          <div className="absolute inset-0 bg-black/[0.03]" />
         </div>
 
         {/* =====================================================
-            RIGHT SIDE — LOGIN
+            RIGHT SIDE — LOGIN FORM
         ====================================================== */}
 
         <div
@@ -216,29 +213,35 @@ export default function LoginPage() {
             xl:px-16
           "
         >
-
           <div className="w-full max-w-[430px]">
 
             {/* =================================================
-                LOGO
+                PRIME CART LOGO
             ================================================= */}
 
             <Link
               href="/"
+              aria-label="PrimeCart Home"
               className="
                 mb-8
                 inline-flex
                 items-center
-                transition-opacity
-                hover:opacity-85
+                justify-center
+                transition-transform
+                duration-200
+                hover:scale-[1.02]
               "
             >
               <img
                 src="/logo.png"
                 alt="PrimeCart"
+                width={180}
+                height={60}
                 className="
-                  h-[58px]
+                  h-auto
+                  max-h-[64px]
                   w-auto
+                  max-w-[190px]
                   object-contain
                 "
               />
@@ -249,7 +252,6 @@ export default function LoginPage() {
             ================================================= */}
 
             <div className="mb-7">
-
               <h1
                 className="
                   text-[28px]
@@ -276,15 +278,15 @@ export default function LoginPage() {
                 Enter your email and password to access
                 your account
               </p>
-
             </div>
 
             {/* =================================================
-                ERROR
+                ERROR MESSAGE
             ================================================= */}
 
             {error && (
               <div
+                role="alert"
                 className="
                   mb-5
                   rounded-[9px]
@@ -303,11 +305,12 @@ export default function LoginPage() {
             )}
 
             {/* =================================================
-                SUCCESS
+                SUCCESS MESSAGE
             ================================================= */}
 
             {success && (
               <div
+                role="status"
                 className="
                   mb-5
                   rounded-[9px]
@@ -326,18 +329,16 @@ export default function LoginPage() {
             )}
 
             {/* =================================================
-                FORM
+                LOGIN FORM
             ================================================= */}
 
             <form
               onSubmit={handleLogin}
               className="space-y-5"
             >
-
               {/* EMAIL */}
 
               <div>
-
                 <label
                   htmlFor="email"
                   className="
@@ -353,7 +354,6 @@ export default function LoginPage() {
                 </label>
 
                 <div className="relative">
-
                   <Mail
                     size={17}
                     strokeWidth={1.8}
@@ -397,18 +397,16 @@ export default function LoginPage() {
                       focus:border-[#d19a18]
                       focus:ring-[3px]
                       focus:ring-[#d19a18]/10
+                      disabled:cursor-not-allowed
                       disabled:bg-[#fafafa]
                     "
                   />
-
                 </div>
-
               </div>
 
               {/* PASSWORD */}
 
               <div>
-
                 <div
                   className="
                     mb-2
@@ -417,7 +415,6 @@ export default function LoginPage() {
                     justify-between
                   "
                 >
-
                   <label
                     htmlFor="password"
                     className="
@@ -444,11 +441,9 @@ export default function LoginPage() {
                   >
                     Forgot Password?
                   </Link>
-
                 </div>
 
                 <div className="relative">
-
                   <LockKeyhole
                     size={17}
                     strokeWidth={1.8}
@@ -496,6 +491,7 @@ export default function LoginPage() {
                       focus:border-[#d19a18]
                       focus:ring-[3px]
                       focus:ring-[#d19a18]/10
+                      disabled:cursor-not-allowed
                       disabled:bg-[#fafafa]
                     "
                   />
@@ -510,6 +506,11 @@ export default function LoginPage() {
                     disabled={
                       loading || googleLoading
                     }
+                    aria-label={
+                      showPassword
+                        ? "Hide password"
+                        : "Show password"
+                    }
                     className="
                       absolute
                       right-4
@@ -518,12 +519,8 @@ export default function LoginPage() {
                       text-[#777777]
                       transition
                       hover:text-[#222222]
+                      disabled:cursor-not-allowed
                     "
-                    aria-label={
-                      showPassword
-                        ? "Hide password"
-                        : "Show password"
-                    }
                   >
                     {showPassword ? (
                       <EyeOff size={17} />
@@ -531,9 +528,7 @@ export default function LoginPage() {
                       <Eye size={17} />
                     )}
                   </button>
-
                 </div>
-
               </div>
 
               {/* REMEMBER ME */}
@@ -548,7 +543,6 @@ export default function LoginPage() {
                   text-[#555555]
                 "
               >
-
                 <input
                   type="checkbox"
                   checked={rememberMe}
@@ -569,10 +563,9 @@ export default function LoginPage() {
                 />
 
                 <span>Remember Me</span>
-
               </label>
 
-              {/* LOGIN */}
+              {/* LOGIN BUTTON */}
 
               <button
                 type="submit"
@@ -599,34 +592,28 @@ export default function LoginPage() {
                   disabled:opacity-60
                 "
               >
-
                 {loading ? (
                   <>
                     <Loader2
                       size={17}
                       className="animate-spin"
                     />
-
                     Logging in...
                   </>
                 ) : (
                   <>
                     <LogIn size={17} />
-
                     Login
                   </>
                 )}
-
               </button>
-
             </form>
 
             {/* =================================================
-                OR
+                DIVIDER
             ================================================= */}
 
             <div className="my-7 flex items-center gap-4">
-
               <div className="h-px flex-1 bg-[#e6e6e6]" />
 
               <span
@@ -640,11 +627,10 @@ export default function LoginPage() {
               </span>
 
               <div className="h-px flex-1 bg-[#e6e6e6]" />
-
             </div>
 
             {/* =================================================
-                GOOGLE
+                GOOGLE LOGIN
             ================================================= */}
 
             <button
@@ -674,7 +660,6 @@ export default function LoginPage() {
                 disabled:opacity-60
               "
             >
-
               {googleLoading ? (
                 <Loader2
                   size={18}
@@ -687,7 +672,6 @@ export default function LoginPage() {
               {googleLoading
                 ? "Connecting..."
                 : "Continue with Google"}
-
             </button>
 
             {/* =================================================
@@ -703,7 +687,6 @@ export default function LoginPage() {
                 sm:text-[13px]
               "
             >
-
               Don't have an account?{" "}
 
               <Link
@@ -711,20 +694,17 @@ export default function LoginPage() {
                 className="
                   font-semibold
                   text-[#c18b13]
+                  transition
                   hover:underline
                 "
               >
                 Register
               </Link>
-
             </p>
 
           </div>
-
         </div>
-
       </div>
-
     </main>
   );
 }
