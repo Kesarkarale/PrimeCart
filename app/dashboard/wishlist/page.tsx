@@ -1,17 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import {
   Heart,
   ShoppingCart,
   Trash2,
-  Star,
   ArrowLeft,
+  Star,
+  X,
   ShoppingBag,
-  ChevronRight,
   Check,
+  Minus,
+  Plus,
 } from "lucide-react";
-import { useState } from "react";
 
 type WishlistProduct = {
   id: number;
@@ -22,42 +24,63 @@ type WishlistProduct = {
   originalPrice: number;
   rating: number;
   reviews: number;
-  stock: number;
+  discount: number;
+  category: string;
+  inStock: boolean;
 };
 
 const initialWishlist: WishlistProduct[] = [
   {
     id: 1,
-    name: "Wireless Headphones",
+    name: "Wireless Bluetooth Headphones",
     brand: "PrimeAudio",
     image: "/products/headphone.png",
     price: 2499,
     originalPrice: 3999,
     rating: 4.8,
     reviews: 245,
-    stock: 12,
+    discount: 38,
+    category: "Electronics",
+    inStock: true,
   },
   {
     id: 2,
-    name: "Smart Watch",
+    name: "Premium Smart Watch",
     brand: "PrimeTech",
-    image: "/products/watch.png",
+    image: "/products/smartwatch.png",
     price: 3299,
     originalPrice: 4999,
     rating: 4.6,
     reviews: 182,
-    stock: 8,
+    discount: 34,
+    category: "Electronics",
+    inStock: true,
   },
   {
     id: 3,
-    name: "Premium Backpack",
-    brand: "PrimeCarry",
-    image: "/products/bag.png",
+    name: "Classic Casual Sneakers",
+    brand: "UrbanStep",
+    image: "/products/shoes.png",
     price: 1899,
     originalPrice: 2999,
-    rating: 4.7,
+    rating: 4.5,
     reviews: 126,
-    stock: 15,
+    discount: 37,
+    category: "Fashion",
+    inStock: true,
+  },
+  {
+    id: 4,
+    name: "Portable Mini Bluetooth Speaker",
+    brand: "SoundMax",
+    image: "/products/speaker.png",
+    price: 1499,
+    originalPrice: 2499,
+    rating: 4.7,
+    reviews: 98,
+    discount: 40,
+    category: "Electronics",
+    inStock: true,
   },
 ];
 
@@ -67,530 +90,773 @@ export default function WishlistPage() {
 
   const [cartItems, setCartItems] = useState<number[]>([]);
 
-  function removeFromWishlist(id: number) {
+  const removeItem = (id: number) => {
     setWishlist((items) =>
       items.filter((item) => item.id !== id)
     );
-  }
+  };
 
-  function addToCart(id: number) {
+  const clearWishlist = () => {
+    setWishlist([]);
+  };
+
+  const addToCart = (id: number) => {
     setCartItems((items) =>
       items.includes(id) ? items : [...items, id]
     );
-  }
+  };
 
-  function moveAllToCart() {
-    setCartItems(wishlist.map((item) => item.id));
-  }
+  const addAllToCart = () => {
+    const availableIds = wishlist
+      .filter((item) => item.inStock)
+      .map((item) => item.id);
+
+    setCartItems(availableIds);
+  };
+
+  const totalValue = wishlist.reduce(
+    (total, item) => total + item.price,
+    0
+  );
+
+  const totalOriginalValue = wishlist.reduce(
+    (total, item) => total + item.originalPrice,
+    0
+  );
+
+  const totalSavings =
+    totalOriginalValue - totalValue;
 
   return (
-    <main className="min-h-screen bg-[#faf8f3] px-4 py-6 transition-colors dark:bg-[#050505] sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[#faf8f3] text-[#171717]">
 
-      <div className="mx-auto max-w-[1350px]">
+      {/* =====================================================
+          PAGE HEADER
+      ===================================================== */}
 
-        {/* =====================================================
-            HEADER
-        ===================================================== */}
+      <section className="border-b border-[#e9e5dc] bg-white">
 
-        <div className="mb-7 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
 
-          <div>
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
 
-            {/* Breadcrumb */}
-
-            <div className="mb-2 flex items-center gap-2 text-sm text-gray-500">
+            <div>
 
               <Link
                 href="/dashboard"
-                className="transition hover:text-[#c99516]"
+                className="
+                  mb-4
+                  inline-flex
+                  items-center
+                  gap-2
+                  text-sm
+                  font-medium
+                  text-[#777]
+                  transition
+                  hover:text-[#c99516]
+                "
               >
-                Home
+                <ArrowLeft size={16} />
+                Back to Shopping
               </Link>
 
-              <ChevronRight size={15} />
+              <div className="flex items-center gap-3">
 
-              <span>Wishlist</span>
+                <div
+                  className="
+                    flex
+                    h-12
+                    w-12
+                    items-center
+                    justify-center
+                    rounded-full
+                    bg-[#f8f1df]
+                    text-[#c99516]
+                  "
+                >
+                  <Heart
+                    size={24}
+                    strokeWidth={1.8}
+                    fill="currentColor"
+                  />
+                </div>
+
+                <div>
+
+                  <h1
+                    className="
+                      text-2xl
+                      font-bold
+                      tracking-tight
+                      sm:text-3xl
+                    "
+                  >
+                    My Wishlist
+                  </h1>
+
+                  <p className="mt-1 text-sm text-[#777]">
+                    {wishlist.length}{" "}
+                    {wishlist.length === 1
+                      ? "item"
+                      : "items"}{" "}
+                    saved for later
+                  </p>
+
+                </div>
+
+              </div>
 
             </div>
 
-            <div className="flex items-center gap-3">
+            {wishlist.length > 0 && (
+              <div className="flex items-center gap-3">
 
-              <div className="
-                flex
-                h-11
-                w-11
-                items-center
-                justify-center
-                rounded-xl
-                bg-[#faf0d7]
-                text-[#c99516]
-              ">
-                <Heart
-                  size={23}
-                  fill="currentColor"
-                />
+                <button
+                  onClick={addAllToCart}
+                  className="
+                    inline-flex
+                    h-11
+                    items-center
+                    justify-center
+                    gap-2
+                    rounded-xl
+                    bg-[#d99d08]
+                    px-5
+                    text-sm
+                    font-bold
+                    text-white
+                    shadow-[0_6px_18px_rgba(217,157,8,0.18)]
+                    transition
+                    hover:bg-[#c88f05]
+                  "
+                >
+                  <ShoppingCart size={17} />
+                  Add All to Cart
+                </button>
+
+                <button
+                  onClick={clearWishlist}
+                  className="
+                    inline-flex
+                    h-11
+                    items-center
+                    justify-center
+                    gap-2
+                    rounded-xl
+                    border
+                    border-[#dedede]
+                    bg-white
+                    px-4
+                    text-sm
+                    font-semibold
+                    text-[#555]
+                    transition
+                    hover:border-red-200
+                    hover:bg-red-50
+                    hover:text-red-600
+                  "
+                >
+                  <Trash2 size={16} />
+                  <span className="hidden sm:inline">
+                    Clear All
+                  </span>
+                </button>
+
               </div>
-
-              <div>
-
-                <h1 className="
-                  text-3xl
-                  font-black
-                  tracking-tight
-                  text-[#111]
-                  dark:text-white
-                  sm:text-4xl
-                ">
-                  My Wishlist
-                </h1>
-
-                <p className="mt-1 text-sm text-gray-500">
-                  {wishlist.length}{" "}
-                  {wishlist.length === 1
-                    ? "item"
-                    : "items"}{" "}
-                  saved for later
-                </p>
-
-              </div>
-
-            </div>
+            )}
 
           </div>
 
-          {wishlist.length > 0 && (
-            <button
-              type="button"
-              onClick={moveAllToCart}
-              className="
-                inline-flex
-                items-center
-                justify-center
-                gap-2
-                rounded-xl
-                bg-[#d99d08]
-                px-5
-                py-3
-                text-sm
-                font-bold
-                text-white
-                shadow-[0_6px_18px_rgba(217,157,8,0.18)]
-                transition
-                hover:bg-[#c88f05]
-                active:scale-[0.98]
-              "
-            >
-              <ShoppingCart size={17} />
-              Move All to Cart
-            </button>
-          )}
-
         </div>
 
-        {/* =====================================================
-            WISHLIST
-        ===================================================== */}
+      </section>
 
-        {wishlist.length > 0 ? (
+      {/* =====================================================
+          CONTENT
+      ===================================================== */}
 
-          <div className="
-            grid
-            grid-cols-1
-            gap-5
-            sm:grid-cols-2
-            lg:grid-cols-3
-            xl:grid-cols-4
-          ">
+      <div className="mx-auto max-w-[1400px] px-4 py-7 sm:px-6 lg:px-8">
 
-            {wishlist.map((product) => {
+        {wishlist.length === 0 ? (
+          <EmptyWishlist />
+        ) : (
+          <div className="grid gap-7 lg:grid-cols-[1fr_330px]">
 
-              const discount = Math.round(
-                ((product.originalPrice -
-                  product.price) /
-                  product.originalPrice) *
-                  100
-              );
+            {/* =================================================
+                PRODUCT GRID
+            ================================================= */}
 
-              const inCart =
-                cartItems.includes(product.id);
+            <section>
 
-              return (
-                <div
-                  key={product.id}
+              <div className="mb-5 flex items-center justify-between">
+
+                <div>
+                  <h2 className="text-lg font-bold">
+                    Saved Items
+                  </h2>
+
+                  <p className="mt-1 text-xs text-[#888]">
+                    Your favorite products are waiting for you
+                  </p>
+                </div>
+
+                <span
                   className="
-                    group
-                    overflow-hidden
-                    rounded-3xl
-                    border
-                    border-[#e8e3d9]
+                    rounded-full
                     bg-white
+                    px-3
+                    py-1.5
+                    text-xs
+                    font-semibold
+                    text-[#666]
                     shadow-sm
-                    transition
-                    duration-300
-                    hover:-translate-y-1
-                    hover:shadow-lg
-                    dark:border-[#222]
-                    dark:bg-[#0d0d0d]
+                    ring-1
+                    ring-[#e8e4db]
                   "
                 >
+                  {wishlist.length} Items
+                </span>
 
-                  {/* PRODUCT IMAGE */}
+              </div>
 
-                  <div className="
-                    relative
-                    h-[245px]
-                    overflow-hidden
-                    bg-[#fafafa]
-                    dark:bg-[#151515]
-                  ">
+              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
 
-                    {/* DISCOUNT */}
+                {wishlist.map((product) => (
+                  <WishlistCard
+                    key={product.id}
+                    product={product}
+                    inCart={cartItems.includes(product.id)}
+                    onRemove={() =>
+                      removeItem(product.id)
+                    }
+                    onAddToCart={() =>
+                      addToCart(product.id)
+                    }
+                  />
+                ))}
 
-                    <span className="
-                      absolute
-                      left-4
-                      top-4
-                      z-10
-                      rounded-full
-                      bg-[#d99d08]
-                      px-3
-                      py-1.5
-                      text-[11px]
-                      font-black
-                      text-white
-                    ">
-                      {discount}% OFF
-                    </span>
+              </div>
 
-                    {/* REMOVE */}
+            </section>
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        removeFromWishlist(product.id)
-                      }
-                      aria-label={`Remove ${product.name} from wishlist`}
-                      className="
-                        absolute
-                        right-4
-                        top-4
-                        z-10
-                        flex
-                        h-9
-                        w-9
-                        items-center
-                        justify-center
-                        rounded-full
-                        bg-white
-                        text-gray-500
-                        shadow-md
-                        transition
-                        hover:bg-red-50
-                        hover:text-red-500
-                        dark:bg-[#222]
-                      "
-                    >
-                      <Trash2 size={16} />
-                    </button>
+            {/* =================================================
+                SUMMARY
+            ================================================= */}
 
-                    {/* IMAGE */}
+            <aside>
 
-                    <Link
-                      href={`/dashboard/product/${product.id}`}
-                      className="flex h-full w-full items-center justify-center"
-                    >
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="
-                          h-full
-                          w-full
-                          object-contain
-                          p-7
-                          transition
-                          duration-500
-                          group-hover:scale-105
-                        "
-                        onError={(e) => {
-                          e.currentTarget.style.display =
-                            "none";
-                        }}
-                      />
-                    </Link>
+              <div
+                className="
+                  sticky
+                  top-24
+                  rounded-2xl
+                  border
+                  border-[#e7e2d8]
+                  bg-white
+                  p-5
+                  shadow-[0_5px_25px_rgba(0,0,0,0.04)]
+                "
+              >
 
+                <div className="mb-5 flex items-center gap-3">
+
+                  <div
+                    className="
+                      flex
+                      h-10
+                      w-10
+                      items-center
+                      justify-center
+                      rounded-xl
+                      bg-[#faf3df]
+                      text-[#c99516]
+                    "
+                  >
+                    <ShoppingBag size={20} />
                   </div>
 
-                  {/* DETAILS */}
+                  <div>
+                    <h3 className="font-bold">
+                      Wishlist Summary
+                    </h3>
 
-                  <div className="p-5">
-
-                    {/* BRAND */}
-
-                    <p className="
-                      text-[11px]
-                      font-bold
-                      uppercase
-                      tracking-[0.12em]
-                      text-[#c99516]
-                    ">
-                      {product.brand}
+                    <p className="text-xs text-[#888]">
+                      Your saved products
                     </p>
+                  </div>
 
-                    {/* NAME */}
+                </div>
 
-                    <Link
-                      href={`/dashboard/product/${product.id}`}
-                      className="
-                        mt-1
-                        block
-                        truncate
-                        text-[16px]
-                        font-bold
-                        text-[#111]
-                        transition
-                        hover:text-[#c99516]
-                        dark:text-white
-                      "
-                    >
-                      {product.name}
-                    </Link>
+                <div className="space-y-4">
 
-                    {/* RATING */}
+                  <SummaryRow
+                    label="Items"
+                    value={`${wishlist.length}`}
+                  />
 
-                    <div className="mt-2 flex items-center gap-2">
+                  <SummaryRow
+                    label="Total Value"
+                    value={`₹${totalValue.toLocaleString("en-IN")}`}
+                  />
 
-                      <span className="
-                        inline-flex
-                        items-center
-                        gap-1
-                        rounded-md
-                        bg-green-600
-                        px-2
-                        py-1
-                        text-[11px]
-                        font-bold
-                        text-white
-                      ">
-                        {product.rating}
-                        <Star
-                          size={11}
-                          fill="currentColor"
-                        />
-                      </span>
+                  <SummaryRow
+                    label="Original Price"
+                    value={`₹${totalOriginalValue.toLocaleString(
+                      "en-IN"
+                    )}`}
+                    muted
+                  />
 
-                      <span className="text-xs text-gray-500">
-                        {product.reviews} reviews
-                      </span>
+                  <div className="border-t border-dashed border-[#dedede]" />
 
-                    </div>
+                  <div className="flex items-center justify-between">
 
-                    {/* PRICE */}
+                    <span className="text-sm font-bold">
+                      You Save
+                    </span>
 
-                    <div className="mt-4 flex items-center gap-2">
-
-                      <span className="
-                        text-xl
-                        font-black
-                        text-[#111]
-                        dark:text-white
-                      ">
-                        ₹
-                        {product.price.toLocaleString(
-                          "en-IN"
-                        )}
-                      </span>
-
-                      <span className="
-                        text-sm
-                        text-gray-400
-                        line-through
-                      ">
-                        ₹
-                        {product.originalPrice.toLocaleString(
-                          "en-IN"
-                        )}
-                      </span>
-
-                    </div>
-
-                    {/* STOCK */}
-
-                    <p className="
-                      mt-2
-                      text-xs
-                      font-semibold
-                      text-green-600
-                    ">
-                      {product.stock > 0
-                        ? `${product.stock} items left in stock`
-                        : "Out of stock"}
-                    </p>
-
-                    {/* ACTION */}
-
-                    <button
-                      type="button"
-                      disabled={
-                        product.stock === 0
-                      }
-                      onClick={() =>
-                        addToCart(product.id)
-                      }
-                      className="
-                        mt-4
-                        flex
-                        h-11
-                        w-full
-                        items-center
-                        justify-center
-                        gap-2
-                        rounded-xl
-                        bg-[#111]
-                        text-sm
-                        font-bold
-                        text-white
-                        transition
-                        hover:bg-[#d99d08]
-                        disabled:cursor-not-allowed
-                        disabled:opacity-50
-                        dark:bg-white
-                        dark:text-black
-                        dark:hover:bg-[#d99d08]
-                        dark:hover:text-white
-                      "
-                    >
-                      {inCart ? (
-                        <>
-                          <Check size={17} />
-                          Added to Cart
-                        </>
-                      ) : (
-                        <>
-                          <ShoppingCart size={17} />
-                          Add to Cart
-                        </>
-                      )}
-                    </button>
+                    <span className="text-sm font-bold text-green-600">
+                      ₹{totalSavings.toLocaleString("en-IN")}
+                    </span>
 
                   </div>
 
                 </div>
-              );
-            })}
 
-          </div>
+                <button
+                  onClick={addAllToCart}
+                  className="
+                    mt-6
+                    flex
+                    h-12
+                    w-full
+                    items-center
+                    justify-center
+                    gap-2
+                    rounded-xl
+                    bg-[#d99d08]
+                    text-sm
+                    font-bold
+                    text-white
+                    shadow-[0_7px_18px_rgba(217,157,8,0.18)]
+                    transition
+                    hover:bg-[#c88f05]
+                  "
+                >
+                  <ShoppingCart size={18} />
+                  Add All to Cart
+                </button>
 
-        ) : (
+                <Link
+                  href="/dashboard"
+                  className="
+                    mt-3
+                    flex
+                    h-11
+                    w-full
+                    items-center
+                    justify-center
+                    rounded-xl
+                    border
+                    border-[#dedede]
+                    bg-white
+                    text-sm
+                    font-semibold
+                    text-[#444]
+                    transition
+                    hover:bg-[#fafafa]
+                  "
+                >
+                  Continue Shopping
+                </Link>
 
-          /* ===================================================
-             EMPTY WISHLIST
-          =================================================== */
+                {/* SECURITY NOTE */}
 
-          <div className="
-            rounded-3xl
-            border
-            border-[#e8e3d9]
-            bg-white
-            px-6
-            py-20
-            text-center
-            shadow-sm
-            dark:border-[#222]
-            dark:bg-[#0d0d0d]
-          ">
+                <div
+                  className="
+                    mt-5
+                    rounded-xl
+                    bg-[#faf8f3]
+                    p-3.5
+                  "
+                >
+                  <p className="text-xs font-semibold text-[#444]">
+                    Your wishlist is private
+                  </p>
 
-            <div className="
-              mx-auto
-              flex
-              h-24
-              w-24
-              items-center
-              justify-center
-              rounded-full
-              bg-[#faf0d7]
-              text-[#c99516]
-            ">
-              <Heart
-                size={42}
-                strokeWidth={1.7}
-              />
-            </div>
+                  <p className="mt-1 text-[11px] leading-5 text-[#888]">
+                    Products you save here will stay in
+                    your account until you remove them.
+                  </p>
+                </div>
 
-            <h2 className="
-              mt-6
-              text-2xl
-              font-black
-              text-[#111]
-              dark:text-white
-            ">
-              Your wishlist is empty
-            </h2>
+              </div>
 
-            <p className="
-              mx-auto
-              mt-2
-              max-w-md
-              text-sm
-              leading-6
-              text-gray-500
-            ">
-              Save products you love to your wishlist
-              and easily find them whenever you're ready
-              to buy.
-            </p>
+            </aside>
 
-            <Link
-              href="/dashboard"
-              className="
-                mt-7
-                inline-flex
-                items-center
-                gap-2
-                rounded-xl
-                bg-[#d99d08]
-                px-6
-                py-3
-                text-sm
-                font-bold
-                text-white
-                transition
-                hover:bg-[#c88f05]
-              "
-            >
-              <ShoppingBag size={17} />
-              Start Shopping
-            </Link>
-
-          </div>
-
-        )}
-
-        {/* =====================================================
-            BOTTOM NOTE
-        ===================================================== */}
-
-        {wishlist.length > 0 && (
-          <div className="
-            mt-7
-            flex
-            items-center
-            justify-center
-            gap-2
-            text-center
-            text-xs
-            text-gray-500
-          ">
-            <Heart
-              size={14}
-              className="text-[#c99516]"
-              fill="currentColor"
-            />
-            Your saved products are waiting for you.
           </div>
         )}
 
       </div>
 
     </main>
+  );
+}
+
+/* =============================================================
+   WISHLIST CARD
+============================================================= */
+
+function WishlistCard({
+  product,
+  inCart,
+  onRemove,
+  onAddToCart,
+}: {
+  product: WishlistProduct;
+  inCart: boolean;
+  onRemove: () => void;
+  onAddToCart: () => void;
+}) {
+  return (
+    <article
+      className="
+        group
+        overflow-hidden
+        rounded-2xl
+        border
+        border-[#e7e3da]
+        bg-white
+        shadow-[0_4px_20px_rgba(0,0,0,0.035)]
+        transition-all
+        duration-300
+        hover:-translate-y-1
+        hover:shadow-[0_12px_35px_rgba(0,0,0,0.08)]
+      "
+    >
+
+      {/* IMAGE */}
+
+      <div className="relative h-[245px] overflow-hidden bg-[#f8f7f4]">
+
+        <Link
+          href={`/dashboard/products/${product.id}`}
+          className="absolute inset-0 z-0"
+        />
+
+        <img
+          src={product.image}
+          alt={product.name}
+          className="
+            h-full
+            w-full
+            object-contain
+            p-6
+            transition-transform
+            duration-500
+            group-hover:scale-105
+          "
+        />
+
+        {/* DISCOUNT */}
+
+        <span
+          className="
+            absolute
+            left-3
+            top-3
+            rounded-lg
+            bg-[#d99d08]
+            px-2.5
+            py-1.5
+            text-[11px]
+            font-bold
+            text-white
+          "
+        >
+          {product.discount}% OFF
+        </span>
+
+        {/* REMOVE */}
+
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={`Remove ${product.name}`}
+          className="
+            absolute
+            right-3
+            top-3
+            z-10
+            flex
+            h-9
+            w-9
+            items-center
+            justify-center
+            rounded-full
+            bg-white
+            text-[#777]
+            shadow-md
+            transition
+            hover:bg-red-50
+            hover:text-red-600
+          "
+        >
+          <X size={17} />
+        </button>
+
+      </div>
+
+      {/* DETAILS */}
+
+      <div className="p-4">
+
+        <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-[#a17a18]">
+          {product.brand}
+        </p>
+
+        <Link
+          href={`/dashboard/products/${product.id}`}
+          className="
+            block
+            min-h-[44px]
+            text-sm
+            font-bold
+            leading-5
+            text-[#222]
+            transition
+            hover:text-[#c99516]
+          "
+        >
+          {product.name}
+        </Link>
+
+        {/* RATING */}
+
+        <div className="mt-3 flex items-center gap-2">
+
+          <span
+            className="
+              inline-flex
+              items-center
+              gap-1
+              rounded-md
+              bg-[#f5f1e6]
+              px-2
+              py-1
+              text-[11px]
+              font-bold
+              text-[#765a13]
+            "
+          >
+            {product.rating}
+            <Star
+              size={11}
+              fill="currentColor"
+            />
+          </span>
+
+          <span className="text-[11px] text-[#888]">
+            {product.reviews} reviews
+          </span>
+
+        </div>
+
+        {/* PRICE */}
+
+        <div className="mt-3 flex items-end gap-2">
+
+          <span className="text-xl font-extrabold text-[#181818]">
+            ₹{product.price.toLocaleString("en-IN")}
+          </span>
+
+          <span className="pb-0.5 text-xs text-[#999] line-through">
+            ₹{product.originalPrice.toLocaleString(
+              "en-IN"
+            )}
+          </span>
+
+        </div>
+
+        {/* STOCK */}
+
+        <div className="mt-2">
+
+          {product.inStock ? (
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-green-600">
+              <Check size={13} />
+              In Stock
+            </span>
+          ) : (
+            <span className="text-[11px] font-semibold text-red-500">
+              Out of Stock
+            </span>
+          )}
+
+        </div>
+
+        {/* BUTTON */}
+
+        <button
+          type="button"
+          onClick={onAddToCart}
+          disabled={!product.inStock || inCart}
+          className={`
+            mt-4
+            flex
+            h-11
+            w-full
+            items-center
+            justify-center
+            gap-2
+            rounded-xl
+            text-sm
+            font-bold
+            transition-all
+
+            ${
+              inCart
+                ? "bg-green-50 text-green-700 border border-green-200"
+                : product.inStock
+                ? "bg-[#d99d08] text-white hover:bg-[#c88f05]"
+                : "cursor-not-allowed bg-[#f1f1f1] text-[#999]"
+            }
+          `}
+        >
+          {inCart ? (
+            <>
+              <Check size={17} />
+              Added to Cart
+            </>
+          ) : (
+            <>
+              <ShoppingCart size={17} />
+              Add to Cart
+            </>
+          )}
+        </button>
+
+      </div>
+
+    </article>
+  );
+}
+
+/* =============================================================
+   SUMMARY ROW
+============================================================= */
+
+function SummaryRow({
+  label,
+  value,
+  muted = false,
+}: {
+  label: string;
+  value: string;
+  muted?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between">
+
+      <span
+        className={`text-sm ${
+          muted
+            ? "text-[#999]"
+            : "text-[#666]"
+        }`}
+      >
+        {label}
+      </span>
+
+      <span
+        className={`text-sm font-semibold ${
+          muted
+            ? "text-[#999]"
+            : "text-[#222]"
+        }`}
+      >
+        {value}
+      </span>
+
+    </div>
+  );
+}
+
+/* =============================================================
+   EMPTY WISHLIST
+============================================================= */
+
+function EmptyWishlist() {
+  return (
+    <div
+      className="
+        flex
+        min-h-[600px]
+        flex-col
+        items-center
+        justify-center
+        rounded-3xl
+        border
+        border-[#e7e2d8]
+        bg-white
+        px-6
+        text-center
+        shadow-[0_5px_25px_rgba(0,0,0,0.035)]
+      "
+    >
+
+      <div
+        className="
+          flex
+          h-24
+          w-24
+          items-center
+          justify-center
+          rounded-full
+          bg-[#faf3df]
+          text-[#c99516]
+        "
+      >
+        <Heart
+          size={43}
+          strokeWidth={1.4}
+        />
+      </div>
+
+      <h2 className="mt-7 text-2xl font-bold">
+        Your Wishlist is Empty
+      </h2>
+
+      <p className="mt-2 max-w-[430px] text-sm leading-6 text-[#888]">
+        You haven't saved any products yet. Explore
+        our collection and add your favorite products
+        to your wishlist.
+      </p>
+
+      <Link
+        href="/dashboard"
+        className="
+          mt-7
+          inline-flex
+          h-12
+          items-center
+          justify-center
+          gap-2
+          rounded-xl
+          bg-[#d99d08]
+          px-7
+          text-sm
+          font-bold
+          text-white
+          shadow-[0_7px_18px_rgba(217,157,8,0.18)]
+          transition
+          hover:bg-[#c88f05]
+        "
+      >
+        <ShoppingBag size={18} />
+        Start Shopping
+      </Link>
+
+    </div>
   );
 }
