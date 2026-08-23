@@ -26,6 +26,7 @@ export default function RegisterPage() {
 
   const [showPassword, setShowPassword] =
     useState(false);
+
   const [showConfirm, setShowConfirm] =
     useState(false);
 
@@ -39,13 +40,15 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState("");
 
   // =========================================================
-  // REGISTER
+  // REGISTER WITH EMAIL + PASSWORD
   // =========================================================
 
   async function handleRegister(
     e: FormEvent<HTMLFormElement>
   ) {
     e.preventDefault();
+
+    if (loading || googleLoading) return;
 
     setError("");
     setSuccess("");
@@ -54,13 +57,33 @@ export default function RegisterPage() {
     const cleanEmail = email.trim().toLowerCase();
     const cleanMobile = mobile.trim();
 
+    // ---------------------------------------------------------
+    // VALIDATION
+    // ---------------------------------------------------------
+
     if (!name) {
       setError("Please enter your full name.");
       return;
     }
 
+    if (name.length < 2) {
+      setError("Please enter a valid full name.");
+      return;
+    }
+
     if (!cleanEmail) {
       setError("Please enter your email address.");
+      return;
+    }
+
+    if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        cleanEmail
+      )
+    ) {
+      setError(
+        "Please enter a valid email address."
+      );
       return;
     }
 
@@ -93,13 +116,23 @@ export default function RegisterPage() {
       return;
     }
 
+    // ---------------------------------------------------------
+    // SUPABASE SIGN UP
+    // ---------------------------------------------------------
+
     try {
       setLoading(true);
 
-      const { data, error: signUpError } =
+      const redirectTo =
+        `${window.location.origin}/auth/callback?next=/dashboard`;
+
+      const {
+        data,
+        error: signUpError,
+      } =
         await supabase.auth.signUp({
           email: cleanEmail,
-          password,
+          password: password,
 
           options: {
             data: {
@@ -107,79 +140,150 @@ export default function RegisterPage() {
               mobile: cleanMobile,
             },
 
-            emailRedirectTo:
-              `${window.location.origin}/auth/callback?next=/dashboard`,
+            emailRedirectTo: redirectTo,
           },
         });
 
+      // -------------------------------------------------------
+      // ERROR
+      // -------------------------------------------------------
+
       if (signUpError) {
+        console.error(
+          "Supabase registration error:",
+          signUpError
+        );
+
         const message =
           signUpError.message.toLowerCase();
 
         if (
-          message.includes("already registered") ||
-          message.includes("already exists")
+          message.includes(
+            "user already registered"
+          ) ||
+          message.includes(
+            "already registered"
+          ) ||
+          message.includes(
+            "already exists"
+          )
         ) {
           setError(
             "An account with this email already exists. Please login instead."
           );
-        } else {
-          setError(signUpError.message);
+
+          return;
         }
 
+        if (
+          message.includes(
+            "password should be at least"
+          )
+        ) {
+          setError(
+            "Password must contain at least 6 characters."
+          );
+
+          return;
+        }
+
+        if (
+          message.includes(
+            "email address"
+          ) &&
+          message.includes("invalid")
+        ) {
+          setError(
+            "Please enter a valid email address."
+          );
+
+          return;
+        }
+
+        setError(signUpError.message);
         return;
       }
 
-      /*
-       * Email confirmation OFF
-       * → session available
-       * → directly dashboard
-       */
+      // -------------------------------------------------------
+      // ACCOUNT CREATED
+      // -------------------------------------------------------
+
+      console.log(
+        "Registration successful:",
+        data
+      );
+
+      // -------------------------------------------------------
+      // CASE 1:
+      // EMAIL CONFIRMATION OFF
+      //
+      // Supabase gives session immediately.
+      // Go directly to dashboard.
+      // -------------------------------------------------------
 
       if (data.session) {
         setSuccess(
           "Account created successfully. Redirecting..."
         );
 
-        window.location.replace("/dashboard");
+        window.location.replace(
+          "/dashboard"
+        );
+
         return;
       }
 
-      /*
-       * Email confirmation ON
-       */
+      // -------------------------------------------------------
+      // CASE 2:
+      // EMAIL CONFIRMATION ON
+      //
+      // Account is created but Supabase waits
+      // for email verification.
+      // -------------------------------------------------------
 
       setSuccess(
-        "Account created successfully! Please check your email and verify your account before logging in."
+        "Account created successfully! Please check your email and verify your account."
       );
 
+      // Clear form
       setFullName("");
       setEmail("");
       setMobile("");
       setPassword("");
       setConfirmPassword("");
       setAgree(false);
+
+      // After a short delay go to login
+      setTimeout(() => {
+        window.location.replace(
+          "/login?registered=true"
+        );
+      }, 2200);
     } catch (err) {
       console.error(
         "Registration error:",
         err
       );
 
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to create your account."
-      );
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(
+          "Unable to create your account. Please try again."
+        );
+      }
     } finally {
       setLoading(false);
     }
   }
 
   // =========================================================
-  // GOOGLE SIGN UP
+  // GOOGLE SIGN UP / LOGIN
   // =========================================================
 
-  const handleGoogleSignup = async () => {
+  async function handleGoogleSignup() {
+    if (loading || googleLoading) return;
+
     setError("");
     setSuccess("");
 
@@ -189,7 +293,10 @@ export default function RegisterPage() {
       const redirectTo =
         `${window.location.origin}/auth/callback?next=/dashboard`;
 
-      const { error: googleError } =
+      const {
+        data,
+        error: googleError,
+      } =
         await supabase.auth.signInWithOAuth({
           provider: "google",
 
@@ -208,8 +315,21 @@ export default function RegisterPage() {
           googleError
         );
 
-        setError(googleError.message);
+        setError(
+          googleError.message
+        );
+
         setGoogleLoading(false);
+        return;
+      }
+
+      /*
+       * Supabase normally redirects automatically.
+       * data.url can be used by the browser flow.
+       */
+
+      if (data?.url) {
+        window.location.href = data.url;
       }
     } catch (err) {
       console.error(
@@ -218,12 +338,12 @@ export default function RegisterPage() {
       );
 
       setError(
-        "Unable to continue with Google."
+        "Unable to continue with Google. Please try again."
       );
 
       setGoogleLoading(false);
     }
-  };
+  }
 
   return (
     <main
@@ -257,7 +377,7 @@ export default function RegisterPage() {
         "
       >
         {/* =====================================================
-            DESKTOP BANNER
+            BANNER
         ====================================================== */}
 
         <div
@@ -314,51 +434,53 @@ export default function RegisterPage() {
               max-w-[430px]
             "
           >
-           {/* =================================================
-    LOGO + PRIME CART NAME
-================================================= */}
+            {/* =================================================
+                LOGO
+            ================================================= */}
 
-<Link
-  href="/"
-  aria-label="PrimeCart Home"
-  className="
-    mb-8
-    flex
-    w-fit
-    items-center
-    gap-3
-    transition-opacity
-    duration-200
-    hover:opacity-85
-  "
->
-  <img
-    src="/logo.png"
-    alt="PrimeCart Logo"
-    width={58}
-    height={58}
-    className="
-      h-[52px]
-      w-[52px]
-      shrink-0
-      object-contain
-      sm:h-[56px]
-      sm:w-[56px]
-    "
-  />
+            <Link
+              href="/"
+              aria-label="PrimeCart Home"
+              className="
+                mb-8
+                flex
+                w-fit
+                items-center
+                gap-3
+                transition-opacity
+                duration-200
+                hover:opacity-85
+              "
+            >
+              <img
+                src="/logo.png"
+                alt="PrimeCart Logo"
+                width={58}
+                height={58}
+                className="
+                  h-[52px]
+                  w-[52px]
+                  shrink-0
+                  object-contain
 
-  <span
-    className="
-      text-[28px]
-      font-bold
-      tracking-[-0.8px]
-      text-[#111111]
-      sm:text-[30px]
-    "
-  >
-    PrimeCart
-  </span>
-</Link>
+                  sm:h-[56px]
+                  sm:w-[56px]
+                "
+              />
+
+              <span
+                className="
+                  text-[28px]
+                  font-bold
+                  tracking-[-0.8px]
+                  text-[#111111]
+
+                  sm:text-[30px]
+                "
+              >
+                PrimeCart
+              </span>
+            </Link>
 
             {/* =================================================
                 HEADING
@@ -391,8 +513,8 @@ export default function RegisterPage() {
                   sm:text-[14px]
                 "
               >
-                Create your PrimeCart account and start
-                shopping today.
+                Create your PrimeCart account
+                and start shopping today.
               </p>
             </div>
 
@@ -447,7 +569,7 @@ export default function RegisterPage() {
             )}
 
             {/* =================================================
-                FORM
+                REGISTER FORM
             ================================================= */}
 
             <form
@@ -475,15 +597,21 @@ export default function RegisterPage() {
                     type="text"
                     value={fullName}
                     onChange={(e) =>
-                      setFullName(e.target.value)
+                      setFullName(
+                        e.target.value
+                      )
                     }
                     placeholder="Enter your full name"
                     autoComplete="name"
                     disabled={
-                      loading || googleLoading
+                      loading ||
+                      googleLoading
                     }
                     required
-                    className="auth-input pl-[48px]"
+                    className="
+                      auth-input
+                      pl-[48px]
+                    "
                   />
                 </div>
               </Field>
@@ -509,15 +637,21 @@ export default function RegisterPage() {
                     type="email"
                     value={email}
                     onChange={(e) =>
-                      setEmail(e.target.value)
+                      setEmail(
+                        e.target.value
+                      )
                     }
                     placeholder="Enter your email"
                     autoComplete="email"
                     disabled={
-                      loading || googleLoading
+                      loading ||
+                      googleLoading
                     }
                     required
-                    className="auth-input pl-[48px]"
+                    className="
+                      auth-input
+                      pl-[48px]
+                    "
                   />
                 </div>
               </Field>
@@ -546,16 +680,26 @@ export default function RegisterPage() {
                     onChange={(e) =>
                       setMobile(
                         e.target.value
-                          .replace(/\D/g, "")
-                          .slice(0, 10)
+                          .replace(
+                            /\D/g,
+                            ""
+                          )
+                          .slice(
+                            0,
+                            10
+                          )
                       )
                     }
                     placeholder="Enter your mobile number"
                     autoComplete="tel"
                     disabled={
-                      loading || googleLoading
+                      loading ||
+                      googleLoading
                     }
-                    className="auth-input pl-[48px]"
+                    className="
+                      auth-input
+                      pl-[48px]
+                    "
                   />
                 </div>
               </Field>
@@ -585,12 +729,15 @@ export default function RegisterPage() {
                     }
                     value={password}
                     onChange={(e) =>
-                      setPassword(e.target.value)
+                      setPassword(
+                        e.target.value
+                      )
                     }
                     placeholder="Create a password"
                     autoComplete="new-password"
                     disabled={
-                      loading || googleLoading
+                      loading ||
+                      googleLoading
                     }
                     required
                     className="
@@ -604,11 +751,13 @@ export default function RegisterPage() {
                     type="button"
                     onClick={() =>
                       setShowPassword(
-                        (value) => !value
+                        (value) =>
+                          !value
                       )
                     }
                     disabled={
-                      loading || googleLoading
+                      loading ||
+                      googleLoading
                     }
                     aria-label={
                       showPassword
@@ -657,7 +806,9 @@ export default function RegisterPage() {
                         ? "text"
                         : "password"
                     }
-                    value={confirmPassword}
+                    value={
+                      confirmPassword
+                    }
                     onChange={(e) =>
                       setConfirmPassword(
                         e.target.value
@@ -666,7 +817,8 @@ export default function RegisterPage() {
                     placeholder="Confirm your password"
                     autoComplete="new-password"
                     disabled={
-                      loading || googleLoading
+                      loading ||
+                      googleLoading
                     }
                     required
                     className="
@@ -680,11 +832,13 @@ export default function RegisterPage() {
                     type="button"
                     onClick={() =>
                       setShowConfirm(
-                        (value) => !value
+                        (value) =>
+                          !value
                       )
                     }
                     disabled={
-                      loading || googleLoading
+                      loading ||
+                      googleLoading
                     }
                     aria-label={
                       showConfirm
@@ -731,10 +885,13 @@ export default function RegisterPage() {
                   type="checkbox"
                   checked={agree}
                   onChange={(e) =>
-                    setAgree(e.target.checked)
+                    setAgree(
+                      e.target.checked
+                    )
                   }
                   disabled={
-                    loading || googleLoading
+                    loading ||
+                    googleLoading
                   }
                   className="
                     mt-[2px]
@@ -763,7 +920,8 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={
-                  loading || googleLoading
+                  loading ||
+                  googleLoading
                 }
                 className="
                   mt-2
@@ -796,11 +954,15 @@ export default function RegisterPage() {
                       size={18}
                       className="animate-spin"
                     />
+
                     Creating Account...
                   </>
                 ) : (
                   <>
-                    <UserPlus size={18} />
+                    <UserPlus
+                      size={18}
+                    />
+
                     Create Account
                   </>
                 )}
@@ -808,7 +970,7 @@ export default function RegisterPage() {
             </form>
 
             {/* =================================================
-                DIVIDER
+                OR
             ================================================= */}
 
             <div
@@ -845,9 +1007,12 @@ export default function RegisterPage() {
 
             <button
               type="button"
-              onClick={handleGoogleSignup}
+              onClick={
+                handleGoogleSignup
+              }
               disabled={
-                loading || googleLoading
+                loading ||
+                googleLoading
               }
               className="
                 flex
@@ -921,6 +1086,42 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
+
+      {/* =====================================================
+          INPUT STYLE
+      ====================================================== */}
+
+      <style jsx global>{`
+        .auth-input {
+          height: 54px;
+          width: 100%;
+          border-radius: 10px;
+          border: 1px solid #d9d9d9;
+          background: #ffffff;
+          padding-right: 16px;
+          font-family: serif;
+          font-size: 14px;
+          color: #222222;
+          outline: none;
+          transition: all 0.2s ease;
+        }
+
+        .auth-input::placeholder {
+          color: #999999;
+        }
+
+        .auth-input:focus {
+          border-color: #c99516;
+          box-shadow:
+            0 0 0 3px
+            rgba(201, 149, 22, 0.1);
+        }
+
+        .auth-input:disabled {
+          background: #fafafa;
+          cursor: not-allowed;
+        }
+      `}</style>
     </main>
   );
 }
@@ -982,7 +1183,7 @@ function GoogleIcon() {
 
       <path
         fill="#FBBC05"
-        d="M6.51 13.63A5.85 5.85 0 0 1 6.2 12c0-.57.11-1.12.31-1.63V7.86H3.27A9.75 9.75 0 0 0 2.25 12c0 1.57.38 3.05 1.02 4.14l3.24 2.51Z"
+        d="M6.51 13.63A5.85 5.85 0 0 1 6.2 12c0-.57.11-1.12.31-1.63V7.86H3.27A9.75 9.75 0 0 0 2.25 12c0 1.57.38 3.05 1.02 4.14l3.24-2.51 3.24 2.51Z"
       />
 
       <path
