@@ -314,56 +314,51 @@ export default function RegisterPage() {
               max-w-[430px]
             "
           >
-            {/* =================================================
-                LOGO + NAME
-            ================================================= */}
+           {/* =================================================
+    LOGO + PRIME CART NAME
+================================================= */}
 
-            <Link
-              href="/"
-              aria-label="PrimeCart Home"
-              className="
-                mb-7
-                flex
-                w-fit
-                flex-col
-                items-center
-                transition-opacity
-                duration-200
-                hover:opacity-85
+<Link
+  href="/"
+  aria-label="PrimeCart Home"
+  className="
+    mb-8
+    flex
+    w-fit
+    items-center
+    gap-3
+    transition-opacity
+    duration-200
+    hover:opacity-85
+  "
+>
+  <img
+    src="/logo.png"
+    alt="PrimeCart Logo"
+    width={58}
+    height={58}
+    className="
+      h-[52px]
+      w-[52px]
+      shrink-0
+      object-contain
+      sm:h-[56px]
+      sm:w-[56px]
+    "
+  />
 
-                sm:mb-8
-              "
-            >
-              <img
-                src="/logo.png"
-                alt="PrimeCart Logo"
-                width={60}
-                height={60}
-                className="
-                  h-[55px]
-                  w-[55px]
-                  object-contain
-
-                  sm:h-[60px]
-                  sm:w-[60px]
-                "
-              />
-
-              <span
-                className="
-                  mt-1
-                  font-serif
-                  text-[25px]
-                  font-bold
-                  tracking-[-0.7px]
-                  text-[#111111]
-
-                  sm:text-[27px]
-                "
-              >
-                PrimeCart
-              </span>
-            </Link>
+  <span
+    className="
+      text-[28px]
+      font-bold
+      tracking-[-0.8px]
+      text-[#111111]
+      sm:text-[30px]
+    "
+  >
+    PrimeCart
+  </span>
+</Link>
 
             {/* =================================================
                 HEADING
