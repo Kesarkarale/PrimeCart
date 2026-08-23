@@ -2,223 +2,236 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
-  MapPin,
-  User,
-  Phone,
-  Mail,
+  CheckCircle2,
   CreditCard,
-  Smartphone,
-  Banknote,
+  MapPin,
+  Package,
   ShieldCheck,
-  Lock,
-  ChevronRight,
-  Check,
-  Tag,
-  ShoppingBag,
   Truck,
-  WalletCards,
+  Wallet,
+  Banknote,
+  Loader2,
 } from "lucide-react";
 
-type PaymentMethod =
-  | "upi"
-  | "card"
-  | "cod";
+type PaymentMethod = "cod" | "card" | "upi";
 
 export default function CheckoutPage() {
+  const router = useRouter();
+
   const [paymentMethod, setPaymentMethod] =
-    useState<PaymentMethod>("upi");
+    useState<PaymentMethod>("cod");
 
-  const [coupon, setCoupon] = useState("");
-  const [couponApplied, setCouponApplied] =
-    useState(false);
-
-  const [placingOrder, setPlacingOrder] =
-    useState(false);
-
-  const [orderPlaced, setOrderPlaced] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
     fullName: "",
     mobile: "",
-    email: "",
     address: "",
-    landmark: "",
     city: "",
     state: "",
     pincode: "",
   });
 
-  const subtotal = 6797;
-  const deliveryCharge = subtotal >= 499 ? 0 : 49;
-  const discount = couponApplied ? 500 : 0;
-  const total =
-    subtotal + deliveryCharge - discount;
+  const [error, setError] = useState("");
+
+  const product = {
+    name: "Wireless Headphones",
+    brand: "PrimeAudio",
+    price: 2499,
+    originalPrice: 3999,
+    quantity: 1,
+    image: "/products/headphone.png",
+  };
+
+  const subtotal = product.price * product.quantity;
+  const delivery = subtotal >= 499 ? 0 : 49;
+  const total = subtotal + delivery;
+  const discount = product.originalPrice - product.price;
 
   function updateField(
     field: keyof typeof form,
     value: string
   ) {
-    setForm((prev) => ({
-      ...prev,
+    setForm((previous) => ({
+      ...previous,
       [field]: value,
     }));
   }
 
-  function applyCoupon() {
-    if (coupon.trim().toUpperCase() === "PRIME500") {
-      setCouponApplied(true);
+  function validateForm() {
+    if (!form.fullName.trim()) {
+      return "Please enter your full name.";
+    }
+
+    if (!/^[0-9]{10}$/.test(form.mobile)) {
+      return "Please enter a valid 10-digit mobile number.";
+    }
+
+    if (!form.address.trim()) {
+      return "Please enter your complete address.";
+    }
+
+    if (!form.city.trim()) {
+      return "Please enter your city.";
+    }
+
+    if (!form.state.trim()) {
+      return "Please enter your state.";
+    }
+
+    if (!/^[0-9]{6}$/.test(form.pincode)) {
+      return "Please enter a valid 6-digit pincode.";
+    }
+
+    return "";
+  }
+
+  async function handlePlaceOrder() {
+    setError("");
+
+    const validationError = validateForm();
+
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      /*
+       * Later you can insert the order into Supabase here.
+       */
+
+      await new Promise((resolve) =>
+        setTimeout(resolve, 1200)
+      );
+
+      router.push("/dashboard/orders");
+    } catch (err) {
+      console.error("Place order error:", err);
+      setError("Unable to place your order. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
-  function placeOrder() {
-    setPlacingOrder(true);
-
-    setTimeout(() => {
-      setPlacingOrder(false);
-      setOrderPlaced(true);
-    }, 1200);
-  }
-
-  if (orderPlaced) {
-    return <OrderSuccess />;
-  }
-
   return (
-    <main className="min-h-screen bg-[#faf8f3] text-[#181818]">
+    <main className="min-h-screen bg-[#faf8f3] text-[#111]">
 
-      {/* =====================================================
-          HEADER
-      ===================================================== */}
+      {/* HEADER */}
 
-      <header className="border-b border-[#e8e3d9] bg-white">
+      <header className="sticky top-0 z-40 border-b border-[#e8e4da] bg-white">
+        <div className="mx-auto flex h-[72px] max-w-[1400px] items-center justify-between px-4 lg:px-6">
 
-        <div className="mx-auto flex h-[72px] max-w-[1400px] items-center justify-between px-4 sm:px-6 lg:px-8">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-3"
+          >
+            <img
+              src="/logo.png"
+              alt="PrimeCart"
+              className="h-11 w-11 object-contain"
+            />
+
+            <div>
+              <h1 className="text-[24px] font-black tracking-tight">
+                Prime
+                <span className="text-[#D4AF37]">
+                  Cart
+                </span>
+              </h1>
+
+              <p className="-mt-1 text-[9px] font-medium tracking-[1px] text-gray-500">
+                SHOP MORE. PAY LESS.
+              </p>
+            </div>
+          </Link>
+
+          <div className="hidden items-center gap-2 text-sm font-semibold text-gray-600 sm:flex">
+            <ShieldCheck
+              size={19}
+              className="text-[#D4AF37]"
+            />
+            Secure Checkout
+          </div>
+        </div>
+      </header>
+
+      {/* CONTENT */}
+
+      <div className="mx-auto max-w-[1400px] px-4 py-7 lg:px-6 lg:py-10">
+
+        {/* TOP */}
+
+        <div className="mb-8">
 
           <Link
             href="/dashboard/cart"
-            className="
-              flex
-              items-center
-              gap-2
-              text-sm
-              font-semibold
-              text-[#555]
-              transition
-              hover:text-[#c99516]
-            "
+            className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-gray-600 transition hover:text-[#b58f21]"
           >
-            <ArrowLeft size={18} />
-            <span>Back to Cart</span>
+            <ArrowLeft size={17} />
+            Back to Cart
           </Link>
 
-          <div className="flex items-center gap-2">
-
-            <Lock
-              size={16}
-              className="text-[#c99516]"
-            />
-
-            <span className="text-xs font-semibold text-[#666] sm:text-sm">
-              Secure Checkout
-            </span>
-
-          </div>
-
-        </div>
-
-      </header>
-
-      {/* =====================================================
-          CHECKOUT STEPS
-      ===================================================== */}
-
-      <div className="border-b border-[#ebe7df] bg-white">
-
-        <div className="mx-auto max-w-[1400px] px-4 py-5 sm:px-6 lg:px-8">
-
-          <div className="mx-auto flex max-w-[700px] items-center justify-center">
-
-            <Step
-              number="1"
-              title="Address"
-              active
-            />
-
-            <StepLine />
-
-            <Step
-              number="2"
-              title="Payment"
-              active
-            />
-
-            <StepLine />
-
-            <Step
-              number="3"
-              title="Confirmation"
-            />
-
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* =====================================================
-          MAIN
-      ===================================================== */}
-
-      <div className="mx-auto max-w-[1400px] px-4 py-7 sm:px-6 lg:px-8">
-
-        <div className="mb-7">
-
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          <h2 className="text-3xl font-black tracking-tight sm:text-4xl">
             Checkout
-          </h1>
+          </h2>
 
-          <p className="mt-1 text-sm text-[#888]">
-            Complete your order securely and quickly.
+          <p className="mt-2 text-sm text-gray-500">
+            Complete your details and place your order securely.
           </p>
-
         </div>
 
-        <div className="grid gap-7 lg:grid-cols-[1fr_370px]">
+        {/* ERROR */}
 
-          {/* =================================================
-              LEFT
-          ================================================= */}
+        {error && (
+          <div
+            role="alert"
+            className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+          >
+            {error}
+          </div>
+        )}
+
+        <div className="grid gap-7 lg:grid-cols-[1fr_390px]">
+
+          {/* LEFT */}
 
           <div className="space-y-6">
 
-            {/* ADDRESS */}
+            {/* DELIVERY ADDRESS */}
 
-            <section
-              className="
-                rounded-2xl
-                border
-                border-[#e5e0d7]
-                bg-white
-                p-5
-                shadow-[0_4px_20px_rgba(0,0,0,0.03)]
-                sm:p-7
-              "
-            >
+            <section className="rounded-2xl border border-[#e7e2d8] bg-white p-5 shadow-sm sm:p-7">
 
-              <SectionHeader
-                icon={<MapPin size={20} />}
-                title="Delivery Address"
-                subtitle="Where should we deliver your order?"
-              />
+              <div className="mb-6 flex items-center gap-3">
 
-              <div className="mt-6 grid gap-5 sm:grid-cols-2">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f8f2df]">
+                  <MapPin
+                    size={21}
+                    className="text-[#c29620]"
+                  />
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-bold">
+                    Delivery Address
+                  </h3>
+
+                  <p className="text-xs text-gray-500">
+                    Where should we deliver your order?
+                  </p>
+                </div>
+
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-2">
 
                 <Input
                   label="Full Name"
-                  icon={<User size={17} />}
                   placeholder="Enter your full name"
                   value={form.fullName}
                   onChange={(value) =>
@@ -228,94 +241,28 @@ export default function CheckoutPage() {
 
                 <Input
                   label="Mobile Number"
-                  icon={<Phone size={17} />}
                   placeholder="10-digit mobile number"
                   value={form.mobile}
+                  maxLength={10}
+                  inputMode="numeric"
                   onChange={(value) =>
                     updateField(
                       "mobile",
-                      value
-                        .replace(/\D/g, "")
-                        .slice(0, 10)
+                      value.replace(/\D/g, "").slice(0, 10)
                     )
                   }
                 />
 
                 <div className="sm:col-span-2">
-
                   <Input
-                    label="Email Address"
-                    icon={<Mail size={17} />}
-                    placeholder="Enter your email"
-                    type="email"
-                    value={form.email}
-                    onChange={(value) =>
-                      updateField("email", value)
-                    }
-                  />
-
-                </div>
-
-                <div className="sm:col-span-2">
-
-                  <label className="mb-2 block text-xs font-bold text-[#333]">
-                    Complete Address
-                  </label>
-
-                  <textarea
+                    label="Complete Address"
+                    placeholder="House no, building, street, area"
                     value={form.address}
-                    onChange={(e) =>
-                      updateField(
-                        "address",
-                        e.target.value
-                      )
+                    onChange={(value) =>
+                      updateField("address", value)
                     }
-                    placeholder="House / Flat / Building / Street"
-                    rows={3}
-                    className="
-                      w-full
-                      resize-none
-                      rounded-xl
-                      border
-                      border-[#dcd8d0]
-                      bg-white
-                      px-4
-                      py-3
-                      text-sm
-                      outline-none
-                      transition
-                      placeholder:text-[#aaa]
-                      focus:border-[#c99516]
-                      focus:ring-4
-                      focus:ring-[#c99516]/10
-                    "
                   />
-
                 </div>
-
-                <Input
-                  label="Landmark"
-                  icon={<MapPin size={17} />}
-                  placeholder="Nearby landmark"
-                  value={form.landmark}
-                  onChange={(value) =>
-                    updateField("landmark", value)
-                  }
-                />
-
-                <Input
-                  label="Pincode"
-                  placeholder="6-digit pincode"
-                  value={form.pincode}
-                  onChange={(value) =>
-                    updateField(
-                      "pincode",
-                      value
-                        .replace(/\D/g, "")
-                        .slice(0, 6)
-                    )
-                  }
-                />
 
                 <Input
                   label="City"
@@ -335,368 +282,162 @@ export default function CheckoutPage() {
                   }
                 />
 
-              </div>
+                <Input
+                  label="Pincode"
+                  placeholder="6-digit pincode"
+                  value={form.pincode}
+                  maxLength={6}
+                  inputMode="numeric"
+                  onChange={(value) =>
+                    updateField(
+                      "pincode",
+                      value.replace(/\D/g, "").slice(0, 6)
+                    )
+                  }
+                />
 
+              </div>
             </section>
 
             {/* PAYMENT */}
 
-            <section
-              className="
-                rounded-2xl
-                border
-                border-[#e5e0d7]
-                bg-white
-                p-5
-                shadow-[0_4px_20px_rgba(0,0,0,0.03)]
-                sm:p-7
-              "
-            >
+            <section className="rounded-2xl border border-[#e7e2d8] bg-white p-5 shadow-sm sm:p-7">
 
-              <SectionHeader
-                icon={<WalletCards size={20} />}
-                title="Payment Method"
-                subtitle="Choose your preferred payment option"
-              />
+              <div className="mb-6 flex items-center gap-3">
 
-              <div className="mt-6 space-y-3">
-
-                <PaymentOption
-                  id="upi"
-                  title="UPI"
-                  subtitle="Google Pay, PhonePe, Paytm & more"
-                  icon={<Smartphone size={21} />}
-                  active={
-                    paymentMethod === "upi"
-                  }
-                  onClick={() =>
-                    setPaymentMethod("upi")
-                  }
-                />
-
-                <PaymentOption
-                  id="card"
-                  title="Credit / Debit Card"
-                  subtitle="Visa, Mastercard, RuPay & more"
-                  icon={<CreditCard size={21} />}
-                  active={
-                    paymentMethod === "card"
-                  }
-                  onClick={() =>
-                    setPaymentMethod("card")
-                  }
-                />
-
-                <PaymentOption
-                  id="cod"
-                  title="Cash on Delivery"
-                  subtitle="Pay when your order arrives"
-                  icon={<Banknote size={21} />}
-                  active={
-                    paymentMethod === "cod"
-                  }
-                  onClick={() =>
-                    setPaymentMethod("cod")
-                  }
-                />
-
-              </div>
-
-              {/* UPI */}
-
-              {paymentMethod === "upi" && (
-                <div className="mt-5 rounded-xl bg-[#faf8f3] p-4">
-
-                  <p className="text-xs font-bold text-[#333]">
-                    UPI Payment
-                  </p>
-
-                  <p className="mt-1 text-xs text-[#888]">
-                    You will be redirected to your UPI
-                    app after placing the order.
-                  </p>
-
-                </div>
-              )}
-
-              {/* CARD */}
-
-              {paymentMethod === "card" && (
-                <div className="mt-5 grid gap-4 rounded-xl bg-[#faf8f3] p-4 sm:grid-cols-2">
-
-                  <div className="sm:col-span-2">
-
-                    <label className="mb-2 block text-xs font-bold">
-                      Card Number
-                    </label>
-
-                    <input
-                      placeholder="1234 5678 9012 3456"
-                      className="checkout-input"
-                    />
-
-                  </div>
-
-                  <div>
-
-                    <label className="mb-2 block text-xs font-bold">
-                      Expiry Date
-                    </label>
-
-                    <input
-                      placeholder="MM / YY"
-                      className="checkout-input"
-                    />
-
-                  </div>
-
-                  <div>
-
-                    <label className="mb-2 block text-xs font-bold">
-                      CVV
-                    </label>
-
-                    <input
-                      type="password"
-                      placeholder="•••"
-                      maxLength={3}
-                      className="checkout-input"
-                    />
-
-                  </div>
-
-                </div>
-              )}
-
-              {/* COD */}
-
-              {paymentMethod === "cod" && (
-                <div className="mt-5 rounded-xl border border-[#e7dfca] bg-[#fffaf0] p-4">
-
-                  <div className="flex gap-3">
-
-                    <Banknote
-                      size={20}
-                      className="mt-0.5 shrink-0 text-[#c99516]"
-                    />
-
-                    <div>
-
-                      <p className="text-xs font-bold text-[#333]">
-                        Cash on Delivery
-                      </p>
-
-                      <p className="mt-1 text-xs leading-5 text-[#777]">
-                        Please keep the exact amount ready
-                        when your order is delivered.
-                      </p>
-
-                    </div>
-
-                  </div>
-
-                </div>
-              )}
-
-            </section>
-
-            {/* TRUST */}
-
-            <div
-              className="
-                grid
-                grid-cols-1
-                gap-3
-                sm:grid-cols-3
-              "
-            >
-
-              <TrustItem
-                icon={<ShieldCheck size={20} />}
-                title="Secure Payment"
-                text="Your payment is protected"
-              />
-
-              <TrustItem
-                icon={<Truck size={20} />}
-                title="Fast Delivery"
-                text="Quick & reliable delivery"
-              />
-
-              <TrustItem
-                icon={<Lock size={20} />}
-                title="100% Safe"
-                text="Your information is secure"
-              />
-
-            </div>
-
-          </div>
-
-          {/* =================================================
-              RIGHT SUMMARY
-          ================================================= */}
-
-          <aside>
-
-            <div
-              className="
-                sticky
-                top-5
-                rounded-2xl
-                border
-                border-[#e5e0d7]
-                bg-white
-                p-5
-                shadow-[0_5px_25px_rgba(0,0,0,0.04)]
-                sm:p-6
-              "
-            >
-
-              <div className="flex items-center gap-3">
-
-                <div
-                  className="
-                    flex
-                    h-10
-                    w-10
-                    items-center
-                    justify-center
-                    rounded-xl
-                    bg-[#faf3df]
-                    text-[#c99516]
-                  "
-                >
-                  <ShoppingBag size={20} />
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f8f2df]">
+                  <CreditCard
+                    size={21}
+                    className="text-[#c29620]"
+                  />
                 </div>
 
                 <div>
+                  <h3 className="text-lg font-bold">
+                    Payment Method
+                  </h3>
 
-                  <h2 className="font-bold">
-                    Order Summary
-                  </h2>
-
-                  <p className="text-xs text-[#888]">
-                    3 items
+                  <p className="text-xs text-gray-500">
+                    Choose your preferred payment option.
                   </p>
-
                 </div>
 
               </div>
 
-              {/* PRODUCTS */}
+              <div className="space-y-3">
 
-              <div className="mt-6 space-y-4">
-
-                <CheckoutProduct
-                  image="/products/headphone.png"
-                  name="Wireless Bluetooth Headphones"
-                  quantity={1}
-                  price={2499}
+                <PaymentOption
+                  selected={paymentMethod === "cod"}
+                  onClick={() =>
+                    setPaymentMethod("cod")
+                  }
+                  icon={<Banknote size={21} />}
+                  title="Cash on Delivery"
+                  description="Pay when your order arrives"
                 />
 
-                <CheckoutProduct
-                  image="/products/smartwatch.png"
-                  name="Premium Smart Watch"
-                  quantity={1}
-                  price={3299}
+                <PaymentOption
+                  selected={paymentMethod === "upi"}
+                  onClick={() =>
+                    setPaymentMethod("upi")
+                  }
+                  icon={<Wallet size={21} />}
+                  title="UPI"
+                  description="Pay securely using UPI"
                 />
 
-                <CheckoutProduct
-                  image="/products/speaker.png"
-                  name="Portable Bluetooth Speaker"
-                  quantity={1}
-                  price={999}
+                <PaymentOption
+                  selected={paymentMethod === "card"}
+                  onClick={() =>
+                    setPaymentMethod("card")
+                  }
+                  icon={<CreditCard size={21} />}
+                  title="Credit / Debit Card"
+                  description="Visa, Mastercard and more"
                 />
 
               </div>
+            </section>
 
-              <div className="my-5 border-t border-dashed border-[#dedede]" />
+            {/* SECURITY */}
 
-              {/* COUPON */}
+            <div className="grid gap-4 sm:grid-cols-3">
 
-              <div>
+              <SecurityItem
+                icon={<ShieldCheck size={21} />}
+                title="Secure Payment"
+                text="100% protected"
+              />
 
-                <label className="mb-2 block text-xs font-bold text-[#444]">
-                  Have a coupon?
-                </label>
+              <SecurityItem
+                icon={<Truck size={21} />}
+                title="Fast Delivery"
+                text="Quick doorstep delivery"
+              />
 
-                <div className="flex gap-2">
+              <SecurityItem
+                icon={<CheckCircle2 size={21} />}
+                title="Easy Returns"
+                text="Simple return process"
+              />
 
-                  <div className="relative flex-1">
+            </div>
+          </div>
 
-                    <Tag
-                      size={16}
-                      className="
-                        absolute
-                        left-3
-                        top-1/2
-                        -translate-y-1/2
-                        text-[#999]
-                      "
-                    />
+          {/* RIGHT */}
 
-                    <input
-                      value={coupon}
-                      onChange={(e) =>
-                        setCoupon(e.target.value)
-                      }
-                      placeholder="Enter coupon code"
-                      disabled={couponApplied}
-                      className="
-                        h-11
-                        w-full
-                        rounded-xl
-                        border
-                        border-[#ddd]
-                        pl-9
-                        pr-3
-                        text-xs
-                        outline-none
-                        focus:border-[#c99516]
-                      "
-                    />
+          <aside className="h-fit lg:sticky lg:top-[95px]">
 
+            <div className="rounded-2xl border border-[#e7e2d8] bg-white p-5 shadow-sm sm:p-6">
+
+              <h3 className="mb-5 text-xl font-bold">
+                Order Summary
+              </h3>
+
+              {/* PRODUCT */}
+
+              <div className="flex gap-4 border-b border-[#eeeeee] pb-5">
+
+                <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl bg-[#f7f6f2] p-2">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+
+                <div className="min-w-0">
+
+                  <p className="text-xs font-semibold text-[#c29620]">
+                    {product.brand}
+                  </p>
+
+                  <h4 className="mt-1 line-clamp-2 text-sm font-bold">
+                    {product.name}
+                  </h4>
+
+                  <p className="mt-2 text-xs text-gray-500">
+                    Quantity: {product.quantity}
+                  </p>
+
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="font-bold">
+                      ₹{product.price.toLocaleString("en-IN")}
+                    </span>
+
+                    <span className="text-xs text-gray-400 line-through">
+                      ₹
+                      {product.originalPrice.toLocaleString(
+                        "en-IN"
+                      )}
+                    </span>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={applyCoupon}
-                    disabled={couponApplied}
-                    className="
-                      h-11
-                      rounded-xl
-                      border
-                      border-[#d5a32d]
-                      px-4
-                      text-xs
-                      font-bold
-                      text-[#b17d08]
-                      transition
-                      hover:bg-[#fff8e8]
-                      disabled:opacity-50
-                    "
-                  >
-                    {couponApplied
-                      ? "Applied"
-                      : "Apply"}
-                  </button>
-
                 </div>
-
-                {couponApplied && (
-                  <p className="mt-2 text-[11px] font-semibold text-green-600">
-                    ✓ PRIME500 applied. You saved ₹500.
-                  </p>
-                )}
-
               </div>
-
-              <div className="my-5 border-t border-[#e8e4dc]" />
 
               {/* PRICE */}
 
-              <div className="space-y-3">
+              <div className="space-y-3 border-b border-[#eeeeee] py-5">
 
                 <PriceRow
                   label="Subtotal"
@@ -708,34 +449,36 @@ export default function CheckoutPage() {
                 <PriceRow
                   label="Delivery"
                   value={
-                    deliveryCharge === 0
+                    delivery === 0
                       ? "FREE"
-                      : `₹${deliveryCharge}`
+                      : `₹${delivery}`
                   }
-                  green
+                  valueClass={
+                    delivery === 0
+                      ? "text-green-600"
+                      : ""
+                  }
                 />
 
-                {couponApplied && (
-                  <PriceRow
-                    label="Coupon Discount"
-                    value={`- ₹${discount.toLocaleString(
-                      "en-IN"
-                    )}`}
-                    green
-                  />
-                )}
+                <PriceRow
+                  label="Product Discount"
+                  value={`- ₹${discount.toLocaleString(
+                    "en-IN"
+                  )}`}
+                  valueClass="text-green-600"
+                />
 
               </div>
 
-              <div className="my-5 border-t border-[#dedbd4]" />
+              {/* TOTAL */}
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between py-5">
 
                 <span className="text-base font-bold">
                   Total Amount
                 </span>
 
-                <span className="text-xl font-extrabold text-[#181818]">
+                <span className="text-2xl font-black text-[#111]">
                   ₹{total.toLocaleString("en-IN")}
                 </span>
 
@@ -744,462 +487,171 @@ export default function CheckoutPage() {
               {/* PLACE ORDER */}
 
               <button
-                onClick={placeOrder}
-                disabled={placingOrder}
-                className="
-                  mt-6
-                  flex
-                  h-13
-                  w-full
-                  items-center
-                  justify-center
-                  gap-2
-                  rounded-xl
-                  bg-[#d99d08]
-                  px-5
-                  py-3.5
-                  text-sm
-                  font-bold
-                  text-white
-                  shadow-[0_8px_22px_rgba(217,157,8,0.2)]
-                  transition
-                  hover:bg-[#c88f05]
-                  active:scale-[0.99]
-                  disabled:cursor-not-allowed
-                  disabled:opacity-60
-                "
+                type="button"
+                onClick={handlePlaceOrder}
+                disabled={loading}
+                className="flex h-[56px] w-full items-center justify-center gap-2 rounded-xl bg-[#D4AF37] text-[15px] font-bold text-white shadow-[0_7px_20px_rgba(212,175,55,0.25)] transition hover:bg-[#bd9828] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {placingOrder ? (
+                {loading ? (
                   <>
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                    Processing...
+                    <Loader2
+                      size={19}
+                      className="animate-spin"
+                    />
+                    Placing Order...
                   </>
                 ) : (
                   <>
+                    <Package size={19} />
                     Place Order
-                    <ChevronRight size={18} />
                   </>
                 )}
               </button>
 
-              <p className="mt-3 text-center text-[10px] leading-4 text-[#999]">
-                By placing this order, you agree to
-                PrimeCart's Terms & Conditions and
-                Privacy Policy.
+              <p className="mt-4 text-center text-[11px] leading-5 text-gray-500">
+                By placing this order, you agree to PrimeCart's
+                terms and conditions.
               </p>
 
             </div>
-
           </aside>
-
         </div>
-
       </div>
-
-      <style jsx global>{`
-        .checkout-input {
-          height: 46px;
-          width: 100%;
-          border-radius: 10px;
-          border: 1px solid #dcd8d0;
-          background: #ffffff;
-          padding: 0 14px;
-          font-size: 13px;
-          color: #222;
-          outline: none;
-          transition: all 0.2s ease;
-        }
-
-        .checkout-input::placeholder {
-          color: #aaa;
-        }
-
-        .checkout-input:focus {
-          border-color: #c99516;
-          box-shadow: 0 0 0 4px rgba(201, 149, 22, 0.09);
-        }
-      `}</style>
-
     </main>
   );
 }
 
-/* =============================================================
-   STEP
-============================================================= */
-
-function Step({
-  number,
-  title,
-  active = false,
-}: {
-  number: string;
-  title: string;
-  active?: boolean;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-
-      <div
-        className={`
-          flex
-          h-8
-          w-8
-          items-center
-          justify-center
-          rounded-full
-          text-xs
-          font-bold
-
-          ${
-            active
-              ? "bg-[#d99d08] text-white"
-              : "bg-[#eeeeee] text-[#999]"
-          }
-        `}
-      >
-        {number}
-      </div>
-
-      <span
-        className={`
-          hidden
-          text-xs
-          font-semibold
-          sm:block
-
-          ${
-            active
-              ? "text-[#333]"
-              : "text-[#999]"
-          }
-        `}
-      >
-        {title}
-      </span>
-
-    </div>
-  );
-}
-
-/* =============================================================
-   STEP LINE
-============================================================= */
-
-function StepLine() {
-  return (
-    <div className="mx-3 h-px w-12 bg-[#dedbd3] sm:mx-5 sm:w-20" />
-  );
-}
-
-/* =============================================================
-   SECTION HEADER
-============================================================= */
-
-function SectionHeader({
-  icon,
-  title,
-  subtitle,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  subtitle: string;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-
-      <div
-        className="
-          flex
-          h-10
-          w-10
-          shrink-0
-          items-center
-          justify-center
-          rounded-xl
-          bg-[#faf3df]
-          text-[#c99516]
-        "
-      >
-        {icon}
-      </div>
-
-      <div>
-
-        <h2 className="text-base font-bold">
-          {title}
-        </h2>
-
-        <p className="mt-1 text-xs text-[#888]">
-          {subtitle}
-        </p>
-
-      </div>
-
-    </div>
-  );
-}
-
-/* =============================================================
+/* =========================================================
    INPUT
-============================================================= */
+========================================================= */
 
 function Input({
   label,
   placeholder,
   value,
   onChange,
-  icon,
-  type = "text",
+  maxLength,
+  inputMode,
 }: {
   label: string;
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
-  icon?: React.ReactNode;
-  type?: string;
+  maxLength?: number;
+  inputMode?: "numeric" | "text";
 }) {
   return (
     <div>
-
-      <label className="mb-2 block text-xs font-bold text-[#333]">
+      <label className="mb-2 block text-sm font-bold text-[#222]">
         {label}
       </label>
 
-      <div className="relative">
-
-        {icon && (
-          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#888]">
-            {icon}
-          </span>
-        )}
-
-        <input
-          type={type}
-          value={value}
-          onChange={(e) =>
-            onChange(e.target.value)
-          }
-          placeholder={placeholder}
-          className={`
-            checkout-input
-            ${icon ? "pl-10" : ""}
-          `}
-        />
-
-      </div>
-
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        maxLength={maxLength}
+        inputMode={inputMode}
+        className="h-[50px] w-full rounded-xl border border-[#dedbd3] bg-white px-4 text-sm text-[#222] outline-none transition placeholder:text-gray-400 focus:border-[#D4AF37] focus:ring-4 focus:ring-[#D4AF37]/10"
+      />
     </div>
   );
 }
 
-/* =============================================================
+/* =========================================================
    PAYMENT OPTION
-============================================================= */
+========================================================= */
 
 function PaymentOption({
-  id,
-  title,
-  subtitle,
-  icon,
-  active,
+  selected,
   onClick,
+  icon,
+  title,
+  description,
 }: {
-  id: string;
-  title: string;
-  subtitle: string;
-  icon: React.ReactNode;
-  active: boolean;
+  selected: boolean;
   onClick: () => void;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`
-        flex
-        w-full
-        items-center
-        gap-4
-        rounded-xl
-        border
-        p-4
-        text-left
-        transition
-
-        ${
-          active
-            ? "border-[#d5a32d] bg-[#fffaf0]"
-            : "border-[#e2ded6] bg-white hover:border-[#cfc8bb]"
-        }
-      `}
+      className={`flex w-full items-center gap-4 rounded-xl border p-4 text-left transition ${
+        selected
+          ? "border-[#D4AF37] bg-[#fffaf0] shadow-sm"
+          : "border-[#e2e0da] bg-white hover:border-[#D4AF37]"
+      }`}
     >
-
       <div
-        className={`
-          flex
-          h-10
-          w-10
-          shrink-0
-          items-center
-          justify-center
-          rounded-xl
-
-          ${
-            active
-              ? "bg-[#d99d08] text-white"
-              : "bg-[#f5f3ee] text-[#777]"
-          }
-        `}
+        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+          selected
+            ? "bg-[#D4AF37] text-white"
+            : "bg-[#f5f4ef] text-gray-600"
+        }`}
       >
         {icon}
       </div>
 
       <div className="flex-1">
-
-        <p className="text-sm font-bold text-[#333]">
+        <p className="text-sm font-bold text-[#222]">
           {title}
         </p>
 
-        <p className="mt-1 text-[11px] text-[#888]">
-          {subtitle}
+        <p className="mt-1 text-xs text-gray-500">
+          {description}
         </p>
-
       </div>
 
       <div
-        className={`
-          flex
-          h-5
-          w-5
-          items-center
-          justify-center
-          rounded-full
-          border
-
-          ${
-            active
-              ? "border-[#d99d08] bg-[#d99d08] text-white"
-              : "border-[#ccc]"
-          }
-        `}
+        className={`flex h-5 w-5 items-center justify-center rounded-full border ${
+          selected
+            ? "border-[#D4AF37]"
+            : "border-gray-300"
+        }`}
       >
-        {active && <Check size={12} />}
+        {selected && (
+          <div className="h-2.5 w-2.5 rounded-full bg-[#D4AF37]" />
+        )}
       </div>
-
     </button>
   );
 }
 
-/* =============================================================
-   CHECKOUT PRODUCT
-============================================================= */
-
-function CheckoutProduct({
-  image,
-  name,
-  quantity,
-  price,
-}: {
-  image: string;
-  name: string;
-  quantity: number;
-  price: number;
-}) {
-  return (
-    <div className="flex gap-3">
-
-      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-[#f7f6f2]">
-
-        <img
-          src={image}
-          alt={name}
-          className="h-full w-full object-contain p-2"
-        />
-
-        <span
-          className="
-            absolute
-            -right-1
-            -top-1
-            flex
-            h-5
-            min-w-5
-            items-center
-            justify-center
-            rounded-full
-            bg-[#d99d08]
-            px-1
-            text-[9px]
-            font-bold
-            text-white
-          "
-        >
-          {quantity}
-        </span>
-
-      </div>
-
-      <div className="min-w-0 flex-1">
-
-        <p className="line-clamp-2 text-xs font-semibold leading-5 text-[#333]">
-          {name}
-        </p>
-
-        <p className="mt-1 text-[11px] text-[#888]">
-          Qty: {quantity}
-        </p>
-
-      </div>
-
-      <span className="text-xs font-bold text-[#222]">
-        ₹{price.toLocaleString("en-IN")}
-      </span>
-
-    </div>
-  );
-}
-
-/* =============================================================
+/* =========================================================
    PRICE ROW
-============================================================= */
+========================================================= */
 
 function PriceRow({
   label,
   value,
-  green = false,
+  valueClass = "",
 }: {
   label: string;
   value: string;
-  green?: boolean;
+  valueClass?: string;
 }) {
   return (
-    <div className="flex items-center justify-between">
-
-      <span className="text-xs text-[#777]">
+    <div className="flex items-center justify-between text-sm">
+      <span className="text-gray-600">
         {label}
       </span>
 
-      <span
-        className={`
-          text-xs
-          font-semibold
-
-          ${green ? "text-green-600" : "text-[#333]"}
-        `}
-      >
+      <span className={`font-semibold ${valueClass}`}>
         {value}
       </span>
-
     </div>
   );
 }
 
-/* =============================================================
-   TRUST ITEM
-============================================================= */
+/* =========================================================
+   SECURITY ITEM
+========================================================= */
 
-function TrustItem({
+function SecurityItem({
   icon,
   title,
   text,
@@ -1209,155 +661,18 @@ function TrustItem({
   text: string;
 }) {
   return (
-    <div
-      className="
-        flex
-        items-center
-        gap-3
-        rounded-xl
-        border
-        border-[#e8e3da]
-        bg-white
-        p-4
-      "
-    >
-
-      <div className="text-[#c99516]">
+    <div className="rounded-xl border border-[#e7e2d8] bg-white p-4">
+      <div className="mb-2 text-[#c29620]">
         {icon}
       </div>
 
-      <div>
+      <p className="text-xs font-bold">
+        {title}
+      </p>
 
-        <p className="text-xs font-bold">
-          {title}
-        </p>
-
-        <p className="mt-1 text-[10px] text-[#888]">
-          {text}
-        </p>
-
-      </div>
-
+      <p className="mt-1 text-[10px] text-gray-500">
+        {text}
+      </p>
     </div>
-  );
-}
-
-/* =============================================================
-   ORDER SUCCESS
-============================================================= */
-
-function OrderSuccess() {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-[#faf8f3] px-5">
-
-      <div
-        className="
-          w-full
-          max-w-[560px]
-          rounded-3xl
-          border
-          border-[#e5e0d7]
-          bg-white
-          px-6
-          py-12
-          text-center
-          shadow-[0_10px_40px_rgba(0,0,0,0.06)]
-          sm:px-10
-        "
-      >
-
-        <div
-          className="
-            mx-auto
-            flex
-            h-20
-            w-20
-            items-center
-            justify-center
-            rounded-full
-            bg-green-50
-            text-green-600
-          "
-        >
-          <Check size={40} />
-        </div>
-
-        <h1 className="mt-7 text-2xl font-bold sm:text-3xl">
-          Order Placed Successfully!
-        </h1>
-
-        <p className="mx-auto mt-3 max-w-[430px] text-sm leading-6 text-[#777]">
-          Thank you for shopping with PrimeCart.
-          Your order has been received and will be
-          processed shortly.
-        </p>
-
-        <div
-          className="
-            mx-auto
-            mt-6
-            max-w-[360px]
-            rounded-xl
-            bg-[#faf8f3]
-            p-4
-          "
-        >
-          <p className="text-xs text-[#888]">
-            Order ID
-          </p>
-
-          <p className="mt-1 font-bold text-[#333]">
-            #PC{Math.floor(Math.random() * 900000 + 100000)}
-          </p>
-        </div>
-
-        <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-
-          <Link
-            href="/dashboard/orders"
-            className="
-              flex
-              h-12
-              flex-1
-              items-center
-              justify-center
-              rounded-xl
-              bg-[#d99d08]
-              text-sm
-              font-bold
-              text-white
-              transition
-              hover:bg-[#c88f05]
-            "
-          >
-            View My Orders
-          </Link>
-
-          <Link
-            href="/dashboard"
-            className="
-              flex
-              h-12
-              flex-1
-              items-center
-              justify-center
-              rounded-xl
-              border
-              border-[#dedede]
-              text-sm
-              font-semibold
-              text-[#444]
-              transition
-              hover:bg-[#fafafa]
-            "
-          >
-            Continue Shopping
-          </Link>
-
-        </div>
-
-      </div>
-
-    </main>
   );
 }
