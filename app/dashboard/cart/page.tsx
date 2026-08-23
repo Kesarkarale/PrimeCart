@@ -883,7 +883,7 @@ export default function CartPage() {
                   {/* CHECKOUT */}
 
                   <Link
-                    href="/checkout"
+                    href="/dashboard/checkout"
                     className="group mt-5 flex min-h-[54px] items-center justify-center gap-2 rounded-xl bg-[#111111] px-5 text-sm font-black text-white transition hover:bg-[#d4a51c]"
                   >
                     Proceed to Checkout
