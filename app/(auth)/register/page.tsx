@@ -10,10 +10,7 @@ import {
   User,
   Phone,
   UserPlus,
-  Truck,
-  RotateCcw,
-  ShieldCheck,
-  Headphones,
+  Loader2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -24,16 +21,26 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] =
+    useState("");
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [showPassword, setShowPassword] =
+    useState(false);
+  const [showConfirm, setShowConfirm] =
+    useState(false);
 
   const [agree, setAgree] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] =
+    useState(false);
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // =========================================================
+  // REGISTER
+  // =========================================================
 
   async function handleRegister(
     e: FormEvent<HTMLFormElement>
@@ -93,6 +100,7 @@ export default function RegisterPage() {
         await supabase.auth.signUp({
           email: cleanEmail,
           password,
+
           options: {
             data: {
               full_name: name,
@@ -105,32 +113,42 @@ export default function RegisterPage() {
         });
 
       if (signUpError) {
+        const message =
+          signUpError.message.toLowerCase();
+
         if (
-          signUpError.message
-            .toLowerCase()
-            .includes("already registered")
+          message.includes("already registered") ||
+          message.includes("already exists")
         ) {
-          throw new Error(
-            "An account with this email already exists."
+          setError(
+            "An account with this email already exists. Please login instead."
           );
+        } else {
+          setError(signUpError.message);
         }
 
-        throw signUpError;
+        return;
       }
 
       /*
-       * If Confirm Email is OFF,
-       * Supabase immediately returns a session.
+       * Email confirmation OFF
+       * → session available
+       * → directly dashboard
        */
+
       if (data.session) {
+        setSuccess(
+          "Account created successfully. Redirecting..."
+        );
+
         window.location.replace("/dashboard");
         return;
       }
 
       /*
-       * If Confirm Email is ON,
-       * user needs to verify email first.
+       * Email confirmation ON
        */
+
       setSuccess(
         "Account created successfully! Please check your email and verify your account before logging in."
       );
@@ -142,6 +160,11 @@ export default function RegisterPage() {
       setConfirmPassword("");
       setAgree(false);
     } catch (err) {
+      console.error(
+        "Registration error:",
+        err
+      );
+
       setError(
         err instanceof Error
           ? err.message
@@ -152,458 +175,764 @@ export default function RegisterPage() {
     }
   }
 
+  // =========================================================
+  // GOOGLE SIGN UP
+  // =========================================================
+
+  const handleGoogleSignup = async () => {
+    setError("");
+    setSuccess("");
+
+    try {
+      setGoogleLoading(true);
+
+      const redirectTo =
+        `${window.location.origin}/auth/callback?next=/dashboard`;
+
+      const { error: googleError } =
+        await supabase.auth.signInWithOAuth({
+          provider: "google",
+
+          options: {
+            redirectTo,
+
+            queryParams: {
+              prompt: "select_account",
+            },
+          },
+        });
+
+      if (googleError) {
+        console.error(
+          "Google signup error:",
+          googleError
+        );
+
+        setError(googleError.message);
+        setGoogleLoading(false);
+      }
+    } catch (err) {
+      console.error(
+        "Google authentication error:",
+        err
+      );
+
+      setError(
+        "Unable to continue with Google."
+      );
+
+      setGoogleLoading(false);
+    }
+  };
+
   return (
-    <main className="min-h-screen bg-[#f8f6f1] p-3 sm:p-5 lg:p-7">
+    <main
+      className="
+        min-h-screen
+        bg-[#f8f6f1]
+        px-3
+        py-3
+        sm:px-5
+        sm:py-5
+        lg:p-6
+      "
+    >
+      {/* =====================================================
+          MAIN CONTAINER
+      ====================================================== */}
 
-      <div className="mx-auto max-w-[1380px] overflow-hidden rounded-[24px] bg-white shadow-[0_10px_50px_rgba(0,0,0,0.08)]">
+      <div
+        className="
+          mx-auto
+          grid
+          min-h-[calc(100vh-24px)]
+          w-full
+          max-w-[1370px]
+          overflow-hidden
+          rounded-[22px]
+          bg-white
+          shadow-[0_8px_40px_rgba(0,0,0,0.08)]
 
-        {/* ================= MAIN ================= */}
+          lg:grid-cols-[1fr_1fr]
+        "
+      >
+        {/* =====================================================
+            DESKTOP BANNER
+        ====================================================== */}
 
-        <div className="grid min-h-[760px] lg:grid-cols-2">
+        <div
+          className="
+            relative
+            hidden
+            overflow-hidden
+            bg-[#f4efe7]
 
-          {/* ================= IMAGE ================= */}
+            lg:block
+          "
+        >
+          <img
+            src="/login-banner.png"
+            alt="PrimeCart"
+            className="
+              absolute
+              inset-0
+              h-full
+              w-full
+              object-cover
+            "
+          />
+        </div>
 
-          <div className="relative min-h-[250px] bg-[#f5f1e9] lg:min-h-[760px]">
+        {/* =====================================================
+            REGISTER SECTION
+        ====================================================== */}
 
-            <img
-              src="/login-banner.png"
-              alt="PrimeCart"
-              className="absolute inset-0 h-full w-full object-cover"
-            />
+        <div
+          className="
+            flex
+            w-full
+            items-center
+            justify-center
+            bg-white
 
-          </div>
+            px-5
+            py-9
 
-          {/* ================= REGISTER FORM ================= */}
+            sm:px-9
+            sm:py-10
 
-          <div className="flex items-center justify-center px-5 py-10 sm:px-10 lg:px-14 xl:px-20">
+            md:px-12
 
-            <div className="w-full max-w-[470px]">
+            lg:px-12
+            xl:px-16
+            xl:py-12
+          "
+        >
+          <div
+            className="
+              w-full
+              max-w-[430px]
+            "
+          >
+            {/* =================================================
+                LOGO + NAME
+            ================================================= */}
 
-              {/* LOGO */}
+            <Link
+              href="/"
+              aria-label="PrimeCart Home"
+              className="
+                mb-7
+                flex
+                w-fit
+                flex-col
+                items-center
+                transition-opacity
+                duration-200
+                hover:opacity-85
 
-              <Link
-                href="/"
-                className="mb-8 flex w-fit items-center gap-2"
+                sm:mb-8
+              "
+            >
+              <img
+                src="/logo.png"
+                alt="PrimeCart Logo"
+                width={60}
+                height={60}
+                className="
+                  h-[55px]
+                  w-[55px]
+                  object-contain
+
+                  sm:h-[60px]
+                  sm:w-[60px]
+                "
+              />
+
+              <span
+                className="
+                  mt-1
+                  font-serif
+                  text-[25px]
+                  font-bold
+                  tracking-[-0.7px]
+                  text-[#111111]
+
+                  sm:text-[27px]
+                "
               >
+                PrimeCart
+              </span>
+            </Link>
 
-                <span className="text-[28px] leading-none">
-                  🛒
-                </span>
+            {/* =================================================
+                HEADING
+            ================================================= */}
 
-                <div>
-                  <div className="text-[25px] font-extrabold tracking-tight text-[#111]">
-                    Prime<span className="text-[#c99516]">
-                      Cart
-                    </span>
-                  </div>
+            <div className="mb-6">
+              <h1
+                className="
+                  font-serif
+                  text-[27px]
+                  font-bold
+                  leading-[1.2]
+                  tracking-[-0.5px]
+                  text-[#111111]
 
-                  <p className="-mt-1 text-[8px] font-medium tracking-wide text-[#777]">
-                    SHOP MORE. PAY LESS.
-                  </p>
-                </div>
-
-              </Link>
-
-              {/* HEADING */}
-
-              <div className="mb-7">
-
-                <h1 className="text-[30px] font-extrabold tracking-tight text-[#111] sm:text-[34px]">
-                  Create your account
-                </h1>
-
-                <p className="mt-2 text-[14px] text-[#777]">
-                  Fill in the details below to get started
-                </p>
-
-              </div>
-
-              {/* ERROR */}
-
-              {error && (
-                <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-5 text-red-700">
-                  {error}
-                </div>
-              )}
-
-              {/* SUCCESS */}
-
-              {success && (
-                <div className="mb-5 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm leading-6 text-green-700">
-                  {success}
-                </div>
-              )}
-
-              {/* FORM */}
-
-              <form
-                onSubmit={handleRegister}
-                className="space-y-4"
+                  sm:text-[30px]
+                "
               >
+                Create your account
+              </h1>
 
-                {/* FULL NAME */}
+              <p
+                className="
+                  mt-2
+                  font-serif
+                  text-[13px]
+                  leading-[1.6]
+                  text-[#777777]
 
-                <Field label="Full Name">
-
-                  <div className="relative">
-
-                    <User
-                      size={17}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
-                    />
-
-                    <input
-                      type="text"
-                      value={fullName}
-                      onChange={(e) =>
-                        setFullName(e.target.value)
-                      }
-                      placeholder="Enter your full name"
-                      autoComplete="name"
-                      disabled={loading}
-                      className="auth-input pl-11"
-                      required
-                    />
-
-                  </div>
-
-                </Field>
-
-                {/* EMAIL */}
-
-                <Field label="Email Address">
-
-                  <div className="relative">
-
-                    <Mail
-                      size={17}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
-                    />
-
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) =>
-                        setEmail(e.target.value)
-                      }
-                      placeholder="Enter your email"
-                      autoComplete="email"
-                      disabled={loading}
-                      className="auth-input pl-11"
-                      required
-                    />
-
-                  </div>
-
-                </Field>
-
-                {/* MOBILE */}
-
-                <Field label="Mobile Number">
-
-                  <div className="relative">
-
-                    <Phone
-                      size={17}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
-                    />
-
-                    <input
-                      type="tel"
-                      value={mobile}
-                      onChange={(e) =>
-                        setMobile(
-                          e.target.value
-                            .replace(/\D/g, "")
-                            .slice(0, 10)
-                        )
-                      }
-                      placeholder="Enter your mobile number"
-                      autoComplete="tel"
-                      disabled={loading}
-                      className="auth-input pl-11"
-                    />
-
-                  </div>
-
-                </Field>
-
-                {/* PASSWORD */}
-
-                <Field label="Password">
-
-                  <div className="relative">
-
-                    <LockKeyhole
-                      size={17}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
-                    />
-
-                    <input
-                      type={
-                        showPassword
-                          ? "text"
-                          : "password"
-                      }
-                      value={password}
-                      onChange={(e) =>
-                        setPassword(e.target.value)
-                      }
-                      placeholder="Create a password"
-                      autoComplete="new-password"
-                      disabled={loading}
-                      className="auth-input pl-11 pr-11"
-                      required
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowPassword(
-                          (value) => !value
-                        )
-                      }
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#777]"
-                    >
-                      {showPassword ? (
-                        <EyeOff size={17} />
-                      ) : (
-                        <Eye size={17} />
-                      )}
-                    </button>
-
-                  </div>
-
-                </Field>
-
-                {/* CONFIRM PASSWORD */}
-
-                <Field label="Confirm Password">
-
-                  <div className="relative">
-
-                    <LockKeyhole
-                      size={17}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
-                    />
-
-                    <input
-                      type={
-                        showConfirm
-                          ? "text"
-                          : "password"
-                      }
-                      value={confirmPassword}
-                      onChange={(e) =>
-                        setConfirmPassword(
-                          e.target.value
-                        )
-                      }
-                      placeholder="Confirm your password"
-                      autoComplete="new-password"
-                      disabled={loading}
-                      className="auth-input pl-11 pr-11"
-                      required
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowConfirm(
-                          (value) => !value
-                        )
-                      }
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#777]"
-                    >
-                      {showConfirm ? (
-                        <EyeOff size={17} />
-                      ) : (
-                        <Eye size={17} />
-                      )}
-                    </button>
-
-                  </div>
-
-                </Field>
-
-                {/* TERMS */}
-
-                <label className="flex cursor-pointer items-start gap-2 pt-1 text-[11px] leading-5 text-[#666]">
-
-                  <input
-                    type="checkbox"
-                    checked={agree}
-                    onChange={(e) =>
-                      setAgree(e.target.checked)
-                    }
-                    disabled={loading}
-                    className="mt-[2px] h-4 w-4 shrink-0 cursor-pointer accent-[#c99516]"
-                  />
-
-                  <span>
-                    I agree to the{" "}
-                    <span className="font-semibold text-[#c28b12]">
-                      Terms & Conditions
-                    </span>{" "}
-                    and{" "}
-                    <span className="font-semibold text-[#c28b12]">
-                      Privacy Policy
-                    </span>
-                  </span>
-
-                </label>
-
-                {/* CREATE ACCOUNT */}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="mt-2 flex h-[53px] w-full items-center justify-center gap-2 rounded-xl bg-[#d99d08] text-[14px] font-bold text-white shadow-[0_7px_18px_rgba(217,157,8,0.20)] transition hover:bg-[#c68e05] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-
-                  {loading ? (
-                    <>
-                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                      Creating Account...
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus size={18} />
-                      Create Account
-                    </>
-                  )}
-
-                </button>
-
-              </form>
-
-              {/* DIVIDER */}
-
-              <div className="my-7 flex items-center gap-4">
-
-                <div className="h-px flex-1 bg-[#e7e7e7]" />
-
-                <span className="text-[12px] font-medium text-[#888]">
-                  OR
-                </span>
-
-                <div className="h-px flex-1 bg-[#e7e7e7]" />
-
-              </div>
-
-              {/* GOOGLE */}
-
-              <button
-                type="button"
-                onClick={() => {
-                  setError(
-                    "Google sign-up is not configured yet."
-                  );
-                }}
-                className="flex h-[52px] w-full items-center justify-center gap-3 rounded-xl border border-[#dedede] bg-white text-[14px] font-semibold text-[#333] transition hover:bg-[#fafafa]"
+                  sm:text-[14px]
+                "
               >
-                <span className="text-[18px] font-bold text-[#4285f4]">
-                  G
-                </span>
-
-                Sign up with Google
-              </button>
-
-              {/* LOGIN */}
-
-              <p className="mt-7 text-center text-[13px] text-[#777]">
-
-                Already have an account?{" "}
-
-                <Link
-                  href="/login"
-                  className="font-bold text-[#c28b12] hover:underline"
-                >
-                  Login
-                </Link>
-
+                Create your PrimeCart account and start
+                shopping today.
               </p>
-
             </div>
 
+            {/* =================================================
+                ERROR
+            ================================================= */}
+
+            {error && (
+              <div
+                role="alert"
+                className="
+                  mb-5
+                  rounded-[10px]
+                  border
+                  border-red-200
+                  bg-red-50
+                  px-4
+                  py-3
+                  font-serif
+                  text-[12px]
+                  leading-5
+                  text-red-700
+                "
+              >
+                {error}
+              </div>
+            )}
+
+            {/* =================================================
+                SUCCESS
+            ================================================= */}
+
+            {success && (
+              <div
+                role="status"
+                className="
+                  mb-5
+                  rounded-[10px]
+                  border
+                  border-green-200
+                  bg-green-50
+                  px-4
+                  py-3
+                  font-serif
+                  text-[12px]
+                  leading-5
+                  text-green-700
+                "
+              >
+                {success}
+              </div>
+            )}
+
+            {/* =================================================
+                FORM
+            ================================================= */}
+
+            <form
+              onSubmit={handleRegister}
+              className="space-y-4"
+            >
+              {/* FULL NAME */}
+
+              <Field label="Full Name">
+                <div className="relative">
+                  <User
+                    size={18}
+                    strokeWidth={1.8}
+                    className="
+                      pointer-events-none
+                      absolute
+                      left-4
+                      top-1/2
+                      -translate-y-1/2
+                      text-[#777777]
+                    "
+                  />
+
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) =>
+                      setFullName(e.target.value)
+                    }
+                    placeholder="Enter your full name"
+                    autoComplete="name"
+                    disabled={
+                      loading || googleLoading
+                    }
+                    required
+                    className="auth-input pl-[48px]"
+                  />
+                </div>
+              </Field>
+
+              {/* EMAIL */}
+
+              <Field label="Email Address">
+                <div className="relative">
+                  <Mail
+                    size={18}
+                    strokeWidth={1.8}
+                    className="
+                      pointer-events-none
+                      absolute
+                      left-4
+                      top-1/2
+                      -translate-y-1/2
+                      text-[#777777]
+                    "
+                  />
+
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) =>
+                      setEmail(e.target.value)
+                    }
+                    placeholder="Enter your email"
+                    autoComplete="email"
+                    disabled={
+                      loading || googleLoading
+                    }
+                    required
+                    className="auth-input pl-[48px]"
+                  />
+                </div>
+              </Field>
+
+              {/* MOBILE */}
+
+              <Field label="Mobile Number">
+                <div className="relative">
+                  <Phone
+                    size={18}
+                    strokeWidth={1.8}
+                    className="
+                      pointer-events-none
+                      absolute
+                      left-4
+                      top-1/2
+                      -translate-y-1/2
+                      text-[#777777]
+                    "
+                  />
+
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    value={mobile}
+                    onChange={(e) =>
+                      setMobile(
+                        e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 10)
+                      )
+                    }
+                    placeholder="Enter your mobile number"
+                    autoComplete="tel"
+                    disabled={
+                      loading || googleLoading
+                    }
+                    className="auth-input pl-[48px]"
+                  />
+                </div>
+              </Field>
+
+              {/* PASSWORD */}
+
+              <Field label="Password">
+                <div className="relative">
+                  <LockKeyhole
+                    size={18}
+                    strokeWidth={1.8}
+                    className="
+                      pointer-events-none
+                      absolute
+                      left-4
+                      top-1/2
+                      -translate-y-1/2
+                      text-[#777777]
+                    "
+                  />
+
+                  <input
+                    type={
+                      showPassword
+                        ? "text"
+                        : "password"
+                    }
+                    value={password}
+                    onChange={(e) =>
+                      setPassword(e.target.value)
+                    }
+                    placeholder="Create a password"
+                    autoComplete="new-password"
+                    disabled={
+                      loading || googleLoading
+                    }
+                    required
+                    className="
+                      auth-input
+                      pl-[48px]
+                      pr-[48px]
+                    "
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowPassword(
+                        (value) => !value
+                      )
+                    }
+                    disabled={
+                      loading || googleLoading
+                    }
+                    aria-label={
+                      showPassword
+                        ? "Hide password"
+                        : "Show password"
+                    }
+                    className="
+                      absolute
+                      right-4
+                      top-1/2
+                      -translate-y-1/2
+                      text-[#777777]
+                      transition
+                      hover:text-[#222222]
+                    "
+                  >
+                    {showPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
+              </Field>
+
+              {/* CONFIRM PASSWORD */}
+
+              <Field label="Confirm Password">
+                <div className="relative">
+                  <LockKeyhole
+                    size={18}
+                    strokeWidth={1.8}
+                    className="
+                      pointer-events-none
+                      absolute
+                      left-4
+                      top-1/2
+                      -translate-y-1/2
+                      text-[#777777]
+                    "
+                  />
+
+                  <input
+                    type={
+                      showConfirm
+                        ? "text"
+                        : "password"
+                    }
+                    value={confirmPassword}
+                    onChange={(e) =>
+                      setConfirmPassword(
+                        e.target.value
+                      )
+                    }
+                    placeholder="Confirm your password"
+                    autoComplete="new-password"
+                    disabled={
+                      loading || googleLoading
+                    }
+                    required
+                    className="
+                      auth-input
+                      pl-[48px]
+                      pr-[48px]
+                    "
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowConfirm(
+                        (value) => !value
+                      )
+                    }
+                    disabled={
+                      loading || googleLoading
+                    }
+                    aria-label={
+                      showConfirm
+                        ? "Hide password"
+                        : "Show password"
+                    }
+                    className="
+                      absolute
+                      right-4
+                      top-1/2
+                      -translate-y-1/2
+                      text-[#777777]
+                      transition
+                      hover:text-[#222222]
+                    "
+                  >
+                    {showConfirm ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
+              </Field>
+
+              {/* TERMS */}
+
+              <label
+                className="
+                  flex
+                  cursor-pointer
+                  items-start
+                  gap-2
+                  pt-1
+                  font-serif
+                  text-[11px]
+                  leading-5
+                  text-[#666666]
+
+                  sm:text-[12px]
+                "
+              >
+                <input
+                  type="checkbox"
+                  checked={agree}
+                  onChange={(e) =>
+                    setAgree(e.target.checked)
+                  }
+                  disabled={
+                    loading || googleLoading
+                  }
+                  className="
+                    mt-[2px]
+                    h-[16px]
+                    w-[16px]
+                    shrink-0
+                    cursor-pointer
+                    accent-[#c99516]
+                  "
+                />
+
+                <span>
+                  I agree to the{" "}
+                  <span className="font-semibold text-[#c28b12]">
+                    Terms & Conditions
+                  </span>{" "}
+                  and{" "}
+                  <span className="font-semibold text-[#c28b12]">
+                    Privacy Policy
+                  </span>
+                </span>
+              </label>
+
+              {/* CREATE ACCOUNT */}
+
+              <button
+                type="submit"
+                disabled={
+                  loading || googleLoading
+                }
+                className="
+                  mt-2
+                  flex
+                  h-[54px]
+                  w-full
+                  items-center
+                  justify-center
+                  gap-2
+                  rounded-[10px]
+                  bg-[#d99d08]
+                  font-serif
+                  text-[14px]
+                  font-bold
+                  text-white
+                  shadow-[0_7px_18px_rgba(217,157,8,0.20)]
+                  transition-all
+                  hover:bg-[#c88f05]
+                  active:scale-[0.99]
+                  disabled:cursor-not-allowed
+                  disabled:opacity-60
+
+                  sm:h-[56px]
+                  sm:text-[15px]
+                "
+              >
+                {loading ? (
+                  <>
+                    <Loader2
+                      size={18}
+                      className="animate-spin"
+                    />
+                    Creating Account...
+                  </>
+                ) : (
+                  <>
+                    <UserPlus size={18} />
+                    Create Account
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* =================================================
+                DIVIDER
+            ================================================= */}
+
+            <div
+              className="
+                my-6
+                flex
+                items-center
+                gap-4
+
+                sm:my-7
+              "
+            >
+              <div className="h-px flex-1 bg-[#e5e5e5]" />
+
+              <span
+                className="
+                  font-serif
+                  text-[11px]
+                  font-medium
+                  text-[#888888]
+
+                  sm:text-[12px]
+                "
+              >
+                OR
+              </span>
+
+              <div className="h-px flex-1 bg-[#e5e5e5]" />
+            </div>
+
+            {/* =================================================
+                GOOGLE
+            ================================================= */}
+
+            <button
+              type="button"
+              onClick={handleGoogleSignup}
+              disabled={
+                loading || googleLoading
+              }
+              className="
+                flex
+                h-[54px]
+                w-full
+                items-center
+                justify-center
+                gap-3
+                rounded-[10px]
+                border
+                border-[#d9d9d9]
+                bg-white
+                font-serif
+                text-[13px]
+                font-bold
+                text-[#333333]
+                transition-all
+                hover:bg-[#fafafa]
+                active:scale-[0.99]
+                disabled:cursor-not-allowed
+                disabled:opacity-60
+
+                sm:h-[56px]
+                sm:text-[14px]
+              "
+            >
+              {googleLoading ? (
+                <Loader2
+                  size={19}
+                  className="animate-spin"
+                />
+              ) : (
+                <GoogleIcon />
+              )}
+
+              {googleLoading
+                ? "Connecting..."
+                : "Sign up with Google"}
+            </button>
+
+            {/* =================================================
+                LOGIN
+            ================================================= */}
+
+            <p
+              className="
+                mt-6
+                text-center
+                font-serif
+                text-[12px]
+                text-[#777777]
+
+                sm:mt-7
+                sm:text-[13px]
+              "
+            >
+              Already have an account?{" "}
+
+              <Link
+                href="/login"
+                className="
+                  font-bold
+                  text-[#c18b13]
+                  transition
+                  hover:underline
+                "
+              >
+                Login
+              </Link>
+            </p>
           </div>
-
         </div>
-
-        {/* ================= FEATURES ================= */}
-
-        <div className="border-t border-[#eeeeee] bg-white px-5 py-7 sm:px-10">
-
-          <div className="grid grid-cols-2 gap-y-7 md:grid-cols-4 md:gap-5">
-
-            <Feature
-              icon={<Truck size={22} />}
-              title="Free Delivery"
-              text="On orders above ₹499"
-            />
-
-            <Feature
-              icon={<RotateCcw size={22} />}
-              title="7-Day Returns"
-              text="Easy return & refund"
-            />
-
-            <Feature
-              icon={<ShieldCheck size={22} />}
-              title="Secure Payment"
-              text="100% secure payment"
-            />
-
-            <Feature
-              icon={<Headphones size={22} />}
-              title="24/7 Support"
-              text="Always here to help"
-            />
-
-          </div>
-
-          <p className="mt-7 text-center text-[11px] text-[#888]">
-            © {new Date().getFullYear()} PrimeCart. All rights reserved.
-          </p>
-
-        </div>
-
       </div>
-
-      <style jsx global>{`
-
-        .auth-input {
-          height: 50px;
-          width: 100%;
-          border-radius: 10px;
-          border: 1px solid #dedede;
-          background: #ffffff;
-          padding-right: 16px;
-          font-size: 13px;
-          color: #222222;
-          outline: none;
-          transition: all 0.2s ease;
-        }
-
-        .auth-input::placeholder {
-          color: #999999;
-        }
-
-        .auth-input:focus {
-          border-color: #c99516;
-          box-shadow: 0 0 0 4px rgba(201, 149, 22, 0.09);
-        }
-
-        .auth-input:disabled {
-          background: #fafafa;
-          cursor: not-allowed;
-        }
-
-      `}</style>
-
     </main>
   );
 }
+
+/* =============================================================
+   FIELD
+============================================================= */
 
 function Field({
   label,
@@ -614,43 +943,57 @@ function Field({
 }) {
   return (
     <div>
+      <label
+        className="
+          mb-2
+          block
+          font-serif
+          text-[12px]
+          font-bold
+          text-[#222222]
 
-      <label className="mb-2 block text-[12px] font-bold text-[#222]">
+          sm:text-[13px]
+        "
+      >
         {label}
       </label>
 
       {children}
-
     </div>
   );
 }
 
-function Feature({
-  icon,
-  title,
-  text,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  text: string;
-}) {
+/* =============================================================
+   GOOGLE ICON
+============================================================= */
+
+function GoogleIcon() {
   return (
-    <div className="flex items-center justify-center gap-3">
+    <svg
+      width="19"
+      height="19"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path
+        fill="#4285F4"
+        d="M21.35 12.27c0-.78-.07-1.53-.2-2.27H12v4.3h5.23a4.47 4.47 0 0 1-1.94 2.93v2.43h3.14c1.84-1.69 2.92-4.18 2.92-7.39Z"
+      />
 
-      <div className="shrink-0 text-[#c99516]">
-        {icon}
-      </div>
+      <path
+        fill="#34A853"
+        d="M12 21.5c2.63 0 4.84-.87 6.45-2.34l-3.14-2.43c-.87.58-1.98.93-3.31.93-2.55 0-4.71-1.72-5.49-4.03H3.27v2.51A9.74 9.74 0 0 0 12 21.5Z"
+      />
 
-      <div>
-        <p className="text-[12px] font-bold text-[#222]">
-          {title}
-        </p>
+      <path
+        fill="#FBBC05"
+        d="M6.51 13.63A5.85 5.85 0 0 1 6.2 12c0-.57.11-1.12.31-1.63V7.86H3.27A9.75 9.75 0 0 0 2.25 12c0 1.57.38 3.05 1.02 4.14l3.24 2.51Z"
+      />
 
-        <p className="mt-1 text-[10px] text-[#777]">
-          {text}
-        </p>
-      </div>
-
-    </div>
+      <path
+        fill="#EA4335"
+        d="M12 6.34c1.43 0 2.71.49 3.72 1.45l2.79-2.79C16.84 3.43 14.63 2.5 12 2.5a9.74 9.74 0 0 0-8.73 5.36l3.24 2.51 3.24 2.51 3.24 2.51C7.29 8.06 9.45 6.34 12 6.34Z"
+      />
+    </svg>
   );
 }
