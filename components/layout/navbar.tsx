@@ -73,44 +73,44 @@ export default function Navbar() {
   // NAVIGATION
   // =========================================================
 
-  const nav = [
-    {
-      name: "Home",
-      link: "/",
-    },
-    {
-      name: "Categories",
-      link: "/dashboard/categories",
-    },
-    {
-      name: "Deals",
-      link: "/dashboard/deals",
-    },
-    {
-      name: "New Arrivals",
-      link: "/dashboard/products/new",
-    },
-    {
-      name: "Best Sellers",
-      link: "/dashboard/products/best",
-    },
-    {
-      name: "Electronics",
-      link: "/dashboard/category/electronics",
-    },
-    {
-      name: "Fashion",
-      link: "/dashboard/category/fashion",
-    },
-    {
-      name: "Home & Living",
-      link: "/dashboard/category/home-living",
-    },
-    {
-      name: "Beauty",
-      link: "/dashboard/category/beauty",
-    },
-  ];
+ const nav = [
+  {
+    name: "Home",
+    link: "/",
+  },
+  {
+    name: "Categories",
+    link: "/dashboard/categories",
+  },
+  {
+    name: "Deals",
+    link: "/dashboard/deals",
+  },
+  {
+    name: "New Arrivals",
+    link: "/dashboard/products/new",
+  },
+  {
+    name: "Best Sellers",
+    link: "/dashboard/products/best",
+  },
+  {
+    name: "Electronics",
+    link: "/dashboard/category/electronics",
+  },
+  {
+    name: "Fashion",
+    link: "/dashboard/category/fashion",
+  },
+  {
+    name: "Home & Living",
+    link: "/dashboard/category/home-living",
+  },
+  {
+    name: "Beauty",
+    link: "/dashboard/category/beauty",
+  },
+];
 
   // =========================================================
   // GET LOGGED-IN USER
@@ -462,27 +462,27 @@ export default function Navbar() {
 
                 {/* CATEGORIES */}
 
-                {categories.map((category) => (
-                  <Link
-                    key={category.slug}
-                    href={`/dashboard/category/${category.slug}`}
-                    onClick={handleCategoryClick}
-                    className="
-                      block
-                      rounded-xl
-                      px-4
-                      py-3
-                      text-sm
-                      font-medium
-                      text-gray-700
-                      transition
-                      hover:bg-[#D4AF37]
-                      hover:text-white
-                    "
-                  >
-                    {category.name}
-                  </Link>
-                ))}
+              {categories.map((cat) => (
+  <Link
+    key={cat.slug}
+    href={`/dashboard/category/${cat.slug}`}
+    onClick={() => setOpenCategory(false)}
+    className="
+      block
+      rounded-lg
+      px-4
+      py-3
+      text-sm
+      font-medium
+      text-gray-800
+      transition
+      hover:bg-[#D4AF37]
+      hover:text-white
+    "
+  >
+    {cat.name}
+  </Link>
+))}
               </div>
             )}
           </div>
