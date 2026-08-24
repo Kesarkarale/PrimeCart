@@ -1,224 +1,510 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+import Navbar from "@/components/layout/navbar";
+import TopBar from "@/components/layout/top-bar";
+import Footer from "@/components/layout/footer";
+
 import {
+  ChevronRight,
   Headphones,
   Shirt,
   Sofa,
   Sparkles,
   Smartphone,
-  WashingMachine,
+  Refrigerator,
   Footprints,
   Watch,
   ShoppingBag,
   Baby,
-  ArrowRight,
+  Dumbbell,
+  Car,
 } from "lucide-react";
 
 const categories = [
   {
     name: "Electronics",
     slug: "electronics",
-    description: "Headphones, TVs, Cameras, Laptops & more",
+    image: "/products/electronics.png",
+    items: "2500+ Items",
     icon: Headphones,
   },
+
   {
     name: "Fashion",
     slug: "fashion",
-    description: "Clothing, Dresses, Shirts & Accessories",
+    image: "/products/fashion.png",
+    items: "3800+ Items",
     icon: Shirt,
   },
+
   {
     name: "Home & Living",
     slug: "home-living",
-    description: "Furniture, Decor, Bedding & more",
+    image: "/products/home.png",
+    items: "4200+ Items",
     icon: Sofa,
   },
+
   {
     name: "Beauty",
     slug: "beauty",
-    description: "Makeup, Skincare, Haircare & more",
+    image: "/products/perfume.png",
+    items: "2100+ Items",
     icon: Sparkles,
   },
+
   {
     name: "Mobiles",
     slug: "mobiles",
-    description: "Smartphones, Tablets & Accessories",
+    image: "/products/mobiles.png",
+    items: "1500+ Items",
     icon: Smartphone,
   },
+
   {
     name: "Appliances",
     slug: "appliances",
-    description: "Kitchen & Home Appliances",
-    icon: WashingMachine,
+    image: "/products/appliances.png",
+    items: "1800+ Items",
+    icon: Refrigerator,
   },
+
   {
     name: "Footwear",
     slug: "footwear",
-    description: "Shoes, Sneakers, Sandals & more",
+    image: "/products/footwear.png",
+    items: "2200+ Items",
     icon: Footprints,
   },
+
   {
     name: "Watches",
     slug: "watches",
-    description: "Smart Watches & Classic Watches",
+    image: "/products/watch.png",
+    items: "1300+ Items",
     icon: Watch,
   },
+
   {
     name: "Bags",
     slug: "bags",
-    description: "Backpacks, Handbags, Travel Bags",
+    image: "/products/bag.png",
+    items: "1100+ Items",
     icon: ShoppingBag,
   },
+
   {
     name: "Toys & Baby",
     slug: "toys-baby",
-    description: "Toys, Baby Products & Games",
+    image: "/products/toys.png",
+    items: "1600+ Items",
     icon: Baby,
+  },
+
+  {
+    name: "Sports & Outdoors",
+    slug: "sports-outdoors",
+    image: "/products/sports.png",
+    items: "1000+ Items",
+    icon: Dumbbell,
+  },
+
+  {
+    name: "Automotive",
+    slug: "automotive",
+    image: "/products/automotive.png",
+    items: "900+ Items",
+    icon: Car,
   },
 ];
 
 export default function CategoriesPage() {
+  const pathname = usePathname();
+
   return (
-    <main className="min-h-screen bg-[#faf8f3] px-4 py-8 lg:px-8">
-      <div className="mx-auto max-w-[1400px]">
+    <main className="min-h-screen bg-gradient-to-b from-white via-[#fffdf8] to-[#f8f4ea] text-gray-900">
 
-        {/* HEADER */}
+      <TopBar />
+      <Navbar />
 
-        <div className="mb-10">
-          <p className="text-sm font-semibold uppercase tracking-wider text-[#C99718]">
-            PrimeCart
-          </p>
+      <div className="max-w-[1500px] mx-auto px-6 py-8">
 
-          <h1 className="mt-2 text-3xl font-bold text-gray-900 sm:text-4xl">
-            All Categories
-          </h1>
+        <div className="grid lg:grid-cols-[280px_1fr] gap-8">
 
-          <p className="mt-2 max-w-2xl text-gray-500">
-            Browse our complete collection and discover
-            products from your favourite categories.
-          </p>
-        </div>
+          {/* ================= SIDEBAR ================= */}
 
-        {/* CATEGORY GRID */}
+          <div className="space-y-5">
 
-        <div
-          className="
-            grid
-            grid-cols-1
-            gap-5
-            sm:grid-cols-2
-            lg:grid-cols-3
-            xl:grid-cols-4
-          "
-        >
-          {categories.map((category) => {
-            const Icon = category.icon;
+            <div className="bg-white border border-gray-200 rounded-3xl p-5">
 
-            return (
+              <h2 className="text-2xl font-bold mb-5">
+                All Categories
+              </h2>
+
+              <div className="space-y-1">
+
+                {categories.map((cat) => {
+                  const Icon = cat.icon;
+
+                  const isActive =
+                    pathname === `/category/${cat.slug}`;
+
+                  return (
+                    <Link
+                      key={cat.name}
+                      href={`/category/${cat.slug}`}
+                      className={`
+                        w-full
+                        flex
+                        items-center
+                        justify-between
+                        px-4
+                        py-3
+                        rounded-2xl
+                        transition
+                        ${
+                          isActive
+                            ? "bg-[#f7f1e4] text-[#c99718]"
+                            : "hover:bg-[#faf6ee] text-gray-700"
+                        }
+                      `}
+                    >
+
+                      <div className="flex items-center gap-3">
+
+                        <Icon size={18} />
+
+                        <span>
+                          {cat.name}
+                        </span>
+
+                      </div>
+
+                      <ChevronRight size={16} />
+
+                    </Link>
+                  );
+                })}
+
+              </div>
+
               <Link
-                key={category.slug}
-                href={`/dashboard/category/${category.slug}`}
-                className="group"
+                href="/categories"
+                className="
+                  block
+                  text-center
+                  w-full
+                  mt-5
+                  border
+                  border-gray-200
+                  rounded-2xl
+                  py-3
+                  font-medium
+                  hover:border-[#D4AF37]
+                  hover:text-[#C99718]
+                  transition
+                "
               >
-                <div
+                View All Categories
+              </Link>
+
+            </div>
+
+
+            {/* ================= OFFER CARD ================= */}
+
+            <div
+              className="
+                bg-gradient-to-br
+                from-[#fff6df]
+                to-[#f5e3b0]
+                rounded-3xl
+                p-6
+                border
+                border-[#f0d78a]
+              "
+            >
+
+              <p className="text-gray-600 text-sm">
+                Limited Time Offer
+              </p>
+
+              <h3 className="text-4xl font-bold mt-2">
+                10% OFF
+              </h3>
+
+              <p className="mt-2 text-gray-700">
+                On your first order
+              </p>
+
+              <button
+                className="
+                  mt-5
+                  bg-[#D4AF37]
+                  text-white
+                  px-5
+                  py-3
+                  rounded-xl
+                  font-semibold
+                  hover:bg-[#c49d25]
+                  transition
+                "
+              >
+                Use Code PRIME10
+              </button>
+
+            </div>
+
+          </div>
+
+
+          {/* ================= RIGHT SIDE ================= */}
+
+          <div>
+
+            <h1 className="text-4xl md:text-5xl font-bold">
+              Shop by Category
+            </h1>
+
+            <p className="text-gray-500 mt-3 mb-8">
+              Explore our wide range of premium products across all categories
+            </p>
+
+
+            {/* ================= CATEGORY GRID ================= */}
+
+            <div
+              className="
+                grid
+                grid-cols-2
+                md:grid-cols-3
+                xl:grid-cols-4
+                2xl:grid-cols-6
+                gap-6
+              "
+            >
+
+              {categories.map((category) => (
+
+                <Link
+                  href={`/category/${category.slug}`}
+                  key={category.name}
                   className="
-                    relative
-                    overflow-hidden
-                    rounded-3xl
+                    bg-white
                     border
                     border-gray-200
-                    bg-white
-                    p-6
-                    shadow-sm
+                    rounded-3xl
+                    p-5
+                    text-center
+                    hover:shadow-lg
+                    hover:-translate-y-1
                     transition-all
                     duration-300
-                    hover:-translate-y-1
-                    hover:border-[#D4AF37]
-                    hover:shadow-xl
                   "
                 >
-                  {/* ICON */}
 
                   <div
                     className="
+                      w-[140px]
+                      h-[140px]
+                      mx-auto
+                      rounded-full
+                      bg-[#f8f3e7]
                       flex
-                      h-16
-                      w-16
                       items-center
                       justify-center
-                      rounded-2xl
-                      bg-[#faf4df]
-                      transition-all
-                      duration-300
-                      group-hover:bg-[#D4AF37]
                     "
                   >
-                    <Icon
-                      size={32}
-                      strokeWidth={1.5}
+
+                    <Image
+                      src={category.image}
+                      alt={category.name}
+                      width={110}
+                      height={110}
                       className="
-                        text-[#C99718]
-                        transition-colors
-                        group-hover:text-white
+                        object-contain
+                        hover:scale-105
+                        transition
                       "
                     />
+
                   </div>
 
-                  {/* TEXT */}
 
-                  <h2
+                  <h3
                     className="
-                      mt-6
-                      text-xl
+                      mt-5
+                      text-lg
                       font-bold
-                      text-gray-900
                     "
                   >
                     {category.name}
-                  </h2>
+                  </h3>
 
                   <p
                     className="
-                      mt-2
-                      min-h-[42px]
-                      text-sm
-                      leading-5
                       text-gray-500
+                      text-sm
+                      mt-1
                     "
                   >
-                    {category.description}
+                    {category.items}
                   </p>
 
-                  {/* ARROW */}
+                </Link>
 
-                  <div
+              ))}
+
+            </div>
+
+
+            {/* ================= FEATURES ROW ================= */}
+
+            <div
+              className="
+                mt-8
+                bg-white
+                border
+                border-gray-200
+                rounded-3xl
+                p-6
+                grid
+                grid-cols-2
+                md:grid-cols-4
+                gap-6
+              "
+            >
+
+              <div className="text-center">
+
+                <div className="text-3xl mb-2">
+                  🏆
+                </div>
+
+                <h3 className="font-bold">
+                  Top Brands
+                </h3>
+
+                <p className="text-sm text-gray-500">
+                  1000+ Trusted Brands
+                </p>
+
+              </div>
+
+
+              <div className="text-center">
+
+                <div className="text-3xl mb-2">
+                  💰
+                </div>
+
+                <h3 className="font-bold">
+                  Best Prices
+                </h3>
+
+                <p className="text-sm text-gray-500">
+                  Daily Best Deals
+                </p>
+
+              </div>
+
+
+              <div className="text-center">
+
+                <div className="text-3xl mb-2">
+                  ↩️
+                </div>
+
+                <h3 className="font-bold">
+                  Easy Returns
+                </h3>
+
+                <p className="text-sm text-gray-500">
+                  Hassle Free Returns
+                </p>
+
+              </div>
+
+
+              <div className="text-center">
+
+                <div className="text-3xl mb-2">
+                  🔒
+                </div>
+
+                <h3 className="font-bold">
+                  Secure Shopping
+                </h3>
+
+                <p className="text-sm text-gray-500">
+                  Safe Payments
+                </p>
+
+              </div>
+
+            </div>
+
+
+            {/* ================= POPULAR SEARCHES ================= */}
+
+            <div className="mt-10">
+
+              <h2 className="text-2xl font-bold mb-5">
+                Popular Searches
+              </h2>
+
+              <div className="flex flex-wrap gap-3">
+
+                {[
+                  "iPhone 16",
+                  "Samsung Galaxy",
+                  "Nike Shoes",
+                  "Luxury Watch",
+                  "Gaming Laptop",
+                  "Handbags",
+                  "Perfume",
+                  "Makeup Kit",
+                  "Sofa Set",
+                  "Bluetooth Speaker",
+                  "Refrigerator",
+                  "Smart TV",
+                ].map((item) => (
+
+                  <button
+                    key={item}
                     className="
-                      mt-6
-                      flex
-                      items-center
-                      gap-2
-                      text-sm
-                      font-semibold
-                      text-[#C99718]
+                      px-5
+                      py-3
+                      bg-white
+                      border
+                      border-gray-200
+                      rounded-full
+                      hover:border-[#D4AF37]
+                      hover:text-[#C99718]
+                      transition
                     "
                   >
-                    Shop Now
+                    {item}
+                  </button>
 
-                    <ArrowRight
-                      size={16}
-                      className="
-                        transition-transform
-                        group-hover:translate-x-1
-                      "
-                    />
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
+                ))}
+
+              </div>
+
+            </div>
+
+          </div>
+
         </div>
+
       </div>
+
+      <Footer />
+
     </main>
   );
 }
