@@ -34,10 +34,6 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // =========================================================
-  // EMAIL + PASSWORD REGISTER
-  // =========================================================
-
   async function handleRegister(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -50,25 +46,45 @@ export default function RegisterPage() {
     const cleanEmail = email.trim().toLowerCase();
     const cleanMobile = mobile.trim();
 
+    // -----------------------------
+    // NAME
+    // -----------------------------
+
     if (!name) {
       setError("Please enter your full name.");
       return;
     }
+
+    // -----------------------------
+    // EMAIL
+    // -----------------------------
 
     if (!cleanEmail) {
       setError("Please enter your email address.");
       return;
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+    // Simple and reliable email validation
+    const emailRegex =
+      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/;
+
+    if (!emailRegex.test(cleanEmail)) {
       setError("Please enter a valid email address.");
       return;
     }
+
+    // -----------------------------
+    // MOBILE
+    // -----------------------------
 
     if (cleanMobile && !/^[0-9]{10}$/.test(cleanMobile)) {
       setError("Please enter a valid 10-digit mobile number.");
       return;
     }
+
+    // -----------------------------
+    // PASSWORD
+    // -----------------------------
 
     if (password.length < 6) {
       setError("Password must contain at least 6 characters.");
@@ -79,6 +95,10 @@ export default function RegisterPage() {
       setError("Passwords do not match.");
       return;
     }
+
+    // -----------------------------
+    // TERMS
+    // -----------------------------
 
     if (!agree) {
       setError(
@@ -93,20 +113,28 @@ export default function RegisterPage() {
       const redirectTo =
         `${window.location.origin}/auth/callback?next=/dashboard`;
 
+      console.log("Registering:", cleanEmail);
+
       const { data, error: signUpError } =
         await supabase.auth.signUp({
           email: cleanEmail,
-          password,
+          password: password,
           options: {
             data: {
               full_name: name,
-              mobile: cleanMobile,
+              mobile: cleanMobile || null,
             },
             emailRedirectTo: redirectTo,
           },
         });
 
+      // -----------------------------
+      // SUPABASE ERROR
+      // -----------------------------
+
       if (signUpError) {
+        console.error("Supabase signup error:", signUpError);
+
         const message = signUpError.message.toLowerCase();
 
         if (
@@ -117,6 +145,12 @@ export default function RegisterPage() {
           setError(
             "An account with this email already exists. Please login instead."
           );
+        } else if (message.includes("invalid email")) {
+          setError(
+            "Supabase rejected this email address. Please check the email and try again."
+          );
+        } else if (message.includes("password")) {
+          setError(signUpError.message);
         } else {
           setError(signUpError.message);
         }
@@ -124,18 +158,26 @@ export default function RegisterPage() {
         return;
       }
 
-      // Email confirmation disabled
+      console.log("Signup response:", data);
+
+      // -----------------------------
+      // SESSION AVAILABLE
+      // -----------------------------
+
       if (data.session) {
         setSuccess("Account created successfully. Redirecting...");
 
         setTimeout(() => {
-          window.location.replace("/dashboard");
-        }, 500);
+          window.location.href = "/dashboard";
+        }, 700);
 
         return;
       }
 
-      // Email confirmation enabled
+      // -----------------------------
+      // EMAIL CONFIRMATION REQUIRED
+      // -----------------------------
+
       setSuccess(
         "Account created successfully! Please check your email and verify your account before logging in."
       );
@@ -149,18 +191,20 @@ export default function RegisterPage() {
     } catch (err) {
       console.error("Registration error:", err);
 
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to create your account. Please try again."
-      );
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(
+          "Unable to create your account. Please try again."
+        );
+      }
     } finally {
       setLoading(false);
     }
   }
 
   // =========================================================
-  // GOOGLE SIGN UP
+  // GOOGLE SIGNUP
   // =========================================================
 
   async function handleGoogleSignup() {
@@ -201,12 +245,9 @@ export default function RegisterPage() {
 
   return (
     <main className="min-h-screen bg-[#f8f6f1] px-3 py-3 sm:px-5 sm:py-5 lg:p-6">
-      <div className="mx-auto grid min-h-[calc(100vh-24px)] w-full max-w-[1370px] overflow-hidden rounded-[22px] bg-white shadow-[0_8px_40px_rgba(0,0,0,0.08)] lg:grid-cols-[1fr_1fr]">
+      <div className="mx-auto grid min-h-[calc(100vh-24px)] w-full max-w-[1370px] overflow-hidden rounded-[22px] bg-white shadow-[0_8px_40px_rgba(0,0,0,0.08)] lg:grid-cols-2">
 
-        {/* =====================================================
-            LEFT BANNER
-        ====================================================== */}
-
+        {/* LEFT BANNER */}
         <div className="relative hidden overflow-hidden bg-[#f4efe7] lg:block">
           <img
             src="/login-banner.png"
@@ -215,54 +256,41 @@ export default function RegisterPage() {
           />
         </div>
 
-        {/* =====================================================
-            REGISTER SECTION
-        ====================================================== */}
-
+        {/* REGISTER */}
         <div className="flex w-full items-center justify-center bg-white px-5 py-9 sm:px-9 sm:py-10 md:px-12 lg:px-12 xl:px-16 xl:py-12">
           <div className="w-full max-w-[430px]">
 
-            {/* =================================================
-                LOGO
-            ================================================= */}
-
+            {/* LOGO */}
             <Link
               href="/"
-              aria-label="PrimeCart Home"
-              className="mb-8 flex w-fit items-center gap-3 transition-opacity duration-200 hover:opacity-85"
+              className="mb-8 flex w-fit items-center gap-3 hover:opacity-85"
             >
               <img
                 src="/logo.png"
                 alt="PrimeCart Logo"
                 width={58}
                 height={58}
-                className="h-[52px] w-[52px] shrink-0 object-contain sm:h-[56px] sm:w-[56px]"
+                className="h-[52px] w-[52px] object-contain sm:h-[56px] sm:w-[56px]"
               />
 
-              <span className="text-[28px] font-bold tracking-[-0.8px] text-[#111111] sm:text-[30px]">
+              <span className="text-[28px] font-bold tracking-[-0.8px] text-[#111] sm:text-[30px]">
                 PrimeCart
               </span>
             </Link>
 
-            {/* =================================================
-                HEADING
-            ================================================= */}
-
+            {/* HEADING */}
             <div className="mb-6">
-              <h1 className="font-serif text-[27px] font-bold leading-[1.2] tracking-[-0.5px] text-[#111111] sm:text-[30px]">
+              <h1 className="font-serif text-[27px] font-bold leading-[1.2] text-[#111] sm:text-[30px]">
                 Create your account
               </h1>
 
-              <p className="mt-2 font-serif text-[13px] leading-[1.6] text-[#777777] sm:text-[14px]">
+              <p className="mt-2 font-serif text-[13px] leading-[1.6] text-[#777] sm:text-[14px]">
                 Create your PrimeCart account and start shopping
                 today.
               </p>
             </div>
 
-            {/* =================================================
-                ERROR
-            ================================================= */}
-
+            {/* ERROR */}
             {error && (
               <div
                 role="alert"
@@ -272,10 +300,7 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* =================================================
-                SUCCESS
-            ================================================= */}
-
+            {/* SUCCESS */}
             {success && (
               <div
                 role="status"
@@ -285,20 +310,18 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* =================================================
-                REGISTER FORM
-            ================================================= */}
-
-            <form onSubmit={handleRegister} className="space-y-4">
+            <form
+              onSubmit={handleRegister}
+              className="space-y-4"
+              noValidate
+            >
 
               {/* FULL NAME */}
-
               <Field label="Full Name">
                 <div className="relative">
                   <User
                     size={18}
-                    strokeWidth={1.8}
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#777777]"
+                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
                   />
 
                   <input
@@ -308,43 +331,38 @@ export default function RegisterPage() {
                     placeholder="Enter your full name"
                     autoComplete="name"
                     disabled={loading || googleLoading}
-                    required
                     className="auth-input pl-[48px]"
                   />
                 </div>
               </Field>
 
               {/* EMAIL */}
-
               <Field label="Email Address">
                 <div className="relative">
                   <Mail
                     size={18}
-                    strokeWidth={1.8}
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#777777]"
+                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
                   />
 
                   <input
-                    type="email"
+                    type="text"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email"
                     autoComplete="email"
+                    inputMode="email"
                     disabled={loading || googleLoading}
-                    required
                     className="auth-input pl-[48px]"
                   />
                 </div>
               </Field>
 
               {/* MOBILE */}
-
               <Field label="Mobile Number">
                 <div className="relative">
                   <Phone
                     size={18}
-                    strokeWidth={1.8}
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#777777]"
+                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
                   />
 
                   <input
@@ -367,13 +385,11 @@ export default function RegisterPage() {
               </Field>
 
               {/* PASSWORD */}
-
               <Field label="Password">
                 <div className="relative">
                   <LockKeyhole
                     size={18}
-                    strokeWidth={1.8}
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#777777]"
+                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
                   />
 
                   <input
@@ -383,7 +399,6 @@ export default function RegisterPage() {
                     placeholder="Create a password"
                     autoComplete="new-password"
                     disabled={loading || googleLoading}
-                    required
                     className="auth-input pl-[48px] pr-[48px]"
                   />
 
@@ -393,12 +408,7 @@ export default function RegisterPage() {
                       setShowPassword((value) => !value)
                     }
                     disabled={loading || googleLoading}
-                    aria-label={
-                      showPassword
-                        ? "Hide password"
-                        : "Show password"
-                    }
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#777777] transition hover:text-[#222222]"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#777]"
                   >
                     {showPassword ? (
                       <EyeOff size={18} />
@@ -410,13 +420,11 @@ export default function RegisterPage() {
               </Field>
 
               {/* CONFIRM PASSWORD */}
-
               <Field label="Confirm Password">
                 <div className="relative">
                   <LockKeyhole
                     size={18}
-                    strokeWidth={1.8}
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#777777]"
+                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
                   />
 
                   <input
@@ -428,7 +436,6 @@ export default function RegisterPage() {
                     placeholder="Confirm your password"
                     autoComplete="new-password"
                     disabled={loading || googleLoading}
-                    required
                     className="auth-input pl-[48px] pr-[48px]"
                   />
 
@@ -438,12 +445,7 @@ export default function RegisterPage() {
                       setShowConfirm((value) => !value)
                     }
                     disabled={loading || googleLoading}
-                    aria-label={
-                      showConfirm
-                        ? "Hide password"
-                        : "Show password"
-                    }
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#777777] transition hover:text-[#222222]"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#777]"
                   >
                     {showConfirm ? (
                       <EyeOff size={18} />
@@ -455,14 +457,13 @@ export default function RegisterPage() {
               </Field>
 
               {/* TERMS */}
-
-              <label className="flex cursor-pointer items-start gap-2 pt-1 font-serif text-[11px] leading-5 text-[#666666] sm:text-[12px]">
+              <label className="flex cursor-pointer items-start gap-2 pt-1 font-serif text-[11px] leading-5 text-[#666] sm:text-[12px]">
                 <input
                   type="checkbox"
                   checked={agree}
                   onChange={(e) => setAgree(e.target.checked)}
                   disabled={loading || googleLoading}
-                  className="mt-[2px] h-[16px] w-[16px] shrink-0 cursor-pointer accent-[#c99516]"
+                  className="mt-[2px] h-[16px] w-[16px] accent-[#c99516]"
                 />
 
                 <span>
@@ -478,15 +479,17 @@ export default function RegisterPage() {
               </label>
 
               {/* CREATE ACCOUNT */}
-
               <button
                 type="submit"
                 disabled={loading || googleLoading}
-                className="mt-2 flex h-[54px] w-full items-center justify-center gap-2 rounded-[10px] bg-[#d99d08] font-serif text-[14px] font-bold text-white shadow-[0_7px_18px_rgba(217,157,8,0.20)] transition-all hover:bg-[#c88f05] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 sm:h-[56px] sm:text-[15px]"
+                className="mt-2 flex h-[54px] w-full items-center justify-center gap-2 rounded-[10px] bg-[#d99d08] font-serif text-[14px] font-bold text-white shadow-[0_7px_18px_rgba(217,157,8,0.20)] hover:bg-[#c88f05] disabled:cursor-not-allowed disabled:opacity-60 sm:h-[56px]"
               >
                 {loading ? (
                   <>
-                    <Loader2 size={18} className="animate-spin" />
+                    <Loader2
+                      size={18}
+                      className="animate-spin"
+                    />
                     Creating Account...
                   </>
                 ) : (
@@ -498,29 +501,21 @@ export default function RegisterPage() {
               </button>
             </form>
 
-            {/* =================================================
-                DIVIDER
-            ================================================= */}
-
+            {/* DIVIDER */}
             <div className="my-6 flex items-center gap-4 sm:my-7">
               <div className="h-px flex-1 bg-[#e5e5e5]" />
-
-              <span className="font-serif text-[11px] font-medium text-[#888888] sm:text-[12px]">
+              <span className="font-serif text-[11px] text-[#888]">
                 OR
               </span>
-
               <div className="h-px flex-1 bg-[#e5e5e5]" />
             </div>
 
-            {/* =================================================
-                GOOGLE
-            ================================================= */}
-
+            {/* GOOGLE */}
             <button
               type="button"
               onClick={handleGoogleSignup}
               disabled={loading || googleLoading}
-              className="flex h-[54px] w-full items-center justify-center gap-3 rounded-[10px] border border-[#d9d9d9] bg-white font-serif text-[13px] font-bold text-[#333333] transition-all hover:bg-[#fafafa] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 sm:h-[56px] sm:text-[14px]"
+              className="flex h-[54px] w-full items-center justify-center gap-3 rounded-[10px] border border-[#d9d9d9] bg-white font-serif text-[13px] font-bold text-[#333] hover:bg-[#fafafa] disabled:opacity-60 sm:h-[56px]"
             >
               {googleLoading ? (
                 <Loader2 size={19} className="animate-spin" />
@@ -533,15 +528,12 @@ export default function RegisterPage() {
                 : "Sign up with Google"}
             </button>
 
-            {/* =================================================
-                LOGIN
-            ================================================= */}
-
-            <p className="mt-6 text-center font-serif text-[12px] text-[#777777] sm:mt-7 sm:text-[13px]">
+            {/* LOGIN */}
+            <p className="mt-6 text-center font-serif text-[12px] text-[#777] sm:mt-7 sm:text-[13px]">
               Already have an account?{" "}
               <Link
                 href="/login"
-                className="font-bold text-[#c18b13] transition hover:underline"
+                className="font-bold text-[#c18b13] hover:underline"
               >
                 Login
               </Link>
@@ -549,10 +541,6 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
-
-      {/* =======================================================
-          GLOBAL INPUT STYLE
-      ======================================================= */}
 
       <style jsx global>{`
         .auth-input {
@@ -587,10 +575,6 @@ export default function RegisterPage() {
   );
 }
 
-/* =============================================================
-   FIELD COMPONENT
-============================================================= */
-
 function Field({
   label,
   children,
@@ -600,7 +584,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-2 block font-serif text-[12px] font-bold text-[#222222] sm:text-[13px]">
+      <label className="mb-2 block font-serif text-[12px] font-bold text-[#222] sm:text-[13px]">
         {label}
       </label>
 
@@ -608,10 +592,6 @@ function Field({
     </div>
   );
 }
-
-/* =============================================================
-   GOOGLE ICON
-============================================================= */
 
 function GoogleIcon() {
   return (
@@ -625,17 +605,14 @@ function GoogleIcon() {
         fill="#4285F4"
         d="M21.35 12.27c0-.78-.07-1.53-.2-2.27H12v4.3h5.23a4.47 4.47 0 0 1-1.94 2.93v2.43h3.14c1.84-1.69 2.92-4.18 2.92-7.39Z"
       />
-
       <path
         fill="#34A853"
         d="M12 21.5c2.63 0 4.84-.87 6.45-2.34l-3.14-2.43c-.87.58-1.98.93-3.31.93-2.55 0-4.71-1.72-5.49-4.03H3.27v2.51A9.74 9.74 0 0 0 12 21.5Z"
       />
-
       <path
         fill="#FBBC05"
         d="M6.51 13.63A5.85 5.85 0 0 1 6.2 12c0-.57.11-1.12.31-1.63V7.86H3.27A9.75 9.75 0 0 0 2.25 12c0 1.57.38 3.05 1.02 4.14l3.24 2.51 3.24-2.51Z"
       />
-
       <path
         fill="#EA4335"
         d="M12 6.34c1.43 0 2.71.49 3.72 1.45l2.79-2.79C16.84 3.43 14.63 2.5 12 2.5a9.74 9.74 0 0 0-8.73 5.36l3.24 2.51 3.24 2.51 3.24 2.51C7.29 8.06 9.45 6.34 12 6.34Z"
