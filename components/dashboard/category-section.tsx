@@ -18,87 +18,112 @@ import {
 const categories = [
   {
     name: "Electronics",
+    slug: "electronics",
     icon: Headphones,
-    href: "/dashboard/category/electronics",
   },
   {
     name: "Fashion",
+    slug: "fashion",
     icon: Shirt,
-    href: "/dashboard/category/fashion",
   },
   {
     name: "Home & Living",
+    slug: "home-living",
     icon: Sofa,
-    href: "/dashboard/category/home-living",
   },
   {
     name: "Beauty",
+    slug: "beauty",
     icon: Sparkles,
-    href: "/dashboard/category/beauty",
   },
   {
     name: "Mobiles",
+    slug: "mobiles",
     icon: Smartphone,
-    href: "/dashboard/category/mobiles",
   },
   {
     name: "Appliances",
+    slug: "appliances",
     icon: WashingMachine,
-    href: "/dashboard/category/appliances",
   },
   {
     name: "Footwear",
+    slug: "footwear",
     icon: Footprints,
-    href: "/dashboard/category/footwear",
   },
   {
     name: "Watches",
+    slug: "watches",
     icon: Watch,
-    href: "/dashboard/category/watches",
   },
   {
     name: "Bags",
+    slug: "bags",
     icon: ShoppingBag,
-    href: "/dashboard/category/bags",
   },
   {
     name: "Toys & Baby",
+    slug: "toys-baby",
     icon: Baby,
-    href: "/dashboard/category/toys-baby",
-  },
-  {
-    name: "View All",
-    icon: Grid2X2,
-    href: "/dashboard/categories",
   },
 ];
 
 export default function CategorySection() {
   return (
-    <section className="w-full py-6">
+    <section className="py-6">
+      {/* HEADER */}
+
+      <div className="mb-6 flex items-end justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Shop by Category
+          </h2>
+
+          <p className="mt-1 text-sm text-gray-500">
+            Explore products from your favourite categories
+          </p>
+        </div>
+
+        <Link
+          href="/dashboard/categories"
+          className="
+            hidden
+            text-sm
+            font-semibold
+            text-[#C99718]
+            hover:underline
+            sm:block
+          "
+        >
+          View All →
+        </Link>
+      </div>
+
+      {/* CATEGORY GRID */}
+
       <div
         className="
           grid
           grid-cols-2
           gap-4
           sm:grid-cols-4
-          md:grid-cols-6
-          lg:grid-cols-11
+          md:grid-cols-5
+          lg:grid-cols-10
         "
       >
-        {categories.map((item) => {
-          const Icon = item.icon;
+        {categories.map((category) => {
+          const Icon = category.icon;
 
           return (
             <Link
-              key={item.name}
-              href={item.href}
-              className="group block"
+              key={category.slug}
+              href={`/dashboard/category/${category.slug}`}
+              className="group"
             >
               <div
                 className="
                   flex
-                  h-28
+                  h-[125px]
                   flex-col
                   items-center
                   justify-center
@@ -106,7 +131,6 @@ export default function CategorySection() {
                   border
                   border-gray-200
                   bg-white
-                  shadow-sm
                   transition-all
                   duration-300
                   hover:-translate-y-1
@@ -114,33 +138,62 @@ export default function CategorySection() {
                   hover:shadow-lg
                 "
               >
-                <Icon
-                  size={34}
-                  strokeWidth={1.5}
+                <div
                   className="
-                    text-[#C99718]
-                    transition-transform
+                    flex
+                    h-12
+                    w-12
+                    items-center
+                    justify-center
+                    rounded-full
+                    bg-[#faf4df]
+                    transition-all
                     duration-300
-                    group-hover:scale-110
+                    group-hover:bg-[#D4AF37]
                   "
-                />
+                >
+                  <Icon
+                    size={25}
+                    strokeWidth={1.7}
+                    className="
+                      text-[#C99718]
+                      transition-colors
+                      group-hover:text-white
+                    "
+                  />
+                </div>
 
                 <span
                   className="
                     mt-3
-                    px-1
+                    px-2
                     text-center
                     text-sm
-                    font-medium
+                    font-semibold
                     text-gray-800
                   "
                 >
-                  {item.name}
+                  {category.name}
                 </span>
               </div>
             </Link>
           );
         })}
+      </div>
+
+      {/* MOBILE VIEW ALL */}
+
+      <div className="mt-5 text-center sm:hidden">
+        <Link
+          href="/dashboard/categories"
+          className="
+            text-sm
+            font-semibold
+            text-[#C99718]
+          "
+        >
+          View All Categories →
+        </Link>
       </div>
     </section>
   );
