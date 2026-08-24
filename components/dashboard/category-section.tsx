@@ -18,59 +18,64 @@ import {
 const categories = [
   {
     name: "Electronics",
-    slug: "electronics",
     icon: Headphones,
+    href: "/dashboard/category/electronics",
   },
   {
     name: "Fashion",
-    slug: "fashion",
     icon: Shirt,
+    href: "/dashboard/category/fashion",
   },
   {
     name: "Home & Living",
-    slug: "home-living",
     icon: Sofa,
+    href: "/dashboard/category/home-living",
   },
   {
     name: "Beauty",
-    slug: "beauty",
     icon: Sparkles,
+    href: "/dashboard/category/beauty",
   },
   {
     name: "Mobiles",
-    slug: "mobiles",
     icon: Smartphone,
+    href: "/dashboard/category/mobiles",
   },
   {
     name: "Appliances",
-    slug: "appliances",
     icon: WashingMachine,
+    href: "/dashboard/category/appliances",
   },
   {
     name: "Footwear",
-    slug: "footwear",
     icon: Footprints,
+    href: "/dashboard/category/footwear",
   },
   {
     name: "Watches",
-    slug: "watches",
     icon: Watch,
+    href: "/dashboard/category/watches",
   },
   {
     name: "Bags",
-    slug: "bags",
     icon: ShoppingBag,
+    href: "/dashboard/category/bags",
   },
   {
     name: "Toys & Baby",
-    slug: "toys-baby",
     icon: Baby,
+    href: "/dashboard/category/toys-baby",
+  },
+  {
+    name: "View All",
+    icon: Grid2X2,
+    href: "/dashboard/categories",
   },
 ];
 
 export default function CategorySection() {
   return (
-    <section className="py-6">
+    <section className="w-full py-6">
       <div
         className="
           grid
@@ -78,7 +83,7 @@ export default function CategorySection() {
           gap-4
           sm:grid-cols-4
           md:grid-cols-6
-          lg:grid-cols-10
+          lg:grid-cols-11
         "
       >
         {categories.map((item) => {
@@ -86,15 +91,14 @@ export default function CategorySection() {
 
           return (
             <Link
-              key={item.slug}
-              href={`/dashboard/category/${item.slug}`}
-              className="block"
+              key={item.name}
+              href={item.href}
+              className="group block"
             >
               <div
                 className="
                   flex
                   h-28
-                  cursor-pointer
                   flex-col
                   items-center
                   justify-center
@@ -112,7 +116,13 @@ export default function CategorySection() {
               >
                 <Icon
                   size={34}
-                  className="text-[#C99718] stroke-[1.5]"
+                  strokeWidth={1.5}
+                  className="
+                    text-[#C99718]
+                    transition-transform
+                    duration-300
+                    group-hover:scale-110
+                  "
                 />
 
                 <span
@@ -131,52 +141,6 @@ export default function CategorySection() {
             </Link>
           );
         })}
-
-        {/* VIEW ALL */}
-
-        <Link
-          href="/dashboard/categories"
-          className="block"
-        >
-          <div
-            className="
-              flex
-              h-28
-              cursor-pointer
-              flex-col
-              items-center
-              justify-center
-              rounded-2xl
-              border
-              border-gray-200
-              bg-white
-              shadow-sm
-              transition-all
-              duration-300
-              hover:-translate-y-1
-              hover:border-[#D4AF37]
-              hover:shadow-lg
-            "
-          >
-            <Grid2X2
-              size={34}
-              className="text-[#C99718] stroke-[1.5]"
-            />
-
-            <span
-              className="
-                mt-3
-                px-1
-                text-center
-                text-sm
-                font-medium
-                text-gray-800
-              "
-            >
-              View All
-            </span>
-          </div>
-        </Link>
       </div>
     </section>
   );
