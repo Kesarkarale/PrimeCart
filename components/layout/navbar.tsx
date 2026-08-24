@@ -96,19 +96,19 @@ export default function Navbar() {
   },
   {
     name: "Electronics",
-    link: "/dashboard/category/electronics",
+    link: "/dashboard/categories/electronics",
   },
   {
     name: "Fashion",
-    link: "/dashboard/category/fashion",
+    link: "/dashboard/categories/fashion",
   },
   {
     name: "Home & Living",
-    link: "/dashboard/category/home-living",
+    link: "/dashboard/categories/home-living",
   },
   {
     name: "Beauty",
-    link: "/dashboard/category/beauty",
+    link: "/dashboard/categories/beauty",
   },
 ];
 
