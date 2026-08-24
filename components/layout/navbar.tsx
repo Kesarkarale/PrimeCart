@@ -23,24 +23,55 @@ export default function Navbar() {
   const [mobile, setMobile] = useState(false);
   const [search, setSearch] = useState("");
 
-  // ==============================
+  // =========================================================
   // AUTH STATE
-  // ==============================
+  // =========================================================
 
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [loggedIn, setLoggedIn] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
 
+  // =========================================================
+  // CATEGORIES
+  // IMPORTANT:
+  // All category links use /dashboard/category/[slug]
+  // =========================================================
+
   const categories = [
-    "Electronics",
-    "Fashion",
-    "Mobiles",
-    "Beauty",
-    "Home & Living",
-    "Kitchen",
-    "Sports",
+    {
+      name: "Electronics",
+      slug: "electronics",
+    },
+    {
+      name: "Fashion",
+      slug: "fashion",
+    },
+    {
+      name: "Mobiles",
+      slug: "mobiles",
+    },
+    {
+      name: "Beauty",
+      slug: "beauty",
+    },
+    {
+      name: "Home & Living",
+      slug: "home-living",
+    },
+    {
+      name: "Kitchen",
+      slug: "kitchen",
+    },
+    {
+      name: "Sports",
+      slug: "sports",
+    },
   ];
+
+  // =========================================================
+  // NAVIGATION
+  // =========================================================
 
   const nav = [
     {
@@ -73,11 +104,11 @@ export default function Navbar() {
     },
     {
       name: "Home & Living",
-      link: "/category/home",
+      link: "/dashboard/category/home-living",
     },
     {
       name: "Beauty",
-      link: "/category/beauty",
+      link: "/dashboard/category/beauty",
     },
   ];
 
@@ -89,6 +120,34 @@ export default function Navbar() {
     const supabase = createClient();
 
     let mounted = true;
+
+    function getDisplayName(user: any) {
+      const metadata = user?.user_metadata || {};
+
+      const fullName =
+        metadata.full_name ||
+        metadata.name ||
+        metadata.fullName ||
+        metadata.display_name ||
+        "";
+
+      const email = user?.email || "";
+
+      if (fullName) {
+        return String(fullName);
+      }
+
+      if (email) {
+        return email
+          .split("@")[0]
+          .replace(/[._-]/g, " ")
+          .replace(/\b\w/g, (letter: string) =>
+            letter.toUpperCase()
+          );
+      }
+
+      return "My Account";
+    }
 
     async function loadUser() {
       try {
@@ -107,38 +166,8 @@ export default function Navbar() {
         }
 
         setLoggedIn(true);
-
-        const metadata = user.user_metadata || {};
-
-        // First preference:
-        // full_name saved during registration
-        const fullName =
-          metadata.full_name ||
-          metadata.name ||
-          metadata.fullName ||
-          "";
-
-        // Email
-        const email = user.email || "";
-
-        setUserEmail(email);
-
-        if (fullName) {
-          setUserName(String(fullName));
-        } else if (email) {
-          // If Google doesn't provide name,
-          // show email username.
-          setUserName(
-            email
-              .split("@")[0]
-              .replace(/[._-]/g, " ")
-              .replace(/\b\w/g, (letter) =>
-                letter.toUpperCase()
-              )
-          );
-        } else {
-          setUserName("My Account");
-        }
+        setUserEmail(user.email || "");
+        setUserName(getDisplayName(user));
       } catch (error) {
         console.error(
           "Navbar user loading error:",
@@ -160,7 +189,7 @@ export default function Navbar() {
     loadUser();
 
     // =======================================================
-    // LISTEN FOR LOGIN / LOGOUT
+    // AUTH LISTENER
     // =======================================================
 
     const {
@@ -184,6 +213,7 @@ export default function Navbar() {
           metadata.full_name ||
           metadata.name ||
           metadata.fullName ||
+          metadata.display_name ||
           "";
 
         const email = user.email || "";
@@ -221,11 +251,13 @@ export default function Navbar() {
   function handleSearch() {
     const value = search.trim();
 
-    if (value) {
-      router.push(
-        `/search?q=${encodeURIComponent(value)}`
-      );
-    }
+    if (!value) return;
+
+    setOpenCategory(false);
+
+    router.push(
+      `/search?q=${encodeURIComponent(value)}`
+    );
   }
 
   // =========================================================
@@ -243,6 +275,7 @@ export default function Navbar() {
       setUserEmail("");
 
       setMobile(false);
+      setOpenCategory(false);
 
       router.push("/");
       router.refresh();
@@ -255,13 +288,26 @@ export default function Navbar() {
   }
 
   // =========================================================
-  // USER DISPLAY NAME
+  // CATEGORY CLICK
+  // =========================================================
+
+  function handleCategoryClick() {
+    setOpenCategory(false);
+    setMobile(false);
+  }
+
+  // =========================================================
+  // DISPLAY NAME
   // =========================================================
 
   const displayName =
     userName.length > 22
       ? `${userName.slice(0, 22)}...`
       : userName;
+
+  // =========================================================
+  // UI
+  // =========================================================
 
   return (
     <header
@@ -295,7 +341,10 @@ export default function Navbar() {
 
         <Link
           href="/"
-          className="min-w-[210px]"
+          className="
+            min-w-[210px]
+            shrink-0
+          "
         >
           <h1
             className="
@@ -310,13 +359,18 @@ export default function Navbar() {
             </span>
           </h1>
 
-          <p className="text-xs text-gray-500">
+          <p
+            className="
+              text-xs
+              text-gray-500
+            "
+          >
             Shop More. Pay Less.
           </p>
         </Link>
 
         {/* ===================================================
-            SEARCH
+            DESKTOP SEARCH
         ==================================================== */}
 
         <div
@@ -327,6 +381,8 @@ export default function Navbar() {
             lg:flex
           "
         >
+          {/* CATEGORY SELECTOR */}
+
           <div className="relative">
             <button
               onClick={() =>
@@ -342,16 +398,29 @@ export default function Navbar() {
                 gap-2
                 rounded-l-xl
                 border
+                border-gray-300
                 bg-gray-50
                 px-5
                 text-sm
                 font-semibold
+                text-gray-800
+                transition
+                hover:bg-gray-100
               "
             >
               All Categories
 
-              <ChevronDown size={16} />
+              <ChevronDown
+                size={16}
+                className={
+                  openCategory
+                    ? "rotate-180 transition"
+                    : "transition"
+                }
+              />
             </button>
+
+            {/* CATEGORY DROPDOWN */}
 
             {openCategory && (
               <div
@@ -359,42 +428,66 @@ export default function Navbar() {
                   absolute
                   left-0
                   top-12
-                  z-50
-                  w-56
-                  rounded-xl
+                  z-[100]
+                  w-60
+                  rounded-2xl
                   border
+                  border-gray-200
                   bg-white
-                  p-3
-                  shadow-xl
+                  p-2
+                  shadow-2xl
                 "
               >
-                {categories.map((cat) => (
+                {/* ALL PRODUCTS */}
+
+                <Link
+                  href="/dashboard/products"
+                  onClick={handleCategoryClick}
+                  className="
+                    mb-1
+                    block
+                    rounded-xl
+                    px-4
+                    py-3
+                    text-sm
+                    font-semibold
+                    text-gray-800
+                    transition
+                    hover:bg-[#D4AF37]
+                    hover:text-white
+                  "
+                >
+                  All Products
+                </Link>
+
+                {/* CATEGORIES */}
+
+                {categories.map((category) => (
                   <Link
-                    key={cat}
-                    href={`/category/${cat
-                      .toLowerCase()
-                      .replaceAll(
-                        " ",
-                        "-"
-                      )}`}
-                    onClick={() =>
-                      setOpenCategory(false)
-                    }
+                    key={category.slug}
+                    href={`/dashboard/category/${category.slug}`}
+                    onClick={handleCategoryClick}
                     className="
                       block
-                      rounded-lg
+                      rounded-xl
                       px-4
                       py-3
+                      text-sm
+                      font-medium
+                      text-gray-700
+                      transition
                       hover:bg-[#D4AF37]
                       hover:text-white
                     "
                   >
-                    {cat}
+                    {category.name}
                   </Link>
                 ))}
               </div>
             )}
           </div>
+
+          {/* SEARCH INPUT */}
 
           <input
             value={search}
@@ -408,13 +501,19 @@ export default function Navbar() {
             }}
             placeholder="Search for products, brands and more..."
             className="
+              min-w-0
               flex-1
               border-y
+              border-gray-300
               px-5
               text-sm
+              text-gray-800
               outline-none
+              placeholder:text-gray-400
             "
           />
+
+          {/* SEARCH BUTTON */}
 
           <button
             onClick={handleSearch}
@@ -422,6 +521,7 @@ export default function Navbar() {
             className="
               flex
               w-12
+              shrink-0
               items-center
               justify-center
               rounded-r-xl
@@ -442,8 +542,9 @@ export default function Navbar() {
         <div
           className="
             flex
+            shrink-0
             items-center
-            gap-6
+            gap-5
           "
         >
           {/* =================================================
@@ -461,11 +562,21 @@ export default function Navbar() {
               <User size={25} />
 
               <div className="hidden sm:block">
-                <p className="text-sm font-semibold">
+                <p
+                  className="
+                    text-sm
+                    font-semibold
+                  "
+                >
                   Account
                 </p>
 
-                <p className="text-xs text-gray-500">
+                <p
+                  className="
+                    text-xs
+                    text-gray-500
+                  "
+                >
                   Loading...
                 </p>
               </div>
@@ -481,6 +592,8 @@ export default function Navbar() {
                   text-left
                 "
               >
+                {/* USER ICON */}
+
                 <div
                   className="
                     flex
@@ -497,7 +610,15 @@ export default function Navbar() {
                   <User size={21} />
                 </div>
 
-                <div className="hidden max-w-[170px] sm:block">
+                {/* NAME */}
+
+                <div
+                  className="
+                    hidden
+                    max-w-[170px]
+                    sm:block
+                  "
+                >
                   <p
                     className="
                       truncate
@@ -521,7 +642,10 @@ export default function Navbar() {
 
                 <ChevronDown
                   size={15}
-                  className="hidden sm:block"
+                  className="
+                    hidden
+                    sm:block
+                  "
                 />
               </button>
 
@@ -533,21 +657,32 @@ export default function Navbar() {
                   absolute
                   right-0
                   top-12
+                  z-[100]
                   w-64
                   translate-y-2
-                  rounded-xl
+                  rounded-2xl
                   border
+                  border-gray-200
                   bg-white
                   p-3
                   opacity-0
-                  shadow-xl
+                  shadow-2xl
                   transition-all
                   group-hover:visible
                   group-hover:translate-y-0
                   group-hover:opacity-100
                 "
               >
-                <div className="border-b px-3 pb-3">
+                {/* USER INFO */}
+
+                <div
+                  className="
+                    border-b
+                    border-gray-100
+                    px-3
+                    pb-3
+                  "
+                >
                   <p
                     className="
                       truncate
@@ -573,36 +708,65 @@ export default function Navbar() {
                   )}
                 </div>
 
+                {/* PROFILE */}
+
                 <Link
                   href="/dashboard/profile"
                   className="
                     mt-2
                     block
-                    rounded-lg
+                    rounded-xl
                     px-3
-                    py-2
+                    py-2.5
                     text-sm
                     font-medium
+                    text-gray-700
+                    transition
                     hover:bg-gray-100
                   "
                 >
                   My Profile
                 </Link>
 
+                {/* ORDERS */}
+
                 <Link
                   href="/dashboard/orders"
                   className="
                     block
-                    rounded-lg
+                    rounded-xl
                     px-3
-                    py-2
+                    py-2.5
                     text-sm
                     font-medium
+                    text-gray-700
+                    transition
                     hover:bg-gray-100
                   "
                 >
                   My Orders
                 </Link>
+
+                {/* WISHLIST */}
+
+                <Link
+                  href="/dashboard/wishlist"
+                  className="
+                    block
+                    rounded-xl
+                    px-3
+                    py-2.5
+                    text-sm
+                    font-medium
+                    text-gray-700
+                    transition
+                    hover:bg-gray-100
+                  "
+                >
+                  Wishlist
+                </Link>
+
+                {/* LOGOUT */}
 
                 <button
                   type="button"
@@ -613,13 +777,14 @@ export default function Navbar() {
                     w-full
                     items-center
                     gap-2
-                    rounded-lg
+                    rounded-xl
                     px-3
-                    py-2
+                    py-2.5
                     text-left
                     text-sm
                     font-semibold
                     text-red-600
+                    transition
                     hover:bg-red-50
                   "
                 >
@@ -629,6 +794,8 @@ export default function Navbar() {
               </div>
             </div>
           ) : (
+            /* NOT LOGGED IN */
+
             <Link
               href="/login"
               className="
@@ -640,11 +807,22 @@ export default function Navbar() {
               <User size={25} />
 
               <div>
-                <p className="text-sm font-semibold">
+                <p
+                  className="
+                    text-sm
+                    font-semibold
+                    text-gray-900
+                  "
+                >
                   Account
                 </p>
 
-                <p className="text-xs text-gray-500">
+                <p
+                  className="
+                    text-xs
+                    text-gray-500
+                  "
+                >
                   Sign in / Register
                 </p>
               </div>
@@ -657,7 +835,13 @@ export default function Navbar() {
 
           <Link
             href="/dashboard/wishlist"
-            className="relative"
+            className="
+              relative
+              text-gray-800
+              transition
+              hover:text-[#D4AF37]
+            "
+            aria-label="Wishlist"
           >
             <Heart size={26} />
 
@@ -687,7 +871,13 @@ export default function Navbar() {
 
           <Link
             href="/dashboard/cart"
-            className="relative"
+            className="
+              relative
+              text-gray-800
+              transition
+              hover:text-[#D4AF37]
+            "
+            aria-label="Shopping Cart"
           >
             <ShoppingCart size={27} />
 
@@ -712,7 +902,7 @@ export default function Navbar() {
           </Link>
 
           {/* =================================================
-              MOBILE MENU
+              MOBILE MENU BUTTON
           ================================================== */}
 
           <button
@@ -720,13 +910,16 @@ export default function Navbar() {
               setMobile(!mobile)
             }
             type="button"
-            className="lg:hidden"
+            className="
+              lg:hidden
+              text-gray-800
+            "
             aria-label="Toggle menu"
           >
             {mobile ? (
-              <X />
+              <X size={25} />
             ) : (
-              <Menu />
+              <Menu size={25} />
             )}
           </button>
         </div>
@@ -736,7 +929,12 @@ export default function Navbar() {
           SECOND MENU
       ====================================================== */}
 
-      <div className="border-t">
+      <div
+        className="
+          border-t
+          border-gray-200
+        "
+      >
         <div
           className="
             mx-auto
@@ -749,29 +947,107 @@ export default function Navbar() {
             px-6
           "
         >
-          <button
-            onClick={() =>
-              setOpenCategory(
-                !openCategory
-              )
-            }
-            type="button"
-            className="
-              flex
-              items-center
-              gap-2
-              whitespace-nowrap
-              rounded-lg
-              bg-[#D4AF37]
-              px-7
-              py-2
-              font-semibold
-              text-white
-            "
-          >
-            <Menu size={18} />
-            All Categories
-          </button>
+          {/* ALL CATEGORIES */}
+
+          <div className="relative shrink-0">
+            <button
+              onClick={() =>
+                setOpenCategory(
+                  !openCategory
+                )
+              }
+              type="button"
+              className="
+                flex
+                items-center
+                gap-2
+                whitespace-nowrap
+                rounded-lg
+                bg-[#D4AF37]
+                px-7
+                py-2
+                font-semibold
+                text-white
+                transition
+                hover:bg-black
+              "
+            >
+              <Menu size={18} />
+
+              All Categories
+
+              <ChevronDown
+                size={15}
+                className={
+                  openCategory
+                    ? "rotate-180 transition"
+                    : "transition"
+                }
+              />
+            </button>
+
+            {/* SECOND MENU CATEGORY DROPDOWN */}
+
+            {openCategory && (
+              <div
+                className="
+                  absolute
+                  left-0
+                  top-12
+                  z-[100]
+                  w-60
+                  rounded-2xl
+                  border
+                  border-gray-200
+                  bg-white
+                  p-2
+                  shadow-2xl
+                "
+              >
+                <Link
+                  href="/dashboard/products"
+                  onClick={handleCategoryClick}
+                  className="
+                    mb-1
+                    block
+                    rounded-xl
+                    px-4
+                    py-3
+                    text-sm
+                    font-semibold
+                    text-gray-800
+                    hover:bg-[#D4AF37]
+                    hover:text-white
+                  "
+                >
+                  All Products
+                </Link>
+
+                {categories.map((category) => (
+                  <Link
+                    key={category.slug}
+                    href={`/dashboard/category/${category.slug}`}
+                    onClick={handleCategoryClick}
+                    className="
+                      block
+                      rounded-xl
+                      px-4
+                      py-3
+                      text-sm
+                      font-medium
+                      text-gray-700
+                      hover:bg-[#D4AF37]
+                      hover:text-white
+                    "
+                  >
+                    {category.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* NAV LINKS */}
 
           {nav.map((item, index) => (
             <Link
@@ -781,6 +1057,8 @@ export default function Navbar() {
                 whitespace-nowrap
                 text-sm
                 font-semibold
+                transition
+                hover:text-[#D4AF37]
                 ${
                   index === 0
                     ? "text-[#D4AF37]"
@@ -802,6 +1080,7 @@ export default function Navbar() {
         <div
           className="
             border-t
+            border-gray-200
             bg-white
             p-5
             lg:hidden
@@ -809,7 +1088,13 @@ export default function Navbar() {
         >
           {/* MOBILE SEARCH */}
 
-          <div className="mb-5 flex h-11">
+          <div
+            className="
+              mb-5
+              flex
+              h-11
+            "
+          >
             <input
               value={search}
               onChange={(e) =>
@@ -823,9 +1108,11 @@ export default function Navbar() {
               }}
               placeholder="Search products..."
               className="
+                min-w-0
                 flex-1
-                rounded-l-lg
+                rounded-l-xl
                 border
+                border-gray-300
                 px-4
                 text-sm
                 outline-none
@@ -841,9 +1128,10 @@ export default function Navbar() {
               className="
                 flex
                 w-12
+                shrink-0
                 items-center
                 justify-center
-                rounded-r-lg
+                rounded-r-xl
                 bg-[#D4AF37]
                 text-white
               "
@@ -852,43 +1140,158 @@ export default function Navbar() {
             </button>
           </div>
 
+          {/* MOBILE CATEGORIES */}
+
+          <div className="mb-4">
+            <p
+              className="
+                mb-2
+                text-xs
+                font-bold
+                uppercase
+                tracking-wider
+                text-gray-400
+              "
+            >
+              Categories
+            </p>
+
+            <Link
+              href="/dashboard/products"
+              onClick={() =>
+                setMobile(false)
+              }
+              className="
+                block
+                border-b
+                border-gray-100
+                py-3
+                font-semibold
+                text-[#D4AF37]
+              "
+            >
+              All Products
+            </Link>
+
+            {categories.map((category) => (
+              <Link
+                key={category.slug}
+                href={`/dashboard/category/${category.slug}`}
+                onClick={() =>
+                  setMobile(false)
+                }
+                className="
+                  block
+                  border-b
+                  border-gray-100
+                  py-3
+                  font-medium
+                  text-gray-800
+                  transition
+                  hover:text-[#D4AF37]
+                "
+              >
+                {category.name}
+              </Link>
+            ))}
+          </div>
+
+          {/* LOGGED IN USER */}
+
           {loggedIn && (
             <div
               className="
                 mb-4
-                rounded-xl
+                rounded-2xl
                 bg-[#faf8f3]
                 p-4
               "
             >
-              <p className="text-sm font-bold">
+              <p
+                className="
+                  text-sm
+                  font-bold
+                  text-gray-900
+                "
+              >
                 {userName}
               </p>
 
               {userEmail && (
-                <p className="mt-1 text-xs text-gray-500">
+                <p
+                  className="
+                    mt-1
+                    truncate
+                    text-xs
+                    text-gray-500
+                  "
+                >
                   {userEmail}
                 </p>
               )}
 
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="
-                  mt-3
-                  flex
-                  items-center
-                  gap-2
-                  text-sm
-                  font-semibold
-                  text-red-600
-                "
-              >
-                <LogOut size={16} />
-                Logout
-              </button>
+              <div className="mt-3 flex gap-4">
+                <Link
+                  href="/dashboard/profile"
+                  onClick={() =>
+                    setMobile(false)
+                  }
+                  className="
+                    text-sm
+                    font-semibold
+                    text-gray-700
+                  "
+                >
+                  Profile
+                </Link>
+
+                <Link
+                  href="/dashboard/orders"
+                  onClick={() =>
+                    setMobile(false)
+                  }
+                  className="
+                    text-sm
+                    font-semibold
+                    text-gray-700
+                  "
+                >
+                  Orders
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="
+                    flex
+                    items-center
+                    gap-1
+                    text-sm
+                    font-semibold
+                    text-red-600
+                  "
+                >
+                  <LogOut size={15} />
+                  Logout
+                </button>
+              </div>
             </div>
           )}
+
+          {/* MOBILE NAV */}
+
+          <p
+            className="
+              mb-2
+              text-xs
+              font-bold
+              uppercase
+              tracking-wider
+              text-gray-400
+            "
+          >
+            Menu
+          </p>
 
           {nav.map((item) => (
             <Link
@@ -903,6 +1306,9 @@ export default function Navbar() {
                 border-gray-100
                 py-3
                 font-semibold
+                text-gray-800
+                transition
+                hover:text-[#D4AF37]
               "
             >
               {item.name}
