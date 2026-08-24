@@ -18,88 +18,96 @@ import {
 const categories = [
   {
     name: "Electronics",
+    slug: "electronics",
     icon: Headphones,
-    href: "/dashboard/categories",
   },
   {
     name: "Fashion",
+    slug: "fashion",
     icon: Shirt,
-    href: "/dashboard/categories",
   },
   {
     name: "Home & Living",
+    slug: "home-living",
     icon: Sofa,
-    href: "/dashboard/categories",
   },
   {
     name: "Beauty",
+    slug: "beauty",
     icon: Sparkles,
-    href: "/dashboard/categories",
   },
   {
     name: "Mobiles",
+    slug: "mobiles",
     icon: Smartphone,
-    href: "/dashboard/categories",
   },
   {
     name: "Appliances",
+    slug: "appliances",
     icon: WashingMachine,
-    href: "/dashboard/categories",
   },
   {
     name: "Footwear",
+    slug: "footwear",
     icon: Footprints,
-    href: "/dashboard/categories",
   },
   {
     name: "Watches",
+    slug: "watches",
     icon: Watch,
-    href: "/dashboard/categories",
   },
   {
     name: "Bags",
+    slug: "bags",
     icon: ShoppingBag,
-    href: "/dashboard/categories",
   },
   {
     name: "Toys & Baby",
+    slug: "toys-baby",
     icon: Baby,
-    href: "/dashboard/categories",
-  },
-  {
-    name: "View All",
-    icon: Grid2X2,
-    href: "/dashboard/categories",
   },
 ];
 
 export default function CategorySection() {
   return (
     <section className="py-6">
-      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-11 gap-4">
-        {categories.map((item, i) => {
+      <div
+        className="
+          grid
+          grid-cols-2
+          gap-4
+          sm:grid-cols-4
+          md:grid-cols-6
+          lg:grid-cols-10
+        "
+      >
+        {categories.map((item) => {
           const Icon = item.icon;
 
           return (
-            <Link key={i} href={item.href}>
+            <Link
+              key={item.slug}
+              href={`/dashboard/category/${item.slug}`}
+              className="block"
+            >
               <div
                 className="
-                  bg-white
-                  rounded-2xl
-                  border
-                  border-gray-200
-                  h-28
                   flex
+                  h-28
+                  cursor-pointer
                   flex-col
                   items-center
                   justify-center
+                  rounded-2xl
+                  border
+                  border-gray-200
+                  bg-white
                   shadow-sm
-                  hover:shadow-lg
-                  hover:border-[#D4AF37]
-                  hover:-translate-y-1
                   transition-all
                   duration-300
-                  cursor-pointer
+                  hover:-translate-y-1
+                  hover:border-[#D4AF37]
+                  hover:shadow-lg
                 "
               >
                 <Icon
@@ -107,13 +115,68 @@ export default function CategorySection() {
                   className="text-[#C99718] stroke-[1.5]"
                 />
 
-                <span className="mt-3 text-sm font-medium text-gray-800 text-center px-1">
+                <span
+                  className="
+                    mt-3
+                    px-1
+                    text-center
+                    text-sm
+                    font-medium
+                    text-gray-800
+                  "
+                >
                   {item.name}
                 </span>
               </div>
             </Link>
           );
         })}
+
+        {/* VIEW ALL */}
+
+        <Link
+          href="/dashboard/categories"
+          className="block"
+        >
+          <div
+            className="
+              flex
+              h-28
+              cursor-pointer
+              flex-col
+              items-center
+              justify-center
+              rounded-2xl
+              border
+              border-gray-200
+              bg-white
+              shadow-sm
+              transition-all
+              duration-300
+              hover:-translate-y-1
+              hover:border-[#D4AF37]
+              hover:shadow-lg
+            "
+          >
+            <Grid2X2
+              size={34}
+              className="text-[#C99718] stroke-[1.5]"
+            />
+
+            <span
+              className="
+                mt-3
+                px-1
+                text-center
+                text-sm
+                font-medium
+                text-gray-800
+              "
+            >
+              View All
+            </span>
+          </div>
+        </Link>
       </div>
     </section>
   );
