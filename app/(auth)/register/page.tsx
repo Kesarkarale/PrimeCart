@@ -155,18 +155,6 @@ export default function RegisterPage() {
       // -----------------------------
 
       if (data.session) {
-        setSuccess("Account created successfully. Redirecting...");
-
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 700);
-
-        return;
-      }
-
-      // -----------------------------
-      // EMAIL CONFIRMATION REQUIRED
-      // -----------------------------
 
       setSuccess("Account created successfully. Redirecting to login...");
 
