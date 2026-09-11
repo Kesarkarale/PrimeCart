@@ -33,155 +33,156 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  async function handleRegister(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+ async function handleRegister(e: FormEvent<HTMLFormElement>) {
+  e.preventDefault();
 
-    if (loading || googleLoading) return;
+  if (loading || googleLoading) return;
 
-    setError("");
-    setSuccess("");
+  setError("");
+  setSuccess("");
 
-    const name = fullName.trim();
-    const cleanEmail = email.trim().toLowerCase();
- 
-    // -----------------------------
-    // NAME
-    // -----------------------------
+  const name = fullName.trim();
+  const cleanEmail = email.trim().toLowerCase();
 
-    if (!name) {
-      setError("Please enter your full name.");
-      return;
-    }
+  // -----------------------------
+  // NAME
+  // -----------------------------
 
-    // -----------------------------
-    // EMAIL
-    // -----------------------------
-
-    if (!cleanEmail) {
-      setError("Please enter your email address.");
-      return;
-    }
-
-    // Simple and reliable email validation
-    const emailRegex =
-      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/;
-
-    if (!emailRegex.test(cleanEmail)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-
-    
-    // -----------------------------
-    // PASSWORD
-    // -----------------------------
-
-    if (password.length < 6) {
-      setError("Password must contain at least 6 characters.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
-    // -----------------------------
-    // TERMS
-    // -----------------------------
-
-    if (!agree) {
-      setError(
-        "Please accept the Terms & Conditions and Privacy Policy."
-      );
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const redirectTo =
-        `${window.location.origin}/auth/callback?next=/dashboard`;
-
-      console.log("Registering:", cleanEmail);
-
-      const { data, error: signUpError } =
-        await supabase.auth.signUp({
-          email: cleanEmail,
-          password: password,
-          options: {
-            data: {
-              full_name: name,
-              
-            },
-            emailRedirectTo: redirectTo,
-          },
-        });
-
-      // -----------------------------
-      // SUPABASE ERROR
-      // -----------------------------
-
-      if (signUpError) {
-        console.error("Supabase signup error:", signUpError);
-
-        const message = signUpError.message.toLowerCase();
-
-        if (
-          message.includes("already registered") ||
-          message.includes("already exists") ||
-          message.includes("user already")
-        ) {
-          setError(
-            "An account with this email already exists. Please login instead."
-          );
-        } else if (message.includes("invalid email")) {
-          setError(
-            "Supabase rejected this email address. Please check the email and try again."
-          );
-        } else if (message.includes("password")) {
-          setError(signUpError.message);
-        } else {
-          setError(signUpError.message);
-        }
-
-        return;
-      }
-
-      console.log("Signup response:", data);
-
-      // -----------------------------
-      // SESSION AVAILABLE
-      // -----------------------------
-
-      if (data.session) {
-
-      setSuccess("Account created successfully. Redirecting to login...");
-
-setFullName("");
-setEmail("");
-setPassword("");
-setConfirmPassword("");
-setAgree(false);
-
-setTimeout(() => {
-  window.location.href = "/login";
-}, 700);
-      
-    } catch (err) {
-      console.error("Registration error:", err);
-
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError(
-          "Unable to create your account. Please try again."
-        );
-      }
-    } finally {
-      setLoading(false);
-    }
+  if (!name) {
+    setError("Please enter your full name.");
+    return;
   }
+
+  // -----------------------------
+  // EMAIL
+  // -----------------------------
+
+  if (!cleanEmail) {
+    setError("Please enter your email address.");
+    return;
+  }
+
+  const emailRegex =
+    /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/;
+
+  if (!emailRegex.test(cleanEmail)) {
+    setError("Please enter a valid email address.");
+    return;
+  }
+
+  // -----------------------------
+  // PASSWORD
+  // -----------------------------
+
+  if (password.length < 6) {
+    setError(
+      "Password must contain at least 6 characters."
+    );
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    setError("Passwords do not match.");
+    return;
+  }
+
+  // -----------------------------
+  // TERMS
+  // -----------------------------
+
+  if (!agree) {
+    setError(
+      "Please accept the Terms & Conditions and Privacy Policy."
+    );
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const { data, error: signUpError } =
+      await supabase.auth.signUp({
+        email: cleanEmail,
+        password: password,
+        options: {
+          data: {
+            full_name: name,
+          },
+        },
+      });
+
+    // -----------------------------
+    // SUPABASE ERROR
+    // -----------------------------
+
+    if (signUpError) {
+      console.error(
+        "Supabase signup error:",
+        signUpError
+      );
+
+      const message =
+        signUpError.message.toLowerCase();
+
+      if (
+        message.includes("already registered") ||
+        message.includes("already exists") ||
+        message.includes("user already")
+      ) {
+        setError(
+          "An account with this email already exists. Please login instead."
+        );
+      } else if (
+        message.includes("invalid email")
+      ) {
+        setError(
+          "Supabase rejected this email address. Please check the email and try again."
+        );
+      } else {
+        setError(signUpError.message);
+      }
+
+      return;
+    }
+
+    console.log("Signup successful:", data);
+
+    // -----------------------------
+    // ACCOUNT CREATED
+    // -----------------------------
+
+    setSuccess(
+      "Account created successfully. Redirecting to login..."
+    );
+
+    // Clear form
+    setFullName("");
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setAgree(false);
+
+    // Always go to Login after registration
+    setTimeout(() => {
+      window.location.replace("/login");
+    }, 800);
+  } catch (err) {
+    console.error(
+      "Registration error:",
+      err
+    );
+
+    if (err instanceof Error) {
+      setError(err.message);
+    } else {
+      setError(
+        "Unable to create your account. Please try again."
+      );
+    }
+  } finally {
+    setLoading(false);
+  }
+}
 
   // =========================================================
   // GOOGLE SIGNUP
