@@ -36,6 +36,8 @@ export default function LoginPage() {
   ) => {
     e.preventDefault();
 
+    if (loading || googleLoading) return;
+
     setError("");
     setSuccess("");
 
@@ -54,21 +56,35 @@ export default function LoginPage() {
     try {
       setLoading(true);
 
-      const { data, error: loginError } =
-        await supabase.auth.signInWithPassword({
-          email: cleanEmail,
-          password,
-        });
+      const {
+        data,
+        error: loginError,
+      } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password,
+      });
 
       if (loginError) {
-        const message = loginError.message.toLowerCase();
+        console.error(
+          "Supabase login error:",
+          loginError
+        );
+
+        const message =
+          loginError.message.toLowerCase();
 
         if (
-          message.includes("invalid login credentials")
+          message.includes(
+            "invalid login credentials"
+          )
         ) {
-          setError("Invalid email or password.");
+          setError(
+            "Invalid email or password."
+          );
         } else if (
-          message.includes("email not confirmed")
+          message.includes(
+            "email not confirmed"
+          )
         ) {
           setError(
             "Please verify your email before logging in."
@@ -80,22 +96,36 @@ export default function LoginPage() {
         return;
       }
 
-      if (!data.session) {
+      if (!data.session || !data.user) {
         setError(
           "Login session could not be created. Please try again."
         );
         return;
       }
 
-      setSuccess("Login successful. Redirecting...");
+      console.log(
+        "Login successful:",
+        data.user.email
+      );
 
-      window.location.replace("/dashboard");
+      setSuccess(
+        "Login successful. Redirecting..."
+      );
+
+      // Small delay so success message is visible
+      setTimeout(() => {
+        window.location.replace("/dashboard");
+      }, 500);
     } catch (err) {
       console.error("Login error:", err);
 
-      setError(
-        "Something went wrong. Please try again."
-      );
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(
+          "Something went wrong. Please try again."
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -106,6 +136,8 @@ export default function LoginPage() {
   // =========================================================
 
   const handleGoogleLogin = async () => {
+    if (loading || googleLoading) return;
+
     setError("");
     setSuccess("");
 
@@ -115,7 +147,10 @@ export default function LoginPage() {
       const redirectTo =
         `${window.location.origin}/auth/callback?next=/dashboard`;
 
-      const { error: googleError } =
+      const {
+        data,
+        error: googleError,
+      } =
         await supabase.auth.signInWithOAuth({
           provider: "google",
           options: {
@@ -134,16 +169,26 @@ export default function LoginPage() {
 
         setError(googleError.message);
         setGoogleLoading(false);
+        return;
       }
+
+      console.log(
+        "Google OAuth started:",
+        data
+      );
     } catch (err) {
       console.error(
         "Google authentication error:",
         err
       );
 
-      setError(
-        "Unable to continue with Google."
-      );
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(
+          "Unable to continue with Google."
+        );
+      }
 
       setGoogleLoading(false);
     }
@@ -242,7 +287,7 @@ export default function LoginPage() {
             "
           >
             {/* =================================================
-                LOGO + PRIME CART
+                LOGO
             ================================================= */}
 
             <Link
@@ -330,8 +375,8 @@ export default function LoginPage() {
                   sm:text-[15px]
                 "
               >
-                Enter your email and password to access
-                your account
+                Enter your email and password to
+                access your account
               </p>
             </div>
 
@@ -426,6 +471,7 @@ export default function LoginPage() {
 
                   <input
                     id="email"
+                    name="email"
                     type="email"
                     value={email}
                     onChange={(e) =>
@@ -434,7 +480,8 @@ export default function LoginPage() {
                     placeholder="Enter your email"
                     autoComplete="email"
                     disabled={
-                      loading || googleLoading
+                      loading ||
+                      googleLoading
                     }
                     required
                     className="
@@ -527,6 +574,7 @@ export default function LoginPage() {
 
                   <input
                     id="password"
+                    name="password"
                     type={
                       showPassword
                         ? "text"
@@ -539,7 +587,8 @@ export default function LoginPage() {
                     placeholder="Enter your password"
                     autoComplete="current-password"
                     disabled={
-                      loading || googleLoading
+                      loading ||
+                      googleLoading
                     }
                     required
                     className="
@@ -579,7 +628,8 @@ export default function LoginPage() {
                       )
                     }
                     disabled={
-                      loading || googleLoading
+                      loading ||
+                      googleLoading
                     }
                     aria-label={
                       showPassword
@@ -629,7 +679,8 @@ export default function LoginPage() {
                     )
                   }
                   disabled={
-                    loading || googleLoading
+                    loading ||
+                    googleLoading
                   }
                   className="
                     h-[17px]
@@ -647,7 +698,8 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={
-                  loading || googleLoading
+                  loading ||
+                  googleLoading
                 }
                 className="
                   flex
@@ -723,14 +775,15 @@ export default function LoginPage() {
             </div>
 
             {/* =================================================
-                GOOGLE
+                GOOGLE LOGIN
             ================================================= */}
 
             <button
               type="button"
               onClick={handleGoogleLogin}
               disabled={
-                loading || googleLoading
+                loading ||
+                googleLoading
               }
               className="
                 flex
@@ -772,7 +825,7 @@ export default function LoginPage() {
             </button>
 
             {/* =================================================
-                REGISTER
+                REGISTER LINK
             ================================================= */}
 
             <p
@@ -837,7 +890,7 @@ function GoogleIcon() {
 
       <path
         fill="#EA4335"
-        d="M12 6.34c1.43 0 2.71.49 3.72 1.45l2.79-2.79C16.84 3.43 14.63 2.5 12 2.5a9.74 9.74 0 0 0-8.73 5.36l3.24 2.51 3.24 2.51C7.29 8.06 9.45 6.34 12 6.34Z"
+        d="M12 6.34c1.43 0 2.71.49 3.72 1.45l2.79-2.79C16.84 3.43 14.63 2.5 12 2.5a9.74 9.74 0 0 0-8.73 5.36l3.24 2.51 3.24 2.51 3.24 2.51C7.29 8.06 9.45 6.34 12 6.34Z"
       />
     </svg>
   );
