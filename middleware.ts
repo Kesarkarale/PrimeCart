@@ -17,21 +17,10 @@ export async function middleware(request: NextRequest) {
         },
 
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => {
-            request.cookies.set(name, value);
-          });
-
-          response = NextResponse.next({
-            request,
-          });
-
           cookiesToSet.forEach(
             ({ name, value, options }) => {
-              response.cookies.set(
-                name,
-                value,
-                options
-              );
+              request.cookies.set(name, value);
+              response.cookies.set(name, value, options);
             }
           );
         },
@@ -60,8 +49,8 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith(`${route}/`)
   );
 
-  // User is NOT logged in
-  // Protected page -> Login
+  // If user is not logged in and tries to access
+  // a protected route, redirect to login.
   if (isProtectedRoute && !user) {
     const loginUrl = new URL(
       "/login",
@@ -75,10 +64,6 @@ export async function middleware(request: NextRequest) {
 
     return NextResponse.redirect(loginUrl);
   }
-
-  // IMPORTANT:
-  // Never redirect /login or /register automatically.
-  // Login/Register pages must always be allowed to open.
 
   return response;
 }
