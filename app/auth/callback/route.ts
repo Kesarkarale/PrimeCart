@@ -6,7 +6,6 @@ export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
 
   const code = requestUrl.searchParams.get("code");
-
   const next =
     requestUrl.searchParams.get("next") || "/dashboard";
 
@@ -31,15 +30,20 @@ export async function GET(request: Request) {
         },
 
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(
-            ({ name, value, options }) => {
-              cookieStore.set(
-                name,
-                value,
-                options
-              );
-            }
-          );
+          try {
+            cookiesToSet.forEach(
+              ({ name, value, options }) => {
+                cookieStore.set(
+                  name,
+                  value,
+                  options
+                );
+              }
+            );
+          } catch {
+            // Cookie setting can fail in some server contexts.
+            // Middleware will refresh the session when needed.
+          }
         },
       },
     }
@@ -49,10 +53,7 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    console.error(
-      "Auth callback error:",
-      error
-    );
+    console.error("Auth callback error:", error);
 
     return NextResponse.redirect(
       new URL(
