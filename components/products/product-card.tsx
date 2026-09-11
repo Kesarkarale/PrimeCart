@@ -4,40 +4,22 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
-import { addToCart } from "@/lib/cart";
-import { toast } from "sonner";
-
+import { motion } from "framer-motion";
 import {
   Heart,
+  ImageOff,
   ShoppingCart,
   Star,
   Zap,
-  ImageOff,
 } from "lucide-react";
+import { toast } from "sonner";
 
-import { motion } from "framer-motion";
+import { addToCart } from "@/lib/cart";
+import type { Product } from "@/lib/products";
 
-interface Product {
-  id: string;
-  name: string;
-
-  price: number;
-  original_price?: number | null;
-  oldPrice?: number | null;
-
-  rating?: number | null;
-  reviews_count?: number | null;
-
-  image?: string | null;
-  image_url?: string | null;
-
-  category?: string | null;
-  category_id?: string | null;
-
-  brand?: string | null;
-
-  stock?: number | null;
-}
+/* =========================================================
+   PRODUCT CARD
+========================================================= */
 
 interface ProductCardProps {
   product: Product;
@@ -46,85 +28,141 @@ interface ProductCardProps {
 export default function ProductCard({
   product,
 }: ProductCardProps) {
-  const [imageError, setImageError] = useState(false);
-  const [wishlist, setWishlist] = useState(false);
-  const [addingToCart, setAddingToCart] = useState(false);
+  const [imageError, setImageError] =
+    useState(false);
 
-  /*
-   * Supabase DB uses image_url.
-   * FeaturedProducts may use image.
-   * Support both.
-   */
+  const [wishlist, setWishlist] =
+    useState(false);
+
+  const [addingToCart, setAddingToCart] =
+    useState(false);
+
+  /* =======================================================
+     PRODUCT IMAGE
+  ======================================================= */
+
   const productImage =
     product.image_url?.trim() ||
     product.image?.trim() ||
     "";
+
+  /* =======================================================
+     RATING
+  ======================================================= */
 
   const productRating =
     typeof product.rating === "number"
       ? product.rating
       : 0;
 
+  /* =======================================================
+     REVIEWS
+  ======================================================= */
+
   const reviews =
     typeof product.reviews_count === "number"
       ? product.reviews_count
       : 0;
+
+  /* =======================================================
+     OLD PRICE
+  ======================================================= */
 
   const oldPrice =
     product.original_price ??
     product.oldPrice ??
     null;
 
+  /* =======================================================
+     CATEGORY
+  ======================================================= */
+
   const category =
-    product.category ||
+    product.category?.trim() ||
     "Product";
 
+  /* =======================================================
+     DISCOUNT
+  ======================================================= */
+
   const discount =
-    oldPrice && oldPrice > product.price
+    oldPrice &&
+    oldPrice > product.price
       ? Math.round(
-          ((oldPrice - product.price) / oldPrice) * 100
+          ((oldPrice - product.price) /
+            oldPrice) *
+            100
         )
       : 0;
 
-  /*
-   * Handle Add To Cart
-   */
+  /* =======================================================
+     STOCK
+  ======================================================= */
+
+  const hasStock =
+    typeof product.stock !== "number" ||
+    product.stock > 0;
+
+  /* =======================================================
+     ADD TO CART
+  ======================================================= */
+
   const handleAddToCart = async () => {
+    if (!hasStock) {
+      toast.error("This product is out of stock");
+      return;
+    }
+
     try {
       setAddingToCart(true);
 
       await addToCart(product as any);
 
-      toast.success("Product added to cart 🛒");
+      toast.success(
+        "Product added to cart 🛒"
+      );
     } catch (error: any) {
-      console.error("Add to cart error:", error);
+      console.error(
+        "Add to cart error:",
+        error
+      );
 
       toast.error(
-        error?.message || "Please login first"
+        error?.message ||
+          "Please login first"
       );
     } finally {
       setAddingToCart(false);
     }
   };
 
-  /*
-   * Wishlist
-   */
-  const handleWishlist = () => {
-    setWishlist((value) => !value);
+  /* =======================================================
+     WISHLIST
+  ======================================================= */
 
-    toast.success(
-      wishlist
-        ? "Removed from wishlist"
-        : "Added to wishlist ❤️"
-    );
+  const handleWishlist = () => {
+    setWishlist((current) => {
+      const next = !current;
+
+      toast.success(
+        next
+          ? "Added to wishlist ❤️"
+          : "Removed from wishlist"
+      );
+
+      return next;
+    });
   };
 
+  /* =======================================================
+     RENDER
+  ======================================================= */
+
   return (
-    <motion.div
+    <motion.article
       initial={{
         opacity: 0,
-        y: 30,
+        y: 24,
       }}
       whileInView={{
         opacity: 1,
@@ -132,12 +170,14 @@ export default function ProductCard({
       }}
       viewport={{
         once: true,
+        amount: 0.15,
       }}
       whileHover={{
-        y: -8,
+        y: -7,
       }}
       transition={{
         duration: 0.3,
+        ease: "easeOut",
       }}
       className="
         group
@@ -148,42 +188,75 @@ export default function ProductCard({
         border-gray-200
         bg-white
         shadow-sm
-        transition
+        transition-all
+        duration-300
         hover:border-[#D4AF37]
-        hover:shadow-lg
+        hover:shadow-xl
 
         dark:border-white/10
-        dark:bg-white/5
+        dark:bg-[#101010]
         dark:shadow-none
       "
     >
-      {/* =====================================================
-          DISCOUNT
-      ====================================================== */}
+      {/* ===================================================
+          BADGES
+      ==================================================== */}
 
-      {discount > 0 && (
-        <div
-          className="
-            absolute
-            left-4
-            top-4
-            z-10
-            rounded-full
-            bg-[#D4AF37]
-            px-3
-            py-1
-            text-[11px]
-            font-bold
-            text-black
-          "
-        >
-          {discount}% OFF
-        </div>
-      )}
+      <div
+        className="
+          absolute
+          left-4
+          top-4
+          z-20
+          flex
+          flex-wrap
+          gap-2
+        "
+      >
+        {discount > 0 && (
+          <span
+            className="
+              rounded-full
+              bg-[#D4AF37]
+              px-3
+              py-1
+              text-[10px]
+              font-extrabold
+              uppercase
+              tracking-wide
+              text-black
+              shadow-sm
+            "
+          >
+            {discount}% OFF
+          </span>
+        )}
 
-      {/* =====================================================
-          WISHLIST
-      ====================================================== */}
+        {product.featured && (
+          <span
+            className="
+              rounded-full
+              border
+              border-black/10
+              bg-black
+              px-3
+              py-1
+              text-[10px]
+              font-bold
+              uppercase
+              tracking-wide
+              text-white
+              dark:border-white/10
+            "
+          >
+            Featured
+          </span>
+        )}
+      </div>
+
+      {/* ===================================================
+          WISHLIST BUTTON
+      ==================================================== */}
 
       <button
         type="button"
@@ -197,26 +270,34 @@ export default function ProductCard({
           absolute
           right-4
           top-4
-          z-10
+          z-20
           flex
           h-10
           w-10
           items-center
           justify-center
           rounded-full
-          bg-gray-100
+          border
+          border-gray-200
+          bg-white/90
           text-gray-700
-          transition
+          shadow-sm
+          backdrop-blur
+          transition-all
+          duration-200
 
+          hover:scale-105
+          hover:border-[#D4AF37]
           hover:bg-[#D4AF37]
           hover:text-black
 
-          dark:bg-black/50
+          dark:border-white/10
+          dark:bg-black/60
           dark:text-white
         "
       >
         <Heart
-          size={19}
+          size={18}
           fill={
             wishlist
               ? "currentColor"
@@ -225,13 +306,14 @@ export default function ProductCard({
         />
       </button>
 
-      {/* =====================================================
-          IMAGE
-      ====================================================== */}
+      {/* ===================================================
+          PRODUCT IMAGE
+      ==================================================== */}
 
       <Link
         href={`/dashboard/products/${product.id}`}
         className="block"
+        aria-label={`View ${product.name}`}
       >
         <div
           className="
@@ -239,14 +321,34 @@ export default function ProductCard({
             h-64
             w-full
             overflow-hidden
-            bg-gray-100
+            bg-gray-50
 
-            dark:bg-black/40
+            dark:bg-black/30
           "
         >
-          {!productImage || imageError ? (
+          {/* IMAGE BACKGROUND */}
+
+          <div
+            className="
+              absolute
+              inset-0
+              bg-gradient-to-br
+              from-gray-50
+              via-white
+              to-gray-100
+
+              dark:from-white/[0.03]
+              dark:via-transparent
+              dark:to-white/[0.02]
+            "
+          />
+
+          {!productImage ||
+          imageError ? (
             <div
               className="
+                relative
+                z-10
                 flex
                 h-full
                 w-full
@@ -257,16 +359,41 @@ export default function ProductCard({
                 dark:text-gray-500
               "
             >
-              <ImageOff size={42} />
+              <div
+                className="
+                  flex
+                  h-16
+                  w-16
+                  items-center
+                  justify-center
+                  rounded-2xl
+                  bg-gray-100
 
-              <span className="mt-2 text-xs">
+                  dark:bg-white/5
+                "
+              >
+                <ImageOff
+                  size={30}
+                />
+              </div>
+
+              <span
+                className="
+                  mt-3
+                  text-xs
+                  font-medium
+                "
+              >
                 Image unavailable
               </span>
             </div>
           ) : (
             <Image
               src={productImage}
-              alt={product.name || "Product"}
+              alt={
+                product.name ||
+                "Product"
+              }
               fill
               sizes="
                 (max-width: 640px) 100vw,
@@ -274,22 +401,45 @@ export default function ProductCard({
                 25vw
               "
               unoptimized
-              onError={() => setImageError(true)}
+              priority={false}
+              onError={() =>
+                setImageError(true)
+              }
               className="
+                relative
+                z-10
                 object-contain
                 p-8
-                transition
+                transition-transform
                 duration-500
+                ease-out
                 group-hover:scale-110
               "
             />
           )}
+
+          {/* HOVER OVERLAY */}
+
+          <div
+            className="
+              pointer-events-none
+              absolute
+              inset-0
+              z-10
+              bg-black/[0.02]
+              opacity-0
+              transition-opacity
+              duration-300
+              group-hover:opacity-100
+              dark:bg-white/[0.02]
+            "
+          />
         </div>
       </Link>
 
-      {/* =====================================================
-          PRODUCT DETAILS
-      ====================================================== */}
+      {/* ===================================================
+          PRODUCT INFORMATION
+      ==================================================== */}
 
       <div className="p-5">
 
@@ -297,11 +447,12 @@ export default function ProductCard({
 
         <p
           className="
-            text-xs
-            font-semibold
+            text-[10px]
+            font-extrabold
             uppercase
-            tracking-wider
-            text-[#D4AF37]
+            tracking-[0.18em]
+            text-[#B28D1A]
+            dark:text-[#D4AF37]
           "
         >
           {category}
@@ -312,7 +463,7 @@ export default function ProductCard({
         {product.brand && (
           <p
             className="
-              mt-1
+              mt-1.5
               text-[11px]
               font-medium
               text-gray-400
@@ -325,26 +476,61 @@ export default function ProductCard({
 
         {/* NAME */}
 
-        <h3
-          className="
-            mt-2
-            line-clamp-1
-            text-xl
-            font-bold
-            text-gray-900
-            dark:text-white
-          "
-          title={product.name}
+        <Link
+          href={`/dashboard/products/${product.id}`}
         >
-          {product.name}
-        </h3>
+          <h3
+            title={product.name}
+            className="
+              mt-2
+              line-clamp-1
+              text-lg
+              font-bold
+              leading-tight
+              text-gray-900
+              transition-colors
+
+              group-hover:text-[#B28D1A]
+
+              dark:text-white
+              dark:group-hover:text-[#D4AF37]
+            "
+          >
+            {product.name}
+          </h3>
+        </Link>
+
+        {/* SHORT DESCRIPTION */}
+
+        {product.short_description && (
+          <p
+            className="
+              mt-2
+              line-clamp-2
+              min-h-[32px]
+              text-xs
+              leading-5
+              text-gray-500
+
+              dark:text-gray-400
+            "
+          >
+            {product.short_description}
+          </p>
+        )}
 
         {/* =================================================
             RATING
         ================================================== */}
 
-        <div className="mt-3 flex items-center gap-2">
-
+        <div
+          className="
+            mt-3
+            flex
+            items-center
+            gap-2
+          "
+        >
           <div
             className="
               flex
@@ -354,13 +540,13 @@ export default function ProductCard({
               bg-[#D4AF37]
               px-2
               py-1
-              text-sm
-              font-bold
+              text-xs
+              font-extrabold
               text-black
             "
           >
             <Star
-              size={14}
+              size={13}
               fill="currentColor"
             />
 
@@ -369,42 +555,59 @@ export default function ProductCard({
               : "New"}
           </div>
 
-          <span
-            className="
-              text-sm
-              text-gray-500
-              dark:text-gray-400
-            "
-          >
-            ({reviews} Reviews)
-          </span>
-
+          {reviews > 0 && (
+            <span
+              className="
+                text-xs
+                text-gray-500
+                dark:text-gray-400
+              "
+            >
+              {reviews.toLocaleString(
+                "en-IN"
+              )}{" "}
+              reviews
+            </span>
+          )}
         </div>
 
         {/* =================================================
             PRICE
         ================================================== */}
 
-        <div className="mt-4 flex items-center gap-3">
-
-          <h4
+        <div
+          className="
+            mt-4
+            flex
+            items-center
+            gap-3
+          "
+        >
+          <span
             className="
               text-2xl
-              font-bold
-              text-[#D4AF37]
+              font-extrabold
+              tracking-tight
+              text-[#B28D1A]
+
+              dark:text-[#D4AF37]
             "
           >
             ₹
             {Number(
               product.price || 0
-            ).toLocaleString("en-IN")}
-          </h4>
+            ).toLocaleString(
+              "en-IN"
+            )}
+          </span>
 
           {oldPrice &&
-            oldPrice > product.price && (
-              <p
+            oldPrice >
+              product.price && (
+              <span
                 className="
                   text-sm
+                  font-medium
                   text-gray-400
                   line-through
                   dark:text-gray-500
@@ -413,50 +616,70 @@ export default function ProductCard({
                 ₹
                 {Number(
                   oldPrice
-                ).toLocaleString("en-IN")}
-              </p>
+                ).toLocaleString(
+                  "en-IN"
+                )}
+              </span>
             )}
-
         </div>
 
         {/* =================================================
-            STOCK
+            STOCK STATUS
         ================================================== */}
 
-        {typeof product.stock === "number" && (
-          <p
-            className={`
-              mt-2
-              text-xs
-              font-medium
-
-              ${
-                product.stock > 0
-                  ? "text-green-600"
-                  : "text-red-500"
-              }
-            `}
-          >
-            {product.stock > 0
-              ? `${product.stock} items available`
-              : "Out of stock"}
-          </p>
+        {typeof product.stock ===
+          "number" && (
+          <div className="mt-2">
+            {product.stock > 0 ? (
+              <p
+                className="
+                  text-xs
+                  font-semibold
+                  text-green-600
+                  dark:text-green-400
+                "
+              >
+                {product.stock}{" "}
+                {product.stock === 1
+                  ? "item"
+                  : "items"}{" "}
+                available
+              </p>
+            ) : (
+              <p
+                className="
+                  text-xs
+                  font-semibold
+                  text-red-500
+                  dark:text-red-400
+                "
+              >
+                Out of stock
+              </p>
+            )}
+          </div>
         )}
 
         {/* =================================================
-            BUTTONS
+            ACTION BUTTONS
         ================================================== */}
 
-        <div className="mt-5 grid grid-cols-2 gap-3">
-
-          {/* CART */}
+        <div
+          className="
+            mt-5
+            grid
+            grid-cols-2
+            gap-3
+          "
+        >
+          {/* ADD TO CART */}
 
           <button
             type="button"
             onClick={handleAddToCart}
             disabled={
               addingToCart ||
-              product.stock === 0
+              !hasStock
             }
             className="
               flex
@@ -467,19 +690,29 @@ export default function ProductCard({
               border
               border-gray-200
               bg-gray-100
+              px-3
               py-3
               text-sm
+              font-semibold
               text-gray-900
-              transition
+              transition-all
+              duration-200
 
               hover:border-[#D4AF37]
+              hover:bg-[#D4AF37]
+              hover:text-black
 
               disabled:cursor-not-allowed
               disabled:opacity-50
+              disabled:hover:border-gray-200
+              disabled:hover:bg-gray-100
 
               dark:border-white/10
-              dark:bg-white/10
+              dark:bg-white/[0.07]
               dark:text-white
+
+              dark:disabled:hover:border-white/10
+              dark:disabled:hover:bg-white/[0.07]
             "
           >
             {addingToCart ? (
@@ -495,15 +728,19 @@ export default function ProductCard({
                 "
               />
             ) : (
-              <ShoppingCart size={17} />
+              <ShoppingCart
+                size={17}
+              />
             )}
 
-            {addingToCart
-              ? "Adding..."
-              : "Cart"}
+            <span>
+              {addingToCart
+                ? "Adding..."
+                : "Cart"}
+            </span>
           </button>
 
-          {/* BUY */}
+          {/* BUY NOW */}
 
           <Link
             href={`/checkout?product=${product.id}`}
@@ -514,24 +751,28 @@ export default function ProductCard({
               gap-2
               rounded-xl
               bg-[#D4AF37]
+              px-3
               py-3
               text-sm
-              font-bold
+              font-extrabold
               text-black
-              transition
+              transition-all
+              duration-200
 
               hover:scale-[1.02]
-              hover:bg-[#c9a227]
+              hover:bg-[#C9A227]
+              active:scale-[0.98]
             "
           >
             <Zap size={17} />
 
-            Buy
+            <span>
+              Buy Now
+            </span>
           </Link>
-
         </div>
 
       </div>
-    </motion.div>
+    </motion.article>
   );
 }
