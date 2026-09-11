@@ -1,33 +1,219 @@
 import { createClient } from "@/lib/supabase/client";
 
+/* =========================================================
+   PRODUCT TYPE
+========================================================= */
 
-export async function getProducts(){
+export interface Product {
+  id: string;
+  name: string;
 
-const supabase = createClient();
+  price: number;
+  original_price?: number | null;
+  oldPrice?: number | null;
 
+  rating?: number | null;
+  reviews_count?: number | null;
 
-const {data,error}=await supabase
-.from("products")
-.select("*")
-.order(
-"created_at",
-{
-ascending:false
+  image?: string | null;
+  image_url?: string | null;
+
+  category?: string | null;
+  category_id?: string | null;
+
+  brand?: string | null;
+
+  stock?: number | null;
+
+  slug?: string | null;
+  short_description?: string | null;
+
+  featured?: boolean | null;
+  flash_sale?: boolean | null;
+  active?: boolean | null;
+
+  created_at?: string | null;
 }
-);
 
+/* =========================================================
+   GET ALL PRODUCTS
+========================================================= */
 
+export async function getProducts(): Promise<Product[]> {
+  const supabase = createClient();
 
-if(error){
+  const { data, error } = await supabase
+    .from("products")
+    .select(`
+      id,
+      name,
+      price,
+      original_price,
+      rating,
+      reviews_count,
+      image,
+      image_url,
+      category,
+      category_id,
+      brand,
+      stock,
+      slug,
+      short_description,
+      featured,
+      flash_sale,
+      active,
+      created_at
+    `)
+    .eq("active", true)
+    .order("created_at", {
+      ascending: false,
+    });
 
-console.log(error);
+  if (error) {
+    console.error("Get products error:", error);
+    return [];
+  }
 
-return [];
-
+  return (data ?? []) as Product[];
 }
 
+/* =========================================================
+   GET SINGLE PRODUCT
+========================================================= */
 
+export async function getProductById(
+  id: string
+): Promise<Product | null> {
+  const supabase = createClient();
 
-return data;
+  const { data, error } = await supabase
+    .from("products")
+    .select(`
+      id,
+      name,
+      price,
+      original_price,
+      rating,
+      reviews_count,
+      image,
+      image_url,
+      category,
+      category_id,
+      brand,
+      stock,
+      slug,
+      short_description,
+      featured,
+      flash_sale,
+      active,
+      created_at
+    `)
+    .eq("id", id)
+    .maybeSingle();
 
+  if (error) {
+    console.error("Get product error:", error);
+    return null;
+  }
+
+  return data as Product | null;
+}
+
+/* =========================================================
+   GET FEATURED PRODUCTS
+========================================================= */
+
+export async function getFeaturedProducts(
+  limit = 8
+): Promise<Product[]> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("products")
+    .select(`
+      id,
+      name,
+      price,
+      original_price,
+      rating,
+      reviews_count,
+      image,
+      image_url,
+      category,
+      category_id,
+      brand,
+      stock,
+      slug,
+      short_description,
+      featured,
+      flash_sale,
+      active,
+      created_at
+    `)
+    .eq("active", true)
+    .eq("featured", true)
+    .order("created_at", {
+      ascending: false,
+    })
+    .limit(limit);
+
+  if (error) {
+    console.error(
+      "Get featured products error:",
+      error
+    );
+
+    return [];
+  }
+
+  return (data ?? []) as Product[];
+}
+
+/* =========================================================
+   GET PRODUCTS BY CATEGORY
+========================================================= */
+
+export async function getProductsByCategory(
+  category: string
+): Promise<Product[]> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("products")
+    .select(`
+      id,
+      name,
+      price,
+      original_price,
+      rating,
+      reviews_count,
+      image,
+      image_url,
+      category,
+      category_id,
+      brand,
+      stock,
+      slug,
+      short_description,
+      featured,
+      flash_sale,
+      active,
+      created_at
+    `)
+    .eq("active", true)
+    .eq("category", category)
+    .order("created_at", {
+      ascending: false,
+    });
+
+  if (error) {
+    console.error(
+      "Get category products error:",
+      error
+    );
+
+    return [];
+  }
+
+  return (data ?? []) as Product[];
 }
