@@ -168,16 +168,18 @@ export default function RegisterPage() {
       // EMAIL CONFIRMATION REQUIRED
       // -----------------------------
 
-      setSuccess(
-        "Account created successfully! Please check your email and verify your account before logging in."
-      );
+      setSuccess("Account created successfully. Redirecting to login...");
 
-      setFullName("");
-      setEmail("");
+setFullName("");
+setEmail("");
+setPassword("");
+setConfirmPassword("");
+setAgree(false);
+
+setTimeout(() => {
+  window.location.href = "/login";
+}, 700);
       
-      setPassword("");
-      setConfirmPassword("");
-      setAgree(false);
     } catch (err) {
       console.error("Registration error:", err);
 
