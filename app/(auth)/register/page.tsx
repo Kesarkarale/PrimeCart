@@ -8,7 +8,7 @@ import {
   LockKeyhole,
   Mail,
   User,
-  Phone,
+  
   UserPlus,
   Loader2,
 } from "lucide-react";
@@ -19,8 +19,7 @@ export default function RegisterPage() {
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [password, setPassword] = useState("");
+   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
@@ -44,8 +43,7 @@ export default function RegisterPage() {
 
     const name = fullName.trim();
     const cleanEmail = email.trim().toLowerCase();
-    const cleanMobile = mobile.trim();
-
+ 
     // -----------------------------
     // NAME
     // -----------------------------
@@ -73,15 +71,7 @@ export default function RegisterPage() {
       return;
     }
 
-    // -----------------------------
-    // MOBILE
-    // -----------------------------
-
-    if (cleanMobile && !/^[0-9]{10}$/.test(cleanMobile)) {
-      setError("Please enter a valid 10-digit mobile number.");
-      return;
-    }
-
+    
     // -----------------------------
     // PASSWORD
     // -----------------------------
@@ -122,7 +112,7 @@ export default function RegisterPage() {
           options: {
             data: {
               full_name: name,
-              mobile: cleanMobile || null,
+              
             },
             emailRedirectTo: redirectTo,
           },
@@ -184,7 +174,7 @@ export default function RegisterPage() {
 
       setFullName("");
       setEmail("");
-      setMobile("");
+      
       setPassword("");
       setConfirmPassword("");
       setAgree(false);
@@ -357,32 +347,7 @@ export default function RegisterPage() {
                 </div>
               </Field>
 
-              {/* MOBILE */}
-              <Field label="Mobile Number">
-                <div className="relative">
-                  <Phone
-                    size={18}
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#777]"
-                  />
-
-                  <input
-                    type="tel"
-                    inputMode="numeric"
-                    value={mobile}
-                    onChange={(e) =>
-                      setMobile(
-                        e.target.value
-                          .replace(/\D/g, "")
-                          .slice(0, 10)
-                      )
-                    }
-                    placeholder="Enter your mobile number"
-                    autoComplete="tel"
-                    disabled={loading || googleLoading}
-                    className="auth-input pl-[48px]"
-                  />
-                </div>
-              </Field>
+              
 
               {/* PASSWORD */}
               <Field label="Password">
