@@ -355,39 +355,35 @@ export default function FeaturedProducts() {
                           PRODUCT IMAGE
                       ================================================= */}
 
-                      {product.image_url ? (
-                        <img
-                          src={product.image_url}
-                          alt={product.name}
-                          loading="lazy"
-                          className="
-                            w-full
-                            h-full
-                            object-contain
-                            p-6
-                            group-hover:scale-110
-                            transition-transform
-                            duration-500
-                          "
-                          onError={(event) => {
-                            const image =
-                              event.currentTarget;
+                     {/* PRODUCT IMAGE */}
 
-                            image.style.display = "none";
-
-                            const fallback =
-                              image.parentElement?.querySelector(
-                                ".image-fallback"
-                              ) as HTMLElement | null;
-
-                            if (fallback) {
-                              fallback.classList.remove(
-                                "hidden"
-                              );
-                            }
-                          }}
-                        />
-                      ) : null}
+{product.image_url ? (
+  <img
+    src={
+      product.image_url.startsWith("/")
+        ? product.image_url
+        : `/${product.image_url}`
+    }
+    alt={product.name}
+    loading="lazy"
+    className="
+      w-full
+      h-full
+      object-contain
+      p-6
+      group-hover:scale-110
+      transition-transform
+      duration-500
+    "
+  />
+) : (
+  <div className="h-full flex items-center justify-center text-gray-400">
+    <div className="text-center">
+      <ImageOff size={42} className="mx-auto" />
+      <p className="text-sm mt-3">No Image</p>
+    </div>
+  </div>
+)}
 
                       {/* =================================================
                           IMAGE FALLBACK
