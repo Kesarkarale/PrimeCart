@@ -29,14 +29,30 @@ type Product = {
   is_active: boolean;
 };
 
+/* =========================================================
+   IMAGE URL
+   Database:
+   smartphone-x-pro.png
+
+   Actual file:
+   public/products/smartphone-x-pro.png
+
+   Browser URL:
+   /products/smartphone-x-pro.png
+========================================================= */
+
 function getImageUrl(imageUrl: string | null) {
-  if (!imageUrl) return null;
+  if (!imageUrl) {
+    return null;
+  }
 
-  const value = imageUrl.trim();
+  let value = imageUrl.trim();
 
-  if (!value) return null;
+  if (!value) {
+    return null;
+  }
 
-  // Full external URL
+  /* External image URL */
   if (
     value.startsWith("http://") ||
     value.startsWith("https://")
@@ -44,14 +60,27 @@ function getImageUrl(imageUrl: string | null) {
     return value;
   }
 
-  // Already has /
-  if (value.startsWith("/")) {
-    return value;
+  /* Remove leading slash */
+  value = value.replace(/^\/+/, "");
+
+  /* If database already contains products/ */
+  if (value.startsWith("products/")) {
+    return `/${value}`;
   }
 
-  // Database contains only filename
-  return `/${value}`;
+  /* If database contains /products/... */
+  if (value.startsWith("products\\")) {
+    value = value.replace(/\\/g, "/");
+    return `/${value}`;
+  }
+
+  /* Normal database filename */
+  return `/products/${value}`;
 }
+
+/* =========================================================
+   PRODUCT IMAGE
+========================================================= */
 
 function ProductImage({
   imageUrl,
@@ -64,10 +93,14 @@ function ProductImage({
 
   const src = getImageUrl(imageUrl);
 
+  useEffect(() => {
+    setFailed(false);
+  }, [imageUrl]);
+
   if (!src || failed) {
     return (
       <div className="absolute inset-0 flex items-center justify-center bg-gray-50 text-gray-400">
-        <div className="text-center">
+        <div className="text-center px-4">
           <ImageOff
             size={42}
             strokeWidth={1.5}
@@ -77,6 +110,12 @@ function ProductImage({
           <p className="text-sm mt-3 font-medium">
             Image unavailable
           </p>
+
+          {src && (
+            <p className="text-[10px] text-gray-400 mt-1 break-all">
+              {src}
+            </p>
+          )}
         </div>
       </div>
     );
@@ -110,11 +149,19 @@ function ProductImage({
   );
 }
 
+/* =========================================================
+   FEATURED PRODUCTS
+========================================================= */
+
 export default function FeaturedProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+
+  /* =========================================================
+     FETCH PRODUCTS FROM SUPABASE
+  ========================================================= */
 
   useEffect(() => {
     let mounted = true;
@@ -144,7 +191,8 @@ export default function FeaturedProducts() {
             reviews_count,
             is_featured,
             is_flash_sale,
-            is_active
+            is_active,
+            created_at
           `)
           .eq("is_active", true)
           .order("created_at", {
@@ -161,7 +209,9 @@ export default function FeaturedProducts() {
           error
         );
 
-        if (!mounted) return;
+        if (!mounted) {
+          return;
+        }
 
         if (error) {
           setErrorMessage(error.message);
@@ -178,7 +228,9 @@ export default function FeaturedProducts() {
           error
         );
 
-        if (!mounted) return;
+        if (!mounted) {
+          return;
+        }
 
         setErrorMessage(
           "Something went wrong while loading products."
@@ -199,6 +251,10 @@ export default function FeaturedProducts() {
     };
   }, []);
 
+  /* =========================================================
+     WISHLIST
+  ========================================================= */
+
   const toggleWishlist = (id: string) => {
     setWishlist((previous) =>
       previous.includes(id)
@@ -208,6 +264,10 @@ export default function FeaturedProducts() {
         : [...previous, id]
     );
   };
+
+  /* =========================================================
+     ADD TO CART
+  ========================================================= */
 
   const handleAddToCart = (
     product: Product
@@ -245,8 +305,11 @@ export default function FeaturedProducts() {
 
               <div className="p-5 space-y-3">
                 <div className="h-5 bg-gray-100 rounded animate-pulse" />
+
                 <div className="h-4 bg-gray-100 rounded animate-pulse w-2/3" />
+
                 <div className="h-4 bg-gray-100 rounded animate-pulse" />
+
                 <div className="h-10 bg-gray-100 rounded-xl animate-pulse mt-5" />
               </div>
             </div>
