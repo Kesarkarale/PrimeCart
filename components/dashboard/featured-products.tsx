@@ -1,8 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { Heart, ShoppingCart, Star } from "lucide-react";
+import { Heart, ShoppingCart, Star, ImageOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -26,8 +25,6 @@ type Product = {
 };
 
 export default function FeaturedProducts() {
-  const supabase = createClient();
-
   const [products, setProducts] = useState<Product[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +35,8 @@ export default function FeaturedProducts() {
       try {
         setLoading(true);
         setErrorMessage("");
+
+        const supabase = createClient();
 
         const { data, error } = await supabase
           .from("products")
@@ -55,7 +54,7 @@ export default function FeaturedProducts() {
           return;
         }
 
-        setProducts(data ?? []);
+        setProducts((data as Product[]) ?? []);
       } catch (error) {
         console.error("Unexpected products error:", error);
 
@@ -70,7 +69,7 @@ export default function FeaturedProducts() {
     };
 
     fetchProducts();
-  }, [supabase]);
+  }, []);
 
   const toggleWishlist = (id: string) => {
     setWishlist((prev) =>
@@ -87,12 +86,12 @@ export default function FeaturedProducts() {
       price: product.price,
     });
 
-    // Cart functionality later
+    // Cart functionality can be connected here later.
   };
 
-  /* =========================
+  /* =========================================================
      LOADING
-  ========================= */
+  ========================================================= */
 
   if (loading) {
     return (
@@ -121,9 +120,9 @@ export default function FeaturedProducts() {
     );
   }
 
-  /* =========================
+  /* =========================================================
      ERROR
-  ========================= */
+  ========================================================= */
 
   if (errorMessage) {
     return (
@@ -141,7 +140,7 @@ export default function FeaturedProducts() {
             Products could not be loaded
           </h3>
 
-          <p className="text-sm text-red-500 mt-2">
+          <p className="text-sm text-red-500 mt-2 break-words">
             {errorMessage}
           </p>
         </div>
@@ -151,13 +150,11 @@ export default function FeaturedProducts() {
 
   return (
     <section className="max-w-7xl mx-auto px-6 py-12">
-
-      {/* =========================
+      {/* =====================================================
           HEADER
-      ========================= */}
+      ===================================================== */}
 
       <div className="flex items-end justify-between gap-4 mb-8">
-
         <div>
           <p className="text-sm font-bold text-[#D4AF37] uppercase tracking-wider">
             PrimeCart Collection
@@ -186,11 +183,11 @@ export default function FeaturedProducts() {
         >
           View All →
         </Link>
-
       </div>
 
-
-      {/* MOBILE VIEW ALL */}
+      {/* =====================================================
+          MOBILE VIEW ALL
+      ===================================================== */}
 
       <div className="sm:hidden mb-6">
         <Link
@@ -201,8 +198,9 @@ export default function FeaturedProducts() {
         </Link>
       </div>
 
-
-      {/* TOTAL */}
+      {/* =====================================================
+          TOTAL PRODUCTS
+      ===================================================== */}
 
       <div className="mb-6">
         <span
@@ -213,6 +211,7 @@ export default function FeaturedProducts() {
             py-2
             bg-white
             border
+            border-gray-200
             rounded-full
             text-sm
             font-semibold
@@ -223,16 +222,16 @@ export default function FeaturedProducts() {
         </span>
       </div>
 
-
-      {/* =========================
+      {/* =====================================================
           EMPTY
-      ========================= */}
+      ===================================================== */}
 
       {products.length === 0 ? (
         <div
           className="
             rounded-3xl
             border
+            border-gray-200
             bg-gray-50
             p-12
             text-center
@@ -248,10 +247,9 @@ export default function FeaturedProducts() {
           </p>
         </div>
       ) : (
-
-        /* =========================
+        /* =====================================================
            PRODUCTS GRID
-        ========================= */
+        ===================================================== */
 
         <div
           className="
@@ -262,15 +260,12 @@ export default function FeaturedProducts() {
             gap-6
           "
         >
-
           {products.map((product) => {
-
             const discount =
               product.original_price &&
               product.original_price > product.price
                 ? Math.round(
-                    ((product.original_price -
-                      product.price) /
+                    ((product.original_price - product.price) /
                       product.original_price) *
                       100
                   )
@@ -293,18 +288,15 @@ export default function FeaturedProducts() {
                   duration-300
                 "
               >
-
-                {/* =========================
-                    IMAGE
-                ========================= */}
+                {/* =================================================
+                    IMAGE AREA
+                ================================================= */}
 
                 <div className="relative">
-
                   <Link
-href={`/dashboard/products/${product.id}`}
+                    href={`/dashboard/products/${product.id}`}
                     className="block"
                   >
-
                     <div
                       className="
                         relative
@@ -313,7 +305,6 @@ href={`/dashboard/products/${product.id}`}
                         overflow-hidden
                       "
                     >
-
                       {/* FLASH SALE */}
 
                       {product.is_flash_sale && (
@@ -330,92 +321,123 @@ href={`/dashboard/products/${product.id}`}
                             rounded-full
                             text-xs
                             font-black
+                            shadow-sm
                           "
                         >
                           FLASH SALE
                         </div>
                       )}
 
-
                       {/* DISCOUNT */}
 
-                      {discount > 0 && !product.is_flash_sale && (
-                        <div
-                          className="
-                            absolute
-                            top-4
-                            left-4
-                            z-10
-                            bg-black
-                            text-white
-                            px-3
-                            py-1.5
-                            rounded-full
-                            text-xs
-                            font-bold
-                          "
-                        >
-                          {discount}% OFF
-                        </div>
-                      )}
+                      {discount > 0 &&
+                        !product.is_flash_sale && (
+                          <div
+                            className="
+                              absolute
+                              top-4
+                              left-4
+                              z-10
+                              bg-black
+                              text-white
+                              px-3
+                              py-1.5
+                              rounded-full
+                              text-xs
+                              font-bold
+                            "
+                          >
+                            {discount}% OFF
+                          </div>
+                        )}
 
-
-                      {/* PRODUCT IMAGE */}
+                      {/* =================================================
+                          PRODUCT IMAGE
+                      ================================================= */}
 
                       {product.image_url ? (
-                        <Image
+                        <img
                           src={product.image_url}
                           alt={product.name}
-                          fill
-                          sizes="
-                            (max-width: 640px) 100vw,
-                            (max-width: 1024px) 50vw,
-                            25vw
-                          "
+                          loading="lazy"
                           className="
+                            w-full
+                            h-full
                             object-contain
                             p-6
                             group-hover:scale-110
                             transition-transform
                             duration-500
                           "
+                          onError={(event) => {
+                            const image =
+                              event.currentTarget;
+
+                            image.style.display = "none";
+
+                            const fallback =
+                              image.parentElement?.querySelector(
+                                ".image-fallback"
+                              ) as HTMLElement | null;
+
+                            if (fallback) {
+                              fallback.classList.remove(
+                                "hidden"
+                              );
+                            }
+                          }}
                         />
-                      ) : (
-                        <div
-                          className="
-                            h-full
-                            flex
-                            items-center
-                            justify-center
-                            text-gray-400
-                          "
-                        >
-                          <div className="text-center">
-                            <ShoppingCart
-                              size={35}
-                              className="mx-auto"
-                            />
+                      ) : null}
 
-                            <p className="text-sm mt-2">
-                              No Image
-                            </p>
-                          </div>
+                      {/* =================================================
+                          IMAGE FALLBACK
+                      ================================================= */}
+
+                      <div
+                        className={`
+                          image-fallback
+                          absolute
+                          inset-0
+                          flex
+                          items-center
+                          justify-center
+                          text-gray-400
+                          ${
+                            product.image_url
+                              ? "hidden"
+                              : ""
+                          }
+                        `}
+                      >
+                        <div className="text-center">
+                          <ImageOff
+                            size={42}
+                            strokeWidth={1.5}
+                            className="mx-auto"
+                          />
+
+                          <p className="text-sm mt-3 font-medium">
+                            Image unavailable
+                          </p>
                         </div>
-                      )}
-
+                      </div>
                     </div>
-
                   </Link>
 
-
-                  {/* WISHLIST */}
+                  {/* =================================================
+                      WISHLIST
+                  ================================================= */}
 
                   <button
                     type="button"
                     onClick={() =>
                       toggleWishlist(product.id)
                     }
-                    aria-label="Add to wishlist"
+                    aria-label={
+                      wishlist.includes(product.id)
+                        ? "Remove from wishlist"
+                        : "Add to wishlist"
+                    }
                     className="
                       absolute
                       top-3
@@ -442,25 +464,23 @@ href={`/dashboard/products/${product.id}`}
                       }
                     />
                   </button>
-
                 </div>
 
-
-                {/* =========================
+                {/* =================================================
                     DETAILS
-                ========================= */}
+                ================================================= */}
 
                 <div className="p-5">
-
                   {/* PRODUCT NAME */}
 
                   <Link
-                   href={`/dashboard/products/${product.id}`}
+                    href={`/dashboard/products/${product.id}`}
                   >
                     <h3
                       className="
                         font-bold
                         text-lg
+                        text-gray-900
                         line-clamp-2
                         hover:text-[#D4AF37]
                         transition
@@ -469,7 +489,6 @@ href={`/dashboard/products/${product.id}`}
                       {product.name}
                     </h3>
                   </Link>
-
 
                   {/* BRAND */}
 
@@ -485,7 +504,6 @@ href={`/dashboard/products/${product.id}`}
                       {product.brand}
                     </p>
                   )}
-
 
                   {/* DESCRIPTION */}
 
@@ -503,11 +521,11 @@ href={`/dashboard/products/${product.id}`}
                       "Premium quality product from PrimeCart."}
                   </p>
 
-
-                  {/* RATING */}
+                  {/* =================================================
+                      RATING
+                  ================================================= */}
 
                   <div className="flex items-center gap-2 mt-3">
-
                     <div
                       className="
                         flex
@@ -533,19 +551,18 @@ href={`/dashboard/products/${product.id}`}
                     <span className="text-sm text-gray-500">
                       ({product.reviews_count ?? 0})
                     </span>
-
                   </div>
 
-
-                  {/* PRICE */}
+                  {/* =================================================
+                      PRICE
+                  ================================================= */}
 
                   <div className="flex items-center gap-3 mt-4">
-
                     <span className="text-2xl font-black text-gray-900">
                       ₹
-                      {Number(product.price).toLocaleString(
-                        "en-IN"
-                      )}
+                      {Number(
+                        product.price
+                      ).toLocaleString("en-IN")}
                     </span>
 
                     {product.original_price &&
@@ -564,11 +581,23 @@ href={`/dashboard/products/${product.id}`}
                           ).toLocaleString("en-IN")}
                         </span>
                       )}
-
                   </div>
 
+                  {/* =================================================
+                      STOCK
+                  ================================================= */}
 
-                  {/* ADD TO CART */}
+                  {product.stock !== null &&
+                    product.stock > 0 &&
+                    product.stock <= 5 && (
+                      <p className="text-xs text-orange-500 font-semibold mt-2">
+                        Only {product.stock} left in stock
+                      </p>
+                    )}
+
+                  {/* =================================================
+                      ADD TO CART
+                  ================================================= */}
 
                   <button
                     type="button"
@@ -576,7 +605,7 @@ href={`/dashboard/products/${product.id}`}
                       handleAddToCart(product)
                     }
                     disabled={
-                      !product.stock ||
+                      product.stock !== null &&
                       product.stock <= 0
                     }
                     className="
@@ -599,21 +628,17 @@ href={`/dashboard/products/${product.id}`}
                   >
                     <ShoppingCart size={18} />
 
-                    {product.stock &&
-                    product.stock > 0
-                      ? "Add To Cart"
-                      : "Out Of Stock"}
+                    {product.stock !== null &&
+                    product.stock <= 0
+                      ? "Out Of Stock"
+                      : "Add To Cart"}
                   </button>
-
                 </div>
-
               </div>
             );
           })}
-
         </div>
       )}
-
     </section>
   );
 }
