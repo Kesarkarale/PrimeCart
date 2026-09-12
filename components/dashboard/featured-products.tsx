@@ -1,7 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, ShoppingCart, Star, ImageOff } from "lucide-react";
+import {
+  Heart,
+  ShoppingCart,
+  Star,
+  ImageOff,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -24,6 +29,87 @@ type Product = {
   is_active: boolean;
 };
 
+function getImageUrl(imageUrl: string | null) {
+  if (!imageUrl) return null;
+
+  const value = imageUrl.trim();
+
+  if (!value) return null;
+
+  // Full external URL
+  if (
+    value.startsWith("http://") ||
+    value.startsWith("https://")
+  ) {
+    return value;
+  }
+
+  // Already has /
+  if (value.startsWith("/")) {
+    return value;
+  }
+
+  // Database contains only filename
+  return `/${value}`;
+}
+
+function ProductImage({
+  imageUrl,
+  productName,
+}: {
+  imageUrl: string | null;
+  productName: string;
+}) {
+  const [failed, setFailed] = useState(false);
+
+  const src = getImageUrl(imageUrl);
+
+  if (!src || failed) {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center bg-gray-50 text-gray-400">
+        <div className="text-center">
+          <ImageOff
+            size={42}
+            strokeWidth={1.5}
+            className="mx-auto"
+          />
+
+          <p className="text-sm mt-3 font-medium">
+            Image unavailable
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={productName}
+      loading="lazy"
+      onError={() => {
+        console.error(
+          "IMAGE LOAD FAILED:",
+          src
+        );
+
+        setFailed(true);
+      }}
+      className="
+        absolute
+        inset-0
+        w-full
+        h-full
+        object-contain
+        p-6
+        group-hover:scale-110
+        transition-transform
+        duration-500
+      "
+    />
+  );
+}
+
 export default function FeaturedProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -31,6 +117,8 @@ export default function FeaturedProducts() {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
+    let mounted = true;
+
     const fetchProducts = async () => {
       try {
         setLoading(true);
@@ -40,23 +128,57 @@ export default function FeaturedProducts() {
 
         const { data, error } = await supabase
           .from("products")
-          .select("*")
+          .select(`
+            id,
+            category_id,
+            name,
+            slug,
+            short_description,
+            description,
+            price,
+            original_price,
+            stock,
+            image_url,
+            brand,
+            rating,
+            reviews_count,
+            is_featured,
+            is_flash_sale,
+            is_active
+          `)
           .eq("is_active", true)
-          .order("created_at", { ascending: false });
+          .order("created_at", {
+            ascending: false,
+          });
 
-        console.log("PRODUCT DATA:", data);
-        console.log("PRODUCT ERROR:", error);
+        console.log(
+          "SUPABASE PRODUCT DATA:",
+          data
+        );
+
+        console.log(
+          "SUPABASE PRODUCT ERROR:",
+          error
+        );
+
+        if (!mounted) return;
 
         if (error) {
-          console.error("Supabase products error:", error);
           setErrorMessage(error.message);
           setProducts([]);
           return;
         }
 
-        setProducts((data as Product[]) ?? []);
+        setProducts(
+          (data as Product[]) ?? []
+        );
       } catch (error) {
-        console.error("Unexpected products error:", error);
+        console.error(
+          "Products fetch error:",
+          error
+        );
+
+        if (!mounted) return;
 
         setErrorMessage(
           "Something went wrong while loading products."
@@ -64,29 +186,39 @@ export default function FeaturedProducts() {
 
         setProducts([]);
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchProducts();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const toggleWishlist = (id: string) => {
-    setWishlist((prev) =>
-      prev.includes(id)
-        ? prev.filter((item) => item !== id)
-        : [...prev, id]
+    setWishlist((previous) =>
+      previous.includes(id)
+        ? previous.filter(
+            (item) => item !== id
+          )
+        : [...previous, id]
     );
   };
 
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = (
+    product: Product
+  ) => {
     console.log("ADD TO CART:", {
       id: product.id,
       name: product.name,
       price: product.price,
     });
 
-    // Cart functionality can be connected here later.
+    // Cart functionality can be connected here.
   };
 
   /* =========================================================
@@ -96,25 +228,29 @@ export default function FeaturedProducts() {
   if (loading) {
     return (
       <section className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex items-center justify-center min-h-[250px]">
-          <div className="text-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((item) => (
             <div
+              key={item}
               className="
-                w-10
-                h-10
-                border-4
-                border-gray-200
-                border-t-[#D4AF37]
-                rounded-full
-                animate-spin
-                mx-auto
+                bg-white
+                rounded-3xl
+                overflow-hidden
+                border
+                border-gray-100
+                shadow-sm
               "
-            />
+            >
+              <div className="h-[280px] bg-gray-100 animate-pulse" />
 
-            <p className="text-gray-500 font-semibold mt-4">
-              Loading Products...
-            </p>
-          </div>
+              <div className="p-5 space-y-3">
+                <div className="h-5 bg-gray-100 rounded animate-pulse" />
+                <div className="h-4 bg-gray-100 rounded animate-pulse w-2/3" />
+                <div className="h-4 bg-gray-100 rounded animate-pulse" />
+                <div className="h-10 bg-gray-100 rounded-xl animate-pulse mt-5" />
+              </div>
+            </div>
+          ))}
         </div>
       </section>
     );
@@ -127,15 +263,7 @@ export default function FeaturedProducts() {
   if (errorMessage) {
     return (
       <section className="max-w-7xl mx-auto px-6 py-12">
-        <div
-          className="
-            rounded-3xl
-            bg-red-50
-            border
-            border-red-200
-            p-8
-          "
-        >
+        <div className="rounded-3xl bg-red-50 border border-red-200 p-8">
           <h3 className="text-xl font-black text-red-600">
             Products could not be loaded
           </h3>
@@ -199,7 +327,7 @@ export default function FeaturedProducts() {
       </div>
 
       {/* =====================================================
-          TOTAL PRODUCTS
+          PRODUCT COUNT
       ===================================================== */}
 
       <div className="mb-6">
@@ -247,9 +375,9 @@ export default function FeaturedProducts() {
           </p>
         </div>
       ) : (
-        /* =====================================================
-           PRODUCTS GRID
-        ===================================================== */
+        /* ===================================================
+           PRODUCT GRID
+        =================================================== */
 
         <div
           className="
@@ -263,13 +391,19 @@ export default function FeaturedProducts() {
           {products.map((product) => {
             const discount =
               product.original_price &&
-              product.original_price > product.price
+              product.original_price >
+                product.price
                 ? Math.round(
-                    ((product.original_price - product.price) /
+                    ((product.original_price -
+                      product.price) /
                       product.original_price) *
                       100
                   )
                 : 0;
+
+            const isOutOfStock =
+              product.stock !== null &&
+              product.stock <= 0;
 
             return (
               <div
@@ -289,7 +423,7 @@ export default function FeaturedProducts() {
                 "
               >
                 {/* =================================================
-                    IMAGE AREA
+                    IMAGE
                 ================================================= */}
 
                 <div className="relative">
@@ -351,86 +485,32 @@ export default function FeaturedProducts() {
                           </div>
                         )}
 
-                      {/* =================================================
-                          PRODUCT IMAGE
-                      ================================================= */}
+                      {/* PRODUCT IMAGE */}
 
-                     {/* PRODUCT IMAGE */}
-
-{product.image_url ? (
-  <img
-    src={
-      product.image_url.startsWith("/")
-        ? product.image_url
-        : `/${product.image_url}`
-    }
-    alt={product.name}
-    loading="lazy"
-    className="
-      w-full
-      h-full
-      object-contain
-      p-6
-      group-hover:scale-110
-      transition-transform
-      duration-500
-    "
-  />
-) : (
-  <div className="h-full flex items-center justify-center text-gray-400">
-    <div className="text-center">
-      <ImageOff size={42} className="mx-auto" />
-      <p className="text-sm mt-3">No Image</p>
-    </div>
-  </div>
-)}
-
-                      {/* =================================================
-                          IMAGE FALLBACK
-                      ================================================= */}
-
-                      <div
-                        className={`
-                          image-fallback
-                          absolute
-                          inset-0
-                          flex
-                          items-center
-                          justify-center
-                          text-gray-400
-                          ${
-                            product.image_url
-                              ? "hidden"
-                              : ""
-                          }
-                        `}
-                      >
-                        <div className="text-center">
-                          <ImageOff
-                            size={42}
-                            strokeWidth={1.5}
-                            className="mx-auto"
-                          />
-
-                          <p className="text-sm mt-3 font-medium">
-                            Image unavailable
-                          </p>
-                        </div>
-                      </div>
+                      <ProductImage
+                        imageUrl={
+                          product.image_url
+                        }
+                        productName={
+                          product.name
+                        }
+                      />
                     </div>
                   </Link>
 
-                  {/* =================================================
-                      WISHLIST
-                  ================================================= */}
+                  {/* WISHLIST */}
 
                   <button
                     type="button"
                     onClick={() =>
-                      toggleWishlist(product.id)
+                      toggleWishlist(
+                        product.id
+                      )
                     }
                     aria-label={
-                      wishlist.includes(product.id)
+                      wishlist.includes(
+                        product.id
+                      )
                         ? "Remove from wishlist"
                         : "Add to wishlist"
                     }
@@ -454,7 +534,9 @@ export default function FeaturedProducts() {
                     <Heart
                       size={19}
                       className={
-                        wishlist.includes(product.id)
+                        wishlist.includes(
+                          product.id
+                        )
                           ? "fill-red-500 text-red-500"
                           : "text-gray-700"
                       }
@@ -467,7 +549,7 @@ export default function FeaturedProducts() {
                 ================================================= */}
 
                 <div className="p-5">
-                  {/* PRODUCT NAME */}
+                  {/* NAME */}
 
                   <Link
                     href={`/dashboard/products/${product.id}`}
@@ -517,9 +599,7 @@ export default function FeaturedProducts() {
                       "Premium quality product from PrimeCart."}
                   </p>
 
-                  {/* =================================================
-                      RATING
-                  ================================================= */}
+                  {/* RATING */}
 
                   <div className="flex items-center gap-2 mt-3">
                     <div
@@ -541,24 +621,28 @@ export default function FeaturedProducts() {
                         className="fill-white"
                       />
 
-                      {product.rating ?? 4.5}
+                      {product.rating ??
+                        4.5}
                     </div>
 
                     <span className="text-sm text-gray-500">
-                      ({product.reviews_count ?? 0})
+                      (
+                      {product.reviews_count ??
+                        0}
+                      )
                     </span>
                   </div>
 
-                  {/* =================================================
-                      PRICE
-                  ================================================= */}
+                  {/* PRICE */}
 
                   <div className="flex items-center gap-3 mt-4">
                     <span className="text-2xl font-black text-gray-900">
                       ₹
                       {Number(
                         product.price
-                      ).toLocaleString("en-IN")}
+                      ).toLocaleString(
+                        "en-IN"
+                      )}
                     </span>
 
                     {product.original_price &&
@@ -574,35 +658,38 @@ export default function FeaturedProducts() {
                           ₹
                           {Number(
                             product.original_price
-                          ).toLocaleString("en-IN")}
+                          ).toLocaleString(
+                            "en-IN"
+                          )}
                         </span>
                       )}
                   </div>
 
-                  {/* =================================================
-                      STOCK
-                  ================================================= */}
+                  {/* STOCK WARNING */}
 
-                  {product.stock !== null &&
+                  {product.stock !==
+                    null &&
                     product.stock > 0 &&
-                    product.stock <= 5 && (
+                    product.stock <=
+                      5 && (
                       <p className="text-xs text-orange-500 font-semibold mt-2">
-                        Only {product.stock} left in stock
+                        Only{" "}
+                        {product.stock}{" "}
+                        left in stock
                       </p>
                     )}
 
-                  {/* =================================================
-                      ADD TO CART
-                  ================================================= */}
+                  {/* ADD TO CART */}
 
                   <button
                     type="button"
                     onClick={() =>
-                      handleAddToCart(product)
+                      handleAddToCart(
+                        product
+                      )
                     }
                     disabled={
-                      product.stock !== null &&
-                      product.stock <= 0
+                      isOutOfStock
                     }
                     className="
                       mt-5
@@ -622,10 +709,11 @@ export default function FeaturedProducts() {
                       transition
                     "
                   >
-                    <ShoppingCart size={18} />
+                    <ShoppingCart
+                      size={18}
+                    />
 
-                    {product.stock !== null &&
-                    product.stock <= 0
+                    {isOutOfStock
                       ? "Out Of Stock"
                       : "Add To Cart"}
                   </button>
