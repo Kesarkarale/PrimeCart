@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 
 export interface Product {
   id: string;
+
   category_id?: string | null;
 
   name: string;
@@ -33,8 +34,17 @@ export interface Product {
   created_at?: string | null;
   updated_at?: string | null;
 
-  /* UI compatibility */
+  /* =====================================================
+     CATEGORY NAME
+     Used by Product Page / Product Card
+  ===================================================== */
+
   category?: string | null;
+
+  /* =====================================================
+     BACKWARD COMPATIBILITY
+  ===================================================== */
+
   featured?: boolean | null;
   flash_sale?: boolean | null;
   active?: boolean | null;
@@ -46,6 +56,7 @@ export interface Product {
 
 type SupabaseProductRow = {
   id: string;
+
   category_id: string | null;
 
   name: string;
@@ -74,84 +85,9 @@ type SupabaseProductRow = {
   updated_at: string | null;
 
   categories?: {
-    name?: string | null;
+    name: string | null;
   } | null;
 };
-
-/* =========================================================
-   NORMALIZE PRODUCT
-========================================================= */
-
-function normalizeProduct(
-  product: SupabaseProductRow
-): Product {
-  return {
-    id: product.id,
-
-    category_id: product.category_id,
-
-    name: product.name,
-    slug: product.slug,
-
-    short_description:
-      product.short_description,
-
-    description:
-      product.description,
-
-    price: Number(product.price ?? 0),
-
-    original_price:
-      product.original_price !== null
-        ? Number(product.original_price)
-        : null,
-
-    stock: product.stock ?? 0,
-
-    image_url:
-      product.image_url,
-
-    brand:
-      product.brand,
-
-    rating:
-      product.rating !== null
-        ? Number(product.rating)
-        : 0,
-
-    reviews_count:
-      product.reviews_count ?? 0,
-
-    is_featured:
-      product.is_featured ?? false,
-
-    is_flash_sale:
-      product.is_flash_sale ?? false,
-
-    is_active:
-      product.is_active ?? true,
-
-    created_at:
-      product.created_at,
-
-    updated_at:
-      product.updated_at,
-
-    /* Compatibility for existing components */
-
-    category:
-      product.categories?.name ?? null,
-
-    featured:
-      product.is_featured ?? false,
-
-    flash_sale:
-      product.is_flash_sale ?? false,
-
-    active:
-      product.is_active ?? true,
-  };
-}
 
 /* =========================================================
    COMMON SELECT
@@ -182,10 +118,95 @@ const PRODUCT_SELECT = `
 `;
 
 /* =========================================================
+   NORMALIZE PRODUCT
+========================================================= */
+
+function normalizeProduct(
+  product: SupabaseProductRow
+): Product {
+  return {
+    id: product.id,
+
+    category_id: product.category_id,
+
+    name: product.name,
+
+    slug: product.slug,
+
+    short_description:
+      product.short_description,
+
+    description:
+      product.description,
+
+    price:
+      Number(product.price ?? 0),
+
+    original_price:
+      product.original_price !== null
+        ? Number(product.original_price)
+        : null,
+
+    stock:
+      Number(product.stock ?? 0),
+
+    image_url:
+      product.image_url,
+
+    brand:
+      product.brand,
+
+    rating:
+      product.rating !== null
+        ? Number(product.rating)
+        : 0,
+
+    reviews_count:
+      Number(product.reviews_count ?? 0),
+
+    is_featured:
+      product.is_featured ?? false,
+
+    is_flash_sale:
+      product.is_flash_sale ?? false,
+
+    is_active:
+      product.is_active ?? true,
+
+    created_at:
+      product.created_at,
+
+    updated_at:
+      product.updated_at,
+
+    /* =====================================================
+       CATEGORY
+    ===================================================== */
+
+    category:
+      product.categories?.name ?? null,
+
+    /* =====================================================
+       BACKWARD COMPATIBILITY
+    ===================================================== */
+
+    featured:
+      product.is_featured ?? false,
+
+    flash_sale:
+      product.is_flash_sale ?? false,
+
+    active:
+      product.is_active ?? true,
+  };
+}
+
+/* =========================================================
    GET ALL PRODUCTS
+   ---------------------------------------------------------
    IMPORTANT:
-   All products from Supabase are returned.
-   No is_active filter.
+   This function returns ALL products from Supabase.
+   There is NO is_active filter here.
 ========================================================= */
 
 export async function getProducts(): Promise<Product[]> {
@@ -236,6 +257,42 @@ export async function getProductById(
   if (error) {
     console.error(
       "Get product error:",
+      error
+    );
+
+    return null;
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  return normalizeProduct(
+    data as SupabaseProductRow
+  );
+}
+
+/* =========================================================
+   GET PRODUCT BY SLUG
+========================================================= */
+
+export async function getProductBySlug(
+  slug: string
+): Promise<Product | null> {
+  const supabase = createClient();
+
+  const {
+    data,
+    error,
+  } = await supabase
+    .from("products")
+    .select(PRODUCT_SELECT)
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (error) {
+    console.error(
+      "Get product by slug error:",
       error
     );
 
@@ -324,7 +381,76 @@ export async function getFlashSaleProducts(
 }
 
 /* =========================================================
-   GET PRODUCTS BY CATEGORY
+   GET ACTIVE PRODUCTS
+========================================================= */
+
+export async function getActiveProducts(): Promise<
+  Product[]
+> {
+  const supabase = createClient();
+
+  const {
+    data,
+    error,
+  } = await supabase
+    .from("products")
+    .select(PRODUCT_SELECT)
+    .eq("is_active", true)
+    .order("created_at", {
+      ascending: false,
+    });
+
+  if (error) {
+    console.error(
+      "Get active products error:",
+      error
+    );
+
+    return [];
+  }
+
+  return (
+    (data ?? []) as SupabaseProductRow[]
+  ).map(normalizeProduct);
+}
+
+/* =========================================================
+   GET PRODUCTS BY CATEGORY ID
+========================================================= */
+
+export async function getProductsByCategoryId(
+  categoryId: string
+): Promise<Product[]> {
+  const supabase = createClient();
+
+  const {
+    data,
+    error,
+  } = await supabase
+    .from("products")
+    .select(PRODUCT_SELECT)
+    .eq("category_id", categoryId)
+    .eq("is_active", true)
+    .order("created_at", {
+      ascending: false,
+    });
+
+  if (error) {
+    console.error(
+      "Get products by category ID error:",
+      error
+    );
+
+    return [];
+  }
+
+  return (
+    (data ?? []) as SupabaseProductRow[]
+  ).map(normalizeProduct);
+}
+
+/* =========================================================
+   GET PRODUCTS BY CATEGORY NAME
 ========================================================= */
 
 export async function getProductsByCategory(
