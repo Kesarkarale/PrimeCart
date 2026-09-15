@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 
 /* =========================================================
    PRODUCT TYPE
@@ -43,9 +43,6 @@ export interface Product {
 
   /* =======================================================
      COMPATIBILITY FIELDS
-
-     These are useful for existing components such as
-     ProductCard / Products page.
   ======================================================= */
 
   category?: string | null;
@@ -58,9 +55,7 @@ export interface Product {
 }
 
 /* =========================================================
-   SUPABASE PRODUCT ROW TYPE
-
-   Matches public.products table exactly.
+   SUPABASE PRODUCT ROW
 ========================================================= */
 
 interface SupabaseProductRow {
@@ -102,22 +97,7 @@ interface SupabaseProductRow {
 }
 
 /* =========================================================
-   SELECT COLUMNS
-
-   IMPORTANT:
-   Do NOT use:
-   image
-   category
-   featured
-   flash_sale
-   active
-
-   Actual database columns are:
-   image_url
-   category_id
-   is_featured
-   is_flash_sale
-   is_active
+   SUPABASE SELECT
 ========================================================= */
 
 const PRODUCT_SELECT = `
@@ -143,9 +123,6 @@ const PRODUCT_SELECT = `
 
 /* =========================================================
    NORMALIZE PRODUCT
-
-   Supabase numeric values can sometimes arrive as strings.
-   We convert them to numbers here.
 ========================================================= */
 
 function normalizeProduct(
@@ -166,7 +143,8 @@ function normalizeProduct(
     description:
       row.description,
 
-    price: Number(row.price ?? 0),
+    price:
+      Number(row.price ?? 0),
 
     original_price:
       row.original_price !== null &&
@@ -211,7 +189,7 @@ function normalizeProduct(
       row.updated_at,
 
     /* =====================================================
-       COMPATIBILITY FIELDS
+       COMPATIBILITY
     ===================================================== */
 
     category:
@@ -231,16 +209,12 @@ function normalizeProduct(
 /* =========================================================
    GET ALL PRODUCTS
 
-   IMPORTANT:
-   This returns ALL products from Supabase.
-
-   No:
-   .eq("is_active", true)
-
-   because you requested all products stored in DB.
+   Returns ALL products from Supabase.
 ========================================================= */
 
 export async function getProducts(): Promise<Product[]> {
+  const supabase = createClient();
+
   const {
     data,
     error,
@@ -280,6 +254,8 @@ export async function getProductById(
   if (!id) {
     return null;
   }
+
+  const supabase = createClient();
 
   const {
     data,
@@ -322,6 +298,8 @@ export async function getProductBySlug(
     return null;
   }
 
+  const supabase = createClient();
+
   const {
     data,
     error,
@@ -354,13 +332,13 @@ export async function getProductBySlug(
 
 /* =========================================================
    GET FEATURED PRODUCTS
-
-   Only active featured products.
 ========================================================= */
 
 export async function getFeaturedProducts(): Promise<
   Product[]
 > {
+  const supabase = createClient();
+
   const {
     data,
     error,
@@ -394,13 +372,13 @@ export async function getFeaturedProducts(): Promise<
 
 /* =========================================================
    GET FLASH SALE PRODUCTS
-
-   Only active flash-sale products.
 ========================================================= */
 
 export async function getFlashSaleProducts(): Promise<
   Product[]
 > {
+  const supabase = createClient();
+
   const {
     data,
     error,
@@ -434,13 +412,13 @@ export async function getFlashSaleProducts(): Promise<
 
 /* =========================================================
    GET ACTIVE PRODUCTS
-
-   Useful for homepage / dashboard sections.
 ========================================================= */
 
 export async function getActiveProducts(): Promise<
   Product[]
 > {
+  const supabase = createClient();
+
   const {
     data,
     error,
@@ -473,8 +451,6 @@ export async function getActiveProducts(): Promise<
 
 /* =========================================================
    GET PRODUCTS BY CATEGORY ID
-
-   Uses category_id because this is the actual DB column.
 ========================================================= */
 
 export async function getProductsByCategoryId(
@@ -483,6 +459,8 @@ export async function getProductsByCategoryId(
   if (!categoryId) {
     return [];
   }
+
+  const supabase = createClient();
 
   const {
     data,
@@ -517,15 +495,6 @@ export async function getProductsByCategoryId(
 
 /* =========================================================
    SEARCH PRODUCTS
-
-   Searches:
-   - name
-   - brand
-   - short_description
-   - description
-   - slug
-
-   This searches directly in Supabase.
 ========================================================= */
 
 export async function searchProducts(
@@ -537,6 +506,8 @@ export async function searchProducts(
     return getProducts();
   }
 
+  const supabase = createClient();
+
   const pattern = `%${term}%`;
 
   const {
@@ -546,7 +517,13 @@ export async function searchProducts(
     .from("products")
     .select(PRODUCT_SELECT)
     .or(
-      `name.ilike.${pattern},brand.ilike.${pattern},short_description.ilike.${pattern},description.ilike.${pattern},slug.ilike.${pattern}`
+      [
+        `name.ilike.${pattern}`,
+        `brand.ilike.${pattern}`,
+        `short_description.ilike.${pattern}`,
+        `description.ilike.${pattern}`,
+        `slug.ilike.${pattern}`,
+      ].join(",")
     )
     .order("created_at", {
       ascending: false,
@@ -579,6 +556,8 @@ export async function getProductsByPriceRange(
   minPrice: number,
   maxPrice: number
 ): Promise<Product[]> {
+  const supabase = createClient();
+
   const min = Number(minPrice);
   const max = Number(maxPrice);
 
@@ -621,6 +600,8 @@ export async function getProductsByPriceRange(
 export async function getTopRatedProducts(
   limit = 10
 ): Promise<Product[]> {
+  const supabase = createClient();
+
   const safeLimit = Math.max(
     1,
     Math.min(limit, 100)
@@ -667,6 +648,8 @@ export async function getTopRatedProducts(
 export async function getLatestProducts(
   limit = 10
 ): Promise<Product[]> {
+  const supabase = createClient();
+
   const safeLimit = Math.max(
     1,
     Math.min(limit, 100)
