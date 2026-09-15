@@ -37,6 +37,9 @@ export interface Product {
 
 /* =========================================================
    GET ALL PRODUCTS
+   IMPORTANT:
+   This returns ALL products stored in Supabase.
+   No active=true filter here.
 ========================================================= */
 
 export async function getProducts(): Promise<Product[]> {
@@ -64,7 +67,6 @@ export async function getProducts(): Promise<Product[]> {
       active,
       created_at
     `)
-    .eq("active", true)
     .order("created_at", {
       ascending: false,
     });
@@ -121,6 +123,7 @@ export async function getProductById(
 
 /* =========================================================
    GET FEATURED PRODUCTS
+   Only active + featured products.
 ========================================================= */
 
 export async function getFeaturedProducts(
@@ -171,6 +174,7 @@ export async function getFeaturedProducts(
 
 /* =========================================================
    GET PRODUCTS BY CATEGORY
+   Only active products for category-specific sections.
 ========================================================= */
 
 export async function getProductsByCategory(
