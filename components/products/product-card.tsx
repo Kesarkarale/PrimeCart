@@ -46,10 +46,19 @@ export default function ProductCard({
      /products/smartphone-x-pro.png
   ======================================================= */
 
-  const productImage =
-    typeof product.image_url === "string"
-      ? product.image_url.trim()
-      : "";
+ const productImage = (() => {
+  const image = product.image_url?.trim();
+
+  if (!image) return "";
+
+  // If DB already contains a full path, use it directly
+  if (image.startsWith("/")) {
+    return image;
+  }
+
+  // DB contains only filename
+  return `/products/${image}`;
+})();
 
   /* =======================================================
      PRODUCT RATING
