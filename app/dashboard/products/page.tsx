@@ -116,15 +116,12 @@ export default function ProductsPage() {
         const shortDescription =
           product.short_description?.toLowerCase() || "";
 
-        const description =
-          product.description?.toLowerCase() || "";
-
         return (
           name.includes(searchValue) ||
           brand.includes(searchValue) ||
           productCategory.includes(searchValue) ||
           shortDescription.includes(searchValue) ||
-          description.includes(searchValue)
+          
         );
       });
     }
