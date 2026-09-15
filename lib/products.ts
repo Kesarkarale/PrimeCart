@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
 /* =========================================================
    PRODUCT TYPE
@@ -7,65 +7,18 @@ import { createClient } from "@/lib/supabase/client";
 export interface Product {
   id: string;
 
-  category_id?: string | null;
-
-  name: string;
-  slug: string;
-
-  short_description?: string | null;
-  description?: string | null;
-
-  price: number;
-  original_price?: number | null;
-
-  stock?: number | null;
-
-  image_url?: string | null;
-
-  brand?: string | null;
-
-  rating?: number | null;
-  reviews_count?: number | null;
-
-  is_featured?: boolean | null;
-  is_flash_sale?: boolean | null;
-  is_active?: boolean | null;
-
-  created_at?: string | null;
-  updated_at?: string | null;
-
-  /* =====================================================
-     CATEGORY NAME
-     Used by Product Page / Product Card
-  ===================================================== */
-
-  category?: string | null;
-
-  /* =====================================================
-     BACKWARD COMPATIBILITY
-  ===================================================== */
-
-  featured?: boolean | null;
-  flash_sale?: boolean | null;
-  active?: boolean | null;
-}
-
-/* =========================================================
-   SUPABASE PRODUCT ROW
-========================================================= */
-
-type SupabaseProductRow = {
-  id: string;
-
   category_id: string | null;
 
   name: string;
+
   slug: string;
 
   short_description: string | null;
+
   description: string | null;
 
   price: number;
+
   original_price: number | null;
 
   stock: number | null;
@@ -74,23 +27,97 @@ type SupabaseProductRow = {
 
   brand: string | null;
 
-  rating: number | null;
+  rating: number;
+
+  reviews_count: number;
+
+  is_featured: boolean;
+
+  is_flash_sale: boolean;
+
+  is_active: boolean;
+
+  created_at: string | null;
+
+  updated_at: string | null;
+
+  /* =======================================================
+     COMPATIBILITY FIELDS
+
+     These are useful for existing components such as
+     ProductCard / Products page.
+  ======================================================= */
+
+  category?: string | null;
+
+  featured?: boolean;
+
+  flash_sale?: boolean;
+
+  active?: boolean;
+}
+
+/* =========================================================
+   SUPABASE PRODUCT ROW TYPE
+
+   Matches public.products table exactly.
+========================================================= */
+
+interface SupabaseProductRow {
+  id: string;
+
+  category_id: string | null;
+
+  name: string;
+
+  slug: string;
+
+  short_description: string | null;
+
+  description: string | null;
+
+  price: number | string;
+
+  original_price: number | string | null;
+
+  stock: number | null;
+
+  image_url: string | null;
+
+  brand: string | null;
+
+  rating: number | string | null;
+
   reviews_count: number | null;
 
   is_featured: boolean | null;
+
   is_flash_sale: boolean | null;
+
   is_active: boolean | null;
 
   created_at: string | null;
-  updated_at: string | null;
 
-  categories?: {
-    name: string | null;
-  } | null;
-};
+  updated_at: string | null;
+}
 
 /* =========================================================
-   COMMON SELECT
+   SELECT COLUMNS
+
+   IMPORTANT:
+   Do NOT use:
+   image
+   category
+   featured
+   flash_sale
+   active
+
+   Actual database columns are:
+   image_url
+   category_id
+   is_featured
+   is_flash_sale
+   is_active
 ========================================================= */
 
 const PRODUCT_SELECT = `
@@ -111,107 +138,109 @@ const PRODUCT_SELECT = `
   is_flash_sale,
   is_active,
   created_at,
-  updated_at,
-  categories (
-    name
-  )
+  updated_at
 `;
 
 /* =========================================================
    NORMALIZE PRODUCT
+
+   Supabase numeric values can sometimes arrive as strings.
+   We convert them to numbers here.
 ========================================================= */
 
 function normalizeProduct(
-  product: SupabaseProductRow
+  row: SupabaseProductRow
 ): Product {
   return {
-    id: product.id,
+    id: row.id,
 
-    category_id: product.category_id,
+    category_id: row.category_id,
 
-    name: product.name,
+    name: row.name,
 
-    slug: product.slug,
+    slug: row.slug,
 
     short_description:
-      product.short_description,
+      row.short_description,
 
     description:
-      product.description,
+      row.description,
 
-    price:
-      Number(product.price ?? 0),
+    price: Number(row.price ?? 0),
 
     original_price:
-      product.original_price !== null
-        ? Number(product.original_price)
+      row.original_price !== null &&
+      row.original_price !== undefined
+        ? Number(row.original_price)
         : null,
 
     stock:
-      Number(product.stock ?? 0),
+      row.stock !== null &&
+      row.stock !== undefined
+        ? Number(row.stock)
+        : null,
 
     image_url:
-      product.image_url,
+      row.image_url,
 
     brand:
-      product.brand,
+      row.brand,
 
     rating:
-      product.rating !== null
-        ? Number(product.rating)
+      row.rating !== null &&
+      row.rating !== undefined
+        ? Number(row.rating)
         : 0,
 
     reviews_count:
-      Number(product.reviews_count ?? 0),
+      Number(row.reviews_count ?? 0),
 
     is_featured:
-      product.is_featured ?? false,
+      row.is_featured ?? false,
 
     is_flash_sale:
-      product.is_flash_sale ?? false,
+      row.is_flash_sale ?? false,
 
     is_active:
-      product.is_active ?? true,
+      row.is_active ?? true,
 
     created_at:
-      product.created_at,
+      row.created_at,
 
     updated_at:
-      product.updated_at,
+      row.updated_at,
 
     /* =====================================================
-       CATEGORY
+       COMPATIBILITY FIELDS
     ===================================================== */
 
     category:
-      product.categories?.name ?? null,
-
-    /* =====================================================
-       BACKWARD COMPATIBILITY
-    ===================================================== */
+      "Product",
 
     featured:
-      product.is_featured ?? false,
+      row.is_featured ?? false,
 
     flash_sale:
-      product.is_flash_sale ?? false,
+      row.is_flash_sale ?? false,
 
     active:
-      product.is_active ?? true,
+      row.is_active ?? true,
   };
 }
 
 /* =========================================================
    GET ALL PRODUCTS
-   ---------------------------------------------------------
+
    IMPORTANT:
-   This function returns ALL products from Supabase.
-   There is NO is_active filter here.
+   This returns ALL products from Supabase.
+
+   No:
+   .eq("is_active", true)
+
+   because you requested all products stored in DB.
 ========================================================= */
 
 export async function getProducts(): Promise<Product[]> {
-  const supabase = createClient();
-
   const {
     data,
     error,
@@ -224,26 +253,33 @@ export async function getProducts(): Promise<Product[]> {
 
   if (error) {
     console.error(
-      "Get products error:",
+      "getProducts error:",
       error
     );
 
-    return [];
+    throw new Error(
+      error.message ||
+        "Failed to load products"
+    );
   }
 
-  return (
-    (data ?? []) as SupabaseProductRow[]
-  ).map(normalizeProduct);
+  return (data ?? []).map((row) =>
+    normalizeProduct(
+      row as unknown as SupabaseProductRow
+    )
+  );
 }
 
 /* =========================================================
-   GET SINGLE PRODUCT
+   GET PRODUCT BY ID
 ========================================================= */
 
 export async function getProductById(
   id: string
 ): Promise<Product | null> {
-  const supabase = createClient();
+  if (!id) {
+    return null;
+  }
 
   const {
     data,
@@ -256,11 +292,14 @@ export async function getProductById(
 
   if (error) {
     console.error(
-      "Get product error:",
+      "getProductById error:",
       error
     );
 
-    return null;
+    throw new Error(
+      error.message ||
+        "Failed to load product"
+    );
   }
 
   if (!data) {
@@ -268,7 +307,7 @@ export async function getProductById(
   }
 
   return normalizeProduct(
-    data as SupabaseProductRow
+    data as unknown as SupabaseProductRow
   );
 }
 
@@ -279,7 +318,9 @@ export async function getProductById(
 export async function getProductBySlug(
   slug: string
 ): Promise<Product | null> {
-  const supabase = createClient();
+  if (!slug) {
+    return null;
+  }
 
   const {
     data,
@@ -292,11 +333,14 @@ export async function getProductBySlug(
 
   if (error) {
     console.error(
-      "Get product by slug error:",
+      "getProductBySlug error:",
       error
     );
 
-    return null;
+    throw new Error(
+      error.message ||
+        "Failed to load product"
+    );
   }
 
   if (!data) {
@@ -304,91 +348,99 @@ export async function getProductBySlug(
   }
 
   return normalizeProduct(
-    data as SupabaseProductRow
+    data as unknown as SupabaseProductRow
   );
 }
 
 /* =========================================================
    GET FEATURED PRODUCTS
+
+   Only active featured products.
 ========================================================= */
 
-export async function getFeaturedProducts(
-  limit = 8
-): Promise<Product[]> {
-  const supabase = createClient();
-
+export async function getFeaturedProducts(): Promise<
+  Product[]
+> {
   const {
     data,
     error,
   } = await supabase
     .from("products")
     .select(PRODUCT_SELECT)
-    .eq("is_active", true)
     .eq("is_featured", true)
+    .eq("is_active", true)
     .order("created_at", {
       ascending: false,
-    })
-    .limit(limit);
+    });
 
   if (error) {
     console.error(
-      "Get featured products error:",
+      "getFeaturedProducts error:",
       error
     );
 
-    return [];
+    throw new Error(
+      error.message ||
+        "Failed to load featured products"
+    );
   }
 
-  return (
-    (data ?? []) as SupabaseProductRow[]
-  ).map(normalizeProduct);
+  return (data ?? []).map((row) =>
+    normalizeProduct(
+      row as unknown as SupabaseProductRow
+    )
+  );
 }
 
 /* =========================================================
    GET FLASH SALE PRODUCTS
+
+   Only active flash-sale products.
 ========================================================= */
 
-export async function getFlashSaleProducts(
-  limit = 8
-): Promise<Product[]> {
-  const supabase = createClient();
-
+export async function getFlashSaleProducts(): Promise<
+  Product[]
+> {
   const {
     data,
     error,
   } = await supabase
     .from("products")
     .select(PRODUCT_SELECT)
-    .eq("is_active", true)
     .eq("is_flash_sale", true)
+    .eq("is_active", true)
     .order("created_at", {
       ascending: false,
-    })
-    .limit(limit);
+    });
 
   if (error) {
     console.error(
-      "Get flash sale products error:",
+      "getFlashSaleProducts error:",
       error
     );
 
-    return [];
+    throw new Error(
+      error.message ||
+        "Failed to load flash sale products"
+    );
   }
 
-  return (
-    (data ?? []) as SupabaseProductRow[]
-  ).map(normalizeProduct);
+  return (data ?? []).map((row) =>
+    normalizeProduct(
+      row as unknown as SupabaseProductRow
+    )
+  );
 }
 
 /* =========================================================
    GET ACTIVE PRODUCTS
+
+   Useful for homepage / dashboard sections.
 ========================================================= */
 
 export async function getActiveProducts(): Promise<
   Product[]
 > {
-  const supabase = createClient();
-
   const {
     data,
     error,
@@ -402,26 +454,35 @@ export async function getActiveProducts(): Promise<
 
   if (error) {
     console.error(
-      "Get active products error:",
+      "getActiveProducts error:",
       error
     );
 
-    return [];
+    throw new Error(
+      error.message ||
+        "Failed to load active products"
+    );
   }
 
-  return (
-    (data ?? []) as SupabaseProductRow[]
-  ).map(normalizeProduct);
+  return (data ?? []).map((row) =>
+    normalizeProduct(
+      row as unknown as SupabaseProductRow
+    )
+  );
 }
 
 /* =========================================================
    GET PRODUCTS BY CATEGORY ID
+
+   Uses category_id because this is the actual DB column.
 ========================================================= */
 
 export async function getProductsByCategoryId(
   categoryId: string
 ): Promise<Product[]> {
-  const supabase = createClient();
+  if (!categoryId) {
+    return [];
+  }
 
   const {
     data,
@@ -437,26 +498,133 @@ export async function getProductsByCategoryId(
 
   if (error) {
     console.error(
-      "Get products by category ID error:",
+      "getProductsByCategoryId error:",
       error
     );
 
-    return [];
+    throw new Error(
+      error.message ||
+        "Failed to load category products"
+    );
   }
 
-  return (
-    (data ?? []) as SupabaseProductRow[]
-  ).map(normalizeProduct);
+  return (data ?? []).map((row) =>
+    normalizeProduct(
+      row as unknown as SupabaseProductRow
+    )
+  );
 }
 
 /* =========================================================
-   GET PRODUCTS BY CATEGORY NAME
+   SEARCH PRODUCTS
+
+   Searches:
+   - name
+   - brand
+   - short_description
+   - description
+   - slug
+
+   This searches directly in Supabase.
 ========================================================= */
 
-export async function getProductsByCategory(
-  category: string
+export async function searchProducts(
+  searchTerm: string
 ): Promise<Product[]> {
-  const supabase = createClient();
+  const term = searchTerm.trim();
+
+  if (!term) {
+    return getProducts();
+  }
+
+  const pattern = `%${term}%`;
+
+  const {
+    data,
+    error,
+  } = await supabase
+    .from("products")
+    .select(PRODUCT_SELECT)
+    .or(
+      `name.ilike.${pattern},brand.ilike.${pattern},short_description.ilike.${pattern},description.ilike.${pattern},slug.ilike.${pattern}`
+    )
+    .order("created_at", {
+      ascending: false,
+    });
+
+  if (error) {
+    console.error(
+      "searchProducts error:",
+      error
+    );
+
+    throw new Error(
+      error.message ||
+        "Failed to search products"
+    );
+  }
+
+  return (data ?? []).map((row) =>
+    normalizeProduct(
+      row as unknown as SupabaseProductRow
+    )
+  );
+}
+
+/* =========================================================
+   GET PRODUCTS BY PRICE RANGE
+========================================================= */
+
+export async function getProductsByPriceRange(
+  minPrice: number,
+  maxPrice: number
+): Promise<Product[]> {
+  const min = Number(minPrice);
+  const max = Number(maxPrice);
+
+  const {
+    data,
+    error,
+  } = await supabase
+    .from("products")
+    .select(PRODUCT_SELECT)
+    .gte("price", min)
+    .lte("price", max)
+    .eq("is_active", true)
+    .order("price", {
+      ascending: true,
+    });
+
+  if (error) {
+    console.error(
+      "getProductsByPriceRange error:",
+      error
+    );
+
+    throw new Error(
+      error.message ||
+        "Failed to load products"
+    );
+  }
+
+  return (data ?? []).map((row) =>
+    normalizeProduct(
+      row as unknown as SupabaseProductRow
+    )
+  );
+}
+
+/* =========================================================
+   GET TOP RATED PRODUCTS
+========================================================= */
+
+export async function getTopRatedProducts(
+  limit = 10
+): Promise<Product[]> {
+  const safeLimit = Math.max(
+    1,
+    Math.min(limit, 100)
+  );
 
   const {
     data,
@@ -465,26 +633,71 @@ export async function getProductsByCategory(
     .from("products")
     .select(PRODUCT_SELECT)
     .eq("is_active", true)
-    .order("created_at", {
+    .order("rating", {
       ascending: false,
-    });
+    })
+    .order("reviews_count", {
+      ascending: false,
+    })
+    .limit(safeLimit);
 
   if (error) {
     console.error(
-      "Get category products error:",
+      "getTopRatedProducts error:",
       error
     );
 
-    return [];
+    throw new Error(
+      error.message ||
+        "Failed to load top rated products"
+    );
   }
 
-  const products = (
-    (data ?? []) as SupabaseProductRow[]
-  ).map(normalizeProduct);
+  return (data ?? []).map((row) =>
+    normalizeProduct(
+      row as unknown as SupabaseProductRow
+    )
+  );
+}
 
-  return products.filter(
-    (product) =>
-      product.category?.toLowerCase() ===
-      category.toLowerCase()
+/* =========================================================
+   GET LATEST PRODUCTS
+========================================================= */
+
+export async function getLatestProducts(
+  limit = 10
+): Promise<Product[]> {
+  const safeLimit = Math.max(
+    1,
+    Math.min(limit, 100)
+  );
+
+  const {
+    data,
+    error,
+  } = await supabase
+    .from("products")
+    .select(PRODUCT_SELECT)
+    .order("created_at", {
+      ascending: false,
+    })
+    .limit(safeLimit);
+
+  if (error) {
+    console.error(
+      "getLatestProducts error:",
+      error
+    );
+
+    throw new Error(
+      error.message ||
+        "Failed to load latest products"
+    );
+  }
+
+  return (data ?? []).map((row) =>
+    normalizeProduct(
+      row as unknown as SupabaseProductRow
+    )
   );
 }
