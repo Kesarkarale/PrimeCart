@@ -3,16 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
+  ArrowLeft,
   ChevronDown,
-  Filter,
   Grid3X3,
   LayoutGrid,
   Search,
+  ShoppingBag,
   SlidersHorizontal,
   Sparkles,
   X,
-  ArrowLeft,
-  ShoppingBag,
 } from "lucide-react";
 
 import Navbar from "@/components/layout/navbar";
@@ -40,21 +39,23 @@ export default function ProductsPage() {
   const [gridSize, setGridSize] =
     useState<"normal" | "large">("normal");
 
-  /* =========================================================
-     LOAD PRODUCTS FROM DATABASE
-  ========================================================= */
+  /*
+   * =========================================================
+   * LOAD PRODUCTS
+   * =========================================================
+   */
 
   useEffect(() => {
     let mounted = true;
 
-    async function loadProducts() {
+    const loadProducts = async () => {
       try {
         setLoading(true);
 
         const data = await getProducts();
 
         if (mounted) {
-          setProducts(data || []);
+          setProducts(Array.isArray(data) ? data : []);
         }
       } catch (error) {
         console.error("Products loading error:", error);
@@ -67,7 +68,7 @@ export default function ProductsPage() {
           setLoading(false);
         }
       }
-    }
+    };
 
     loadProducts();
 
@@ -76,9 +77,11 @@ export default function ProductsPage() {
     };
   }, []);
 
-  /* =========================================================
-     DYNAMIC CATEGORIES
-  ========================================================= */
+  /*
+   * =========================================================
+   * DYNAMIC CATEGORIES
+   * =========================================================
+   */
 
   const categories = useMemo(() => {
     const uniqueCategories = products
@@ -93,15 +96,20 @@ export default function ProductsPage() {
     ];
   }, [products]);
 
-  /* =========================================================
-     SEARCH + FILTER + SORT
-  ========================================================= */
+  /*
+   * =========================================================
+   * SEARCH + FILTER + SORT
+   * =========================================================
+   */
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
 
     const searchValue = search.trim().toLowerCase();
 
+    /*
+     * SEARCH
+     */
     if (searchValue) {
       result = result.filter((product) => {
         const name =
@@ -120,18 +128,23 @@ export default function ProductsPage() {
           name.includes(searchValue) ||
           brand.includes(searchValue) ||
           productCategory.includes(searchValue) ||
-          shortDescription.includes(searchValue) || 
+          shortDescription.includes(searchValue)
         );
       });
     }
 
+    /*
+     * CATEGORY
+     */
     if (category !== "All") {
       result = result.filter(
-        (product) =>
-          product.category === category
+        (product) => product.category === category
       );
     }
 
+    /*
+     * SORT
+     */
     switch (sort) {
       case "price-low":
         result.sort(
@@ -170,20 +183,18 @@ export default function ProductsPage() {
 
           return dateB - dateA;
         });
+
         break;
     }
 
     return result;
-  }, [
-    products,
-    search,
-    category,
-    sort,
-  ]);
+  }, [products, search, category, sort]);
 
-  /* =========================================================
-     CLEAR FILTERS
-  ========================================================= */
+  /*
+   * =========================================================
+   * CLEAR FILTERS
+   * =========================================================
+   */
 
   const clearFilters = () => {
     setSearch("");
@@ -196,22 +207,24 @@ export default function ProductsPage() {
     category !== "All" ||
     sort !== "newest";
 
-  /* =========================================================
-     RENDER
-  ========================================================= */
+  /*
+   * =========================================================
+   * RENDER
+   * =========================================================
+   */
 
   return (
     <div className="min-h-screen bg-[#faf8f3] text-gray-900 dark:bg-[#050505] dark:text-white">
 
       {/* =====================================================
-          SAME DASHBOARD HEADER
+          HEADER
       ===================================================== */}
 
       <TopBar />
       <Navbar />
 
       {/* =====================================================
-          MAIN CONTENT
+          MAIN
       ===================================================== */}
 
       <main className="px-4 pb-16 pt-6 sm:px-6 lg:px-8">
@@ -239,12 +252,12 @@ export default function ProductsPage() {
           </div>
 
           {/* =================================================
-              HERO / PAGE HEADER
+              HERO
           ================================================= */}
 
           <section className="relative overflow-hidden rounded-[30px] border border-gray-200 bg-white px-6 py-8 shadow-sm dark:border-white/10 dark:bg-[#101010] sm:px-8 sm:py-10 lg:px-10">
 
-            {/* Decorative Gold Glow */}
+            {/* Gold Glow */}
 
             <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[#D4AF37]/10 blur-3xl" />
 
@@ -257,11 +270,8 @@ export default function ProductsPage() {
                 {/* Badge */}
 
                 <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#D4AF37]/30 bg-[#D4AF37]/10 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#9B7712] dark:text-[#D4AF37]">
-
                   <Sparkles size={13} />
-
                   PrimeCart Collection
-
                 </div>
 
                 <h1 className="text-3xl font-black tracking-tight text-gray-950 dark:text-white sm:text-4xl lg:text-5xl">
@@ -497,7 +507,7 @@ export default function ProductsPage() {
                       <option
                         key={item}
                         value={item}
-                        className="bg-white text-black"
+                        className="bg-white text-black dark:bg-black dark:text-white"
                       >
                         {item === "All"
                           ? "All Categories"
@@ -729,13 +739,11 @@ export default function ProductsPage() {
                   <div>
 
                     <div className="flex items-center gap-2 text-[#D4AF37]">
-
                       <Sparkles size={17} />
 
                       <span className="text-xs font-extrabold uppercase tracking-[0.16em]">
                         PrimeCart Promise
                       </span>
-
                     </div>
 
                     <h3 className="mt-2 text-2xl font-black sm:text-3xl">
@@ -768,7 +776,7 @@ export default function ProductsPage() {
       </main>
 
       {/* =====================================================
-          SAME DASHBOARD FOOTER
+          FOOTER
       ===================================================== */}
 
       <Footer />
@@ -777,9 +785,11 @@ export default function ProductsPage() {
   );
 }
 
-/* =========================================================
-   PRODUCT SKELETON
-========================================================= */
+/*
+ * =========================================================
+ * PRODUCT SKELETON
+ * =========================================================
+ */
 
 function ProductSkeleton() {
   return (
