@@ -120,8 +120,7 @@ export default function ProductsPage() {
           name.includes(searchValue) ||
           brand.includes(searchValue) ||
           productCategory.includes(searchValue) ||
-          shortDescription.includes(searchValue) ||
-          
+          shortDescription.includes(searchValue) || 
         );
       });
     }
