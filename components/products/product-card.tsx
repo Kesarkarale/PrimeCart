@@ -18,42 +18,47 @@ import { addToCart } from "@/lib/cart";
 import type { Product } from "@/lib/products";
 
 /* =========================================================
-   PRODUCT CARD
+   PRODUCT CARD PROPS
 ========================================================= */
 
 interface ProductCardProps {
   product: Product;
 }
 
+/* =========================================================
+   PRODUCT CARD
+========================================================= */
+
 export default function ProductCard({
   product,
 }: ProductCardProps) {
-  const [imageError, setImageError] =
-    useState(false);
-
-  const [wishlist, setWishlist] =
-    useState(false);
-
-  const [addingToCart, setAddingToCart] =
-    useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [wishlist, setWishlist] = useState(false);
+  const [addingToCart, setAddingToCart] = useState(false);
 
   /* =======================================================
      PRODUCT IMAGE
+
+     Supabase DB column:
+     image_url
+
+     Example:
+     /products/smartphone-x-pro.png
   ======================================================= */
 
   const productImage =
-    product.image_url?.trim() ||
-    product.image?.trim() ||
-    "";
+    typeof product.image_url === "string"
+      ? product.image_url.trim()
+      : "";
 
   /* =======================================================
-     RATING
+     PRODUCT RATING
   ======================================================= */
 
   const productRating =
     typeof product.rating === "number"
       ? product.rating
-      : 0;
+      : Number(product.rating ?? 0);
 
   /* =======================================================
      REVIEWS
@@ -62,36 +67,46 @@ export default function ProductCard({
   const reviews =
     typeof product.reviews_count === "number"
       ? product.reviews_count
-      : 0;
+      : Number(product.reviews_count ?? 0);
 
   /* =======================================================
-     OLD PRICE
+     ORIGINAL PRICE
+
+     Supabase DB column:
+     original_price
   ======================================================= */
 
   const oldPrice =
-    product.original_price ??
-    product.oldPrice ??
-    null;
+    product.original_price !== null &&
+    product.original_price !== undefined
+      ? Number(product.original_price)
+      : null;
 
   /* =======================================================
      CATEGORY
   ======================================================= */
 
   const category =
-    product.category?.trim() ||
-    "Product";
+    typeof product.category === "string" &&
+    product.category.trim()
+      ? product.category.trim()
+      : "Product";
+
+  /* =======================================================
+     CURRENT PRICE
+  ======================================================= */
+
+  const currentPrice = Number(product.price ?? 0);
 
   /* =======================================================
      DISCOUNT
   ======================================================= */
 
   const discount =
-    oldPrice &&
-    oldPrice > product.price
+    oldPrice !== null &&
+    oldPrice > currentPrice
       ? Math.round(
-          ((oldPrice - product.price) /
-            oldPrice) *
-            100
+          ((oldPrice - currentPrice) / oldPrice) * 100
         )
       : 0;
 
@@ -100,8 +115,23 @@ export default function ProductCard({
   ======================================================= */
 
   const hasStock =
-    typeof product.stock !== "number" ||
-    product.stock > 0;
+    product.stock === null ||
+    product.stock === undefined ||
+    Number(product.stock) > 0;
+
+  /* =======================================================
+     FEATURED
+
+     Supports actual DB field:
+     is_featured
+
+     Also supports compatibility field:
+     featured
+  ======================================================= */
+
+  const isFeatured =
+    product.is_featured === true ||
+    product.featured === true;
 
   /* =======================================================
      ADD TO CART
@@ -118,19 +148,16 @@ export default function ProductCard({
 
       await addToCart(product as any);
 
-      toast.success(
-        "Product added to cart 🛒"
-      );
-    } catch (error: any) {
-      console.error(
-        "Add to cart error:",
-        error
-      );
+      toast.success("Product added to cart 🛒");
+    } catch (error: unknown) {
+      console.error("Add to cart error:", error);
 
-      toast.error(
-        error?.message ||
-          "Please login first"
-      );
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Please login first";
+
+      toast.error(message);
     } finally {
       setAddingToCart(false);
     }
@@ -155,11 +182,18 @@ export default function ProductCard({
   };
 
   /* =======================================================
+     RESET IMAGE ERROR WHEN IMAGE URL CHANGES
+  ======================================================= */
+
+  const imageKey = productImage;
+
+  /* =======================================================
      RENDER
   ======================================================= */
 
   return (
     <motion.article
+      key={imageKey}
       initial={{
         opacity: 0,
         y: 24,
@@ -190,6 +224,7 @@ export default function ProductCard({
         shadow-sm
         transition-all
         duration-300
+
         hover:border-[#D4AF37]
         hover:shadow-xl
 
@@ -213,6 +248,8 @@ export default function ProductCard({
           gap-2
         "
       >
+        {/* DISCOUNT */}
+
         {discount > 0 && (
           <span
             className="
@@ -232,21 +269,27 @@ export default function ProductCard({
           </span>
         )}
 
-        {product.featured && (
+        {/* FEATURED */}
+
+        {isFeatured && (
           <span
             className="
               rounded-full
               border
-              border-black/10
-              bg-black
+              border-[#D4AF37]/40
+              bg-[#FFF8DF]
               px-3
               py-1
               text-[10px]
               font-bold
               uppercase
               tracking-wide
-              text-white
-              dark:border-white/10
+              text-[#8A6A00]
+              shadow-sm
+
+              dark:border-[#D4AF37]/30
+              dark:bg-[#D4AF37]/15
+              dark:text-[#D4AF37]
             "
           >
             Featured
@@ -298,11 +341,7 @@ export default function ProductCard({
       >
         <Heart
           size={18}
-          fill={
-            wishlist
-              ? "currentColor"
-              : "none"
-          }
+          fill={wishlist ? "currentColor" : "none"}
         />
       </button>
 
@@ -343,8 +382,9 @@ export default function ProductCard({
             "
           />
 
-          {!productImage ||
-          imageError ? (
+          {/* IMAGE */}
+
+          {!productImage || imageError ? (
             <div
               className="
                 relative
@@ -356,6 +396,7 @@ export default function ProductCard({
                 items-center
                 justify-center
                 text-gray-400
+
                 dark:text-gray-500
               "
             >
@@ -372,9 +413,7 @@ export default function ProductCard({
                   dark:bg-white/5
                 "
               >
-                <ImageOff
-                  size={30}
-                />
+                <ImageOff size={30} />
               </div>
 
               <span
@@ -389,11 +428,9 @@ export default function ProductCard({
             </div>
           ) : (
             <Image
+              key={productImage}
               src={productImage}
-              alt={
-                product.name ||
-                "Product"
-              }
+              alt={product.name || "Product"}
               fill
               sizes="
                 (max-width: 640px) 100vw,
@@ -402,9 +439,7 @@ export default function ProductCard({
               "
               unoptimized
               priority={false}
-              onError={() =>
-                setImageError(true)
-              }
+              onError={() => setImageError(true)}
               className="
                 relative
                 z-10
@@ -413,6 +448,7 @@ export default function ProductCard({
                 transition-transform
                 duration-500
                 ease-out
+
                 group-hover:scale-110
               "
             />
@@ -430,7 +466,9 @@ export default function ProductCard({
               opacity-0
               transition-opacity
               duration-300
+
               group-hover:opacity-100
+
               dark:bg-white/[0.02]
             "
           />
@@ -442,8 +480,9 @@ export default function ProductCard({
       ==================================================== */}
 
       <div className="p-5">
-
-        {/* CATEGORY */}
+        {/* =================================================
+            CATEGORY
+        ================================================== */}
 
         <p
           className="
@@ -452,13 +491,16 @@ export default function ProductCard({
             uppercase
             tracking-[0.18em]
             text-[#B28D1A]
+
             dark:text-[#D4AF37]
           "
         >
           {category}
         </p>
 
-        {/* BRAND */}
+        {/* =================================================
+            BRAND
+        ================================================== */}
 
         {product.brand && (
           <p
@@ -467,6 +509,7 @@ export default function ProductCard({
               text-[11px]
               font-medium
               text-gray-400
+
               dark:text-gray-500
             "
           >
@@ -474,7 +517,9 @@ export default function ProductCard({
           </p>
         )}
 
-        {/* NAME */}
+        {/* =================================================
+            PRODUCT NAME
+        ================================================== */}
 
         <Link
           href={`/dashboard/products/${product.id}`}
@@ -500,7 +545,9 @@ export default function ProductCard({
           </h3>
         </Link>
 
-        {/* SHORT DESCRIPTION */}
+        {/* =================================================
+            SHORT DESCRIPTION
+        ================================================== */}
 
         {product.short_description && (
           <p
@@ -560,13 +607,12 @@ export default function ProductCard({
               className="
                 text-xs
                 text-gray-500
+
                 dark:text-gray-400
               "
             >
-              {reviews.toLocaleString(
-                "en-IN"
-              )}{" "}
-              reviews
+              {reviews.toLocaleString("en-IN")}{" "}
+              {reviews === 1 ? "review" : "reviews"}
             </span>
           )}
         </div>
@@ -594,31 +640,23 @@ export default function ProductCard({
             "
           >
             ₹
-            {Number(
-              product.price || 0
-            ).toLocaleString(
-              "en-IN"
-            )}
+            {currentPrice.toLocaleString("en-IN")}
           </span>
 
-          {oldPrice &&
-            oldPrice >
-              product.price && (
+          {oldPrice !== null &&
+            oldPrice > currentPrice && (
               <span
                 className="
                   text-sm
                   font-medium
                   text-gray-400
                   line-through
+
                   dark:text-gray-500
                 "
               >
                 ₹
-                {Number(
-                  oldPrice
-                ).toLocaleString(
-                  "en-IN"
-                )}
+                {oldPrice.toLocaleString("en-IN")}
               </span>
             )}
         </div>
@@ -627,8 +665,7 @@ export default function ProductCard({
             STOCK STATUS
         ================================================== */}
 
-        {typeof product.stock ===
-          "number" && (
+        {typeof product.stock === "number" && (
           <div className="mt-2">
             {product.stock > 0 ? (
               <p
@@ -636,13 +673,12 @@ export default function ProductCard({
                   text-xs
                   font-semibold
                   text-green-600
+
                   dark:text-green-400
                 "
               >
                 {product.stock}{" "}
-                {product.stock === 1
-                  ? "item"
-                  : "items"}{" "}
+                {product.stock === 1 ? "item" : "items"}{" "}
                 available
               </p>
             ) : (
@@ -651,6 +687,7 @@ export default function ProductCard({
                   text-xs
                   font-semibold
                   text-red-500
+
                   dark:text-red-400
                 "
               >
@@ -672,15 +709,14 @@ export default function ProductCard({
             gap-3
           "
         >
-          {/* ADD TO CART */}
+          {/* =================================================
+              ADD TO CART
+          ================================================== */}
 
           <button
             type="button"
             onClick={handleAddToCart}
-            disabled={
-              addingToCart ||
-              !hasStock
-            }
+            disabled={addingToCart || !hasStock}
             className="
               flex
               items-center
@@ -728,19 +764,17 @@ export default function ProductCard({
                 "
               />
             ) : (
-              <ShoppingCart
-                size={17}
-              />
+              <ShoppingCart size={17} />
             )}
 
             <span>
-              {addingToCart
-                ? "Adding..."
-                : "Cart"}
+              {addingToCart ? "Adding..." : "Cart"}
             </span>
           </button>
 
-          {/* BUY NOW */}
+          {/* =================================================
+              BUY NOW
+          ================================================== */}
 
           <Link
             href={`/checkout?product=${product.id}`}
@@ -766,12 +800,9 @@ export default function ProductCard({
           >
             <Zap size={17} />
 
-            <span>
-              Buy Now
-            </span>
+            <span>Buy Now</span>
           </Link>
         </div>
-
       </div>
     </motion.article>
   );
