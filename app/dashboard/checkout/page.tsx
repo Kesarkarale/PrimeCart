@@ -1,339 +1,467 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+
 import {
   ArrowLeft,
-  CheckCircle2,
+  BadgeCheck,
+  Banknote,
+  Check,
+  ChevronRight,
   CreditCard,
+  Lock,
   MapPin,
   Package,
+  Phone,
   ShieldCheck,
+  ShoppingBag,
+  Smartphone,
   Truck,
-  Wallet,
-  Banknote,
-  Loader2,
+  User,
+  WalletCards,
 } from "lucide-react";
 
 type PaymentMethod = "cod" | "card" | "upi";
+type DeliveryMethod = "standard" | "express";
+
+interface CheckoutProduct {
+  id: string;
+  name: string;
+  slug: string;
+  brand: string | null;
+  price: number;
+  originalPrice: number | null;
+  image_url: string | null;
+  quantity: number;
+  color: string;
+  stock: number;
+}
+
+interface FormData {
+  fullName: string;
+  mobile: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+}
+
+const initialForm: FormData = {
+  fullName: "",
+  mobile: "",
+  address: "",
+  city: "",
+  state: "",
+  pincode: "",
+};
 
 export default function CheckoutPage() {
   const router = useRouter();
 
+  const [product, setProduct] = useState<CheckoutProduct | null>(null);
+
+  const [formData, setFormData] = useState<FormData>(initialForm);
+
   const [paymentMethod, setPaymentMethod] =
     useState<PaymentMethod>("cod");
 
-  const [loading, setLoading] = useState(false);
+  const [deliveryMethod, setDeliveryMethod] =
+    useState<DeliveryMethod>("standard");
 
-  const [form, setForm] = useState({
-    fullName: "",
-    mobile: "",
-    address: "",
-    city: "",
-    state: "",
-    pincode: "",
-  });
+  const [loadingProduct, setLoadingProduct] = useState(true);
+  const [placingOrder, setPlacingOrder] = useState(false);
 
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof FormData, string>>
+  >({});
 
-  const product = {
-    name: "Wireless Headphones",
-    brand: "PrimeAudio",
-    price: 2499,
-    originalPrice: 3999,
-    quantity: 1,
-    image: "/products/headphone.png",
-  };
+  useEffect(() => {
+    try {
+      const storedProduct = localStorage.getItem("primecart_buy_now");
 
-  const subtotal = product.price * product.quantity;
-  const delivery = subtotal >= 499 ? 0 : 49;
-  const total = subtotal + delivery;
-  const discount = product.originalPrice - product.price;
+      if (!storedProduct) {
+        router.replace("/dashboard/products");
+        return;
+      }
 
-  function updateField(
-    field: keyof typeof form,
+      const parsedProduct = JSON.parse(storedProduct);
+
+      if (!parsedProduct?.id) {
+        router.replace("/dashboard/products");
+        return;
+      }
+
+      setProduct(parsedProduct);
+    } catch (error) {
+      console.error("Checkout product error:", error);
+      router.replace("/dashboard/products");
+    } finally {
+      setLoadingProduct(false);
+    }
+  }, [router]);
+
+  const subtotal = useMemo(() => {
+    if (!product) return 0;
+
+    return product.price * product.quantity;
+  }, [product]);
+
+  const originalTotal = useMemo(() => {
+    if (!product) return 0;
+
+    if (!product.originalPrice) {
+      return subtotal;
+    }
+
+    return product.originalPrice * product.quantity;
+  }, [product, subtotal]);
+
+  const discount = Math.max(originalTotal - subtotal, 0);
+
+  const standardDelivery = subtotal >= 499 ? 0 : 49;
+
+  const deliveryCharge =
+    deliveryMethod === "standard"
+      ? standardDelivery
+      : 99;
+
+  const total = subtotal + deliveryCharge;
+
+  const updateField = (
+    field: keyof FormData,
     value: string
-  ) {
-    setForm((previous) => ({
+  ) => {
+    setFormData((previous) => ({
       ...previous,
       [field]: value,
     }));
-  }
 
-  function validateForm() {
-    if (!form.fullName.trim()) {
-      return "Please enter your full name.";
+    setErrors((previous) => ({
+      ...previous,
+      [field]: "",
+    }));
+  };
+
+  const validateForm = () => {
+    const newErrors: Partial<Record<keyof FormData, string>> = {};
+
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = "Please enter your full name.";
     }
 
-    if (!/^[0-9]{10}$/.test(form.mobile)) {
-      return "Please enter a valid 10-digit mobile number.";
+    if (!formData.mobile.trim()) {
+      newErrors.mobile = "Please enter your mobile number.";
+    } else if (!/^[6-9]\d{9}$/.test(formData.mobile.trim())) {
+      newErrors.mobile =
+        "Please enter a valid 10-digit mobile number.";
     }
 
-    if (!form.address.trim()) {
-      return "Please enter your complete address.";
+    if (!formData.address.trim()) {
+      newErrors.address = "Please enter your delivery address.";
     }
 
-    if (!form.city.trim()) {
-      return "Please enter your city.";
+    if (!formData.city.trim()) {
+      newErrors.city = "Please enter your city.";
     }
 
-    if (!form.state.trim()) {
-      return "Please enter your state.";
+    if (!formData.state.trim()) {
+      newErrors.state = "Please enter your state.";
     }
 
-    if (!/^[0-9]{6}$/.test(form.pincode)) {
-      return "Please enter a valid 6-digit pincode.";
+    if (!formData.pincode.trim()) {
+      newErrors.pincode = "Please enter your pincode.";
+    } else if (!/^\d{6}$/.test(formData.pincode.trim())) {
+      newErrors.pincode =
+        "Please enter a valid 6-digit pincode.";
     }
 
-    return "";
-  }
+    setErrors(newErrors);
 
-  async function handlePlaceOrder() {
-    setError("");
+    return Object.keys(newErrors).length === 0;
+  };
 
-    const validationError = validateForm();
+  const handlePlaceOrder = async () => {
+    if (!product) return;
 
-    if (validationError) {
-      setError(validationError);
+    const valid = validateForm();
+
+    if (!valid) {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+
       return;
     }
 
-    try {
-      setLoading(true);
+    setPlacingOrder(true);
 
+    try {
       /*
-       * Later you can insert the order into Supabase here.
+       * Order data prepared for Supabase/backend integration.
+       * Currently the checkout UI completes the order flow
+       * and redirects to the orders page.
        */
+
+      const orderData = {
+        product_id: product.id,
+        product_name: product.name,
+        quantity: product.quantity,
+        color: product.color,
+        price: product.price,
+        subtotal,
+        discount,
+        delivery_charge: deliveryCharge,
+        total,
+        delivery_method: deliveryMethod,
+        payment_method: paymentMethod,
+        customer: formData,
+      };
+
+      console.log("PRIMECART ORDER:", orderData);
 
       await new Promise((resolve) =>
         setTimeout(resolve, 1200)
       );
 
+      localStorage.removeItem("primecart_buy_now");
+
       router.push("/dashboard/orders");
-    } catch (err) {
-      console.error("Place order error:", err);
-      setError("Unable to place your order. Please try again.");
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error("Place order error:", error);
+      setPlacingOrder(false);
     }
+  };
+
+  if (loadingProduct) {
+    return <CheckoutSkeleton />;
+  }
+
+  if (!product) {
+    return null;
   }
 
   return (
-    <main className="min-h-screen bg-[#faf8f3] text-[#111]">
-
+    <div className="min-h-screen bg-[#faf8f3] text-[#171717]">
       {/* HEADER */}
-
-      <header className="sticky top-0 z-40 border-b border-[#e8e4da] bg-white">
-        <div className="mx-auto flex h-[72px] max-w-[1400px] items-center justify-between px-4 lg:px-6">
-
+      <header className="sticky top-0 z-50 border-b border-[#eadfca] bg-white/95 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link
             href="/dashboard"
-            className="flex items-center gap-3"
+            className="flex items-center gap-2"
           >
-            <img
-              src="/logo.png"
-              alt="PrimeCart"
-              className="h-11 w-11 object-contain"
-            />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#D4AF37] text-white">
+              <ShoppingBag size={20} />
+            </div>
 
             <div>
-              <h1 className="text-[24px] font-black tracking-tight">
-                Prime
-                <span className="text-[#D4AF37]">
-                  Cart
-                </span>
-              </h1>
+              <p className="text-lg font-extrabold tracking-tight">
+                Prime<span className="text-[#b8941f]">Cart</span>
+              </p>
 
-              <p className="-mt-1 text-[9px] font-medium tracking-[1px] text-gray-500">
-                SHOP MORE. PAY LESS.
+              <p className="hidden text-[10px] font-medium uppercase tracking-[0.18em] text-gray-400 sm:block">
+                Secure Checkout
               </p>
             </div>
           </Link>
 
-          <div className="hidden items-center gap-2 text-sm font-semibold text-gray-600 sm:flex">
-            <ShieldCheck
-              size={19}
-              className="text-[#D4AF37]"
-            />
+          <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 sm:text-sm">
+            <Lock size={15} />
             Secure Checkout
           </div>
         </div>
       </header>
 
-      {/* CONTENT */}
+      {/* PROGRESS */}
+      <div className="border-b border-[#eadfca] bg-white">
+        <div className="mx-auto flex max-w-7xl items-center justify-center px-4 py-4 sm:px-6 lg:px-8">
+          <CheckoutStep
+            number="1"
+            label="Checkout"
+            active
+          />
 
-      <div className="mx-auto max-w-[1400px] px-4 py-7 lg:px-6 lg:py-10">
+          <div className="mx-2 h-px w-10 bg-[#D4AF37] sm:mx-4 sm:w-20" />
 
-        {/* TOP */}
+          <CheckoutStep
+            number="2"
+            label="Payment"
+            active
+          />
+
+          <div className="mx-2 h-px w-10 bg-gray-200 sm:mx-4 sm:w-20" />
+
+          <CheckoutStep
+            number="3"
+            label="Confirmation"
+          />
+        </div>
+      </div>
+
+      {/* MAIN */}
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        {/* BACK */}
+        <Link
+          href="/dashboard/products"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-gray-600 transition hover:text-[#b8941f]"
+        >
+          <ArrowLeft size={17} />
+          Continue Shopping
+        </Link>
 
         <div className="mb-8">
-
-          <Link
-            href="/dashboard/cart"
-            className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-gray-600 transition hover:text-[#b58f21]"
-          >
-            <ArrowLeft size={17} />
-            Back to Cart
-          </Link>
-
-          <h2 className="text-3xl font-black tracking-tight sm:text-4xl">
+          <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
             Checkout
-          </h2>
+          </h1>
 
-          <p className="mt-2 text-sm text-gray-500">
-            Complete your details and place your order securely.
+          <p className="mt-1 text-sm text-gray-500">
+            Complete your order securely and quickly.
           </p>
         </div>
 
-        {/* ERROR */}
-
-        {error && (
-          <div
-            role="alert"
-            className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
-          >
-            {error}
-          </div>
-        )}
-
-        <div className="grid gap-7 lg:grid-cols-[1fr_390px]">
-
+        <div className="grid gap-6 lg:grid-cols-[1fr_390px]">
           {/* LEFT */}
-
           <div className="space-y-6">
-
             {/* DELIVERY ADDRESS */}
+            <section className="rounded-2xl border border-[#eadfca] bg-white p-5 shadow-sm sm:p-6">
+              <SectionHeading
+                icon={<MapPin size={19} />}
+                title="Delivery Address"
+                subtitle="Where should we deliver your order?"
+              />
 
-            <section className="rounded-2xl border border-[#e7e2d8] bg-white p-5 shadow-sm sm:p-7">
-
-              <div className="mb-6 flex items-center gap-3">
-
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f8f2df]">
-                  <MapPin
-                    size={21}
-                    className="text-[#c29620]"
-                  />
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-bold">
-                    Delivery Address
-                  </h3>
-
-                  <p className="text-xs text-gray-500">
-                    Where should we deliver your order?
-                  </p>
-                </div>
-
-              </div>
-
-              <div className="grid gap-5 sm:grid-cols-2">
-
+              <div className="mt-6 grid gap-5 sm:grid-cols-2">
                 <Input
                   label="Full Name"
                   placeholder="Enter your full name"
-                  value={form.fullName}
+                  value={formData.fullName}
                   onChange={(value) =>
                     updateField("fullName", value)
                   }
+                  error={errors.fullName}
+                  icon={<User size={16} />}
                 />
 
                 <Input
                   label="Mobile Number"
                   placeholder="10-digit mobile number"
-                  value={form.mobile}
-                  maxLength={10}
-                  inputMode="numeric"
+                  value={formData.mobile}
                   onChange={(value) =>
                     updateField(
                       "mobile",
                       value.replace(/\D/g, "").slice(0, 10)
                     )
                   }
+                  error={errors.mobile}
+                  icon={<Phone size={16} />}
                 />
 
                 <div className="sm:col-span-2">
                   <Input
                     label="Complete Address"
-                    placeholder="House no, building, street, area"
-                    value={form.address}
+                    placeholder="House / Flat / Street / Area"
+                    value={formData.address}
                     onChange={(value) =>
                       updateField("address", value)
                     }
+                    error={errors.address}
+                    multiline
+                    icon={<MapPin size={16} />}
                   />
                 </div>
 
                 <Input
                   label="City"
                   placeholder="Enter city"
-                  value={form.city}
+                  value={formData.city}
                   onChange={(value) =>
                     updateField("city", value)
                   }
+                  error={errors.city}
                 />
 
                 <Input
                   label="State"
                   placeholder="Enter state"
-                  value={form.state}
+                  value={formData.state}
                   onChange={(value) =>
                     updateField("state", value)
                   }
+                  error={errors.state}
                 />
 
                 <Input
                   label="Pincode"
                   placeholder="6-digit pincode"
-                  value={form.pincode}
-                  maxLength={6}
-                  inputMode="numeric"
+                  value={formData.pincode}
                   onChange={(value) =>
                     updateField(
                       "pincode",
                       value.replace(/\D/g, "").slice(0, 6)
                     )
                   }
+                  error={errors.pincode}
+                />
+              </div>
+            </section>
+
+            {/* DELIVERY OPTIONS */}
+            <section className="rounded-2xl border border-[#eadfca] bg-white p-5 shadow-sm sm:p-6">
+              <SectionHeading
+                icon={<Truck size={19} />}
+                title="Delivery Options"
+                subtitle="Choose how you want your order delivered."
+              />
+
+              <div className="mt-5 space-y-3">
+                <DeliveryOption
+                  selected={deliveryMethod === "standard"}
+                  onClick={() =>
+                    setDeliveryMethod("standard")
+                  }
+                  title="Standard Delivery"
+                  description="Delivery within 3–5 business days"
+                  price={
+                    standardDelivery === 0
+                      ? "FREE"
+                      : "₹49"
+                  }
+                  icon={<Package size={20} />}
                 />
 
+                <DeliveryOption
+                  selected={deliveryMethod === "express"}
+                  onClick={() =>
+                    setDeliveryMethod("express")
+                  }
+                  title="Express Delivery"
+                  description="Faster delivery within 1–2 business days"
+                  price="₹99"
+                  icon={<Truck size={20} />}
+                />
               </div>
             </section>
 
             {/* PAYMENT */}
+            <section className="rounded-2xl border border-[#eadfca] bg-white p-5 shadow-sm sm:p-6">
+              <SectionHeading
+                icon={<WalletCards size={19} />}
+                title="Payment Method"
+                subtitle="Select your preferred payment option."
+              />
 
-            <section className="rounded-2xl border border-[#e7e2d8] bg-white p-5 shadow-sm sm:p-7">
-
-              <div className="mb-6 flex items-center gap-3">
-
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f8f2df]">
-                  <CreditCard
-                    size={21}
-                    className="text-[#c29620]"
-                  />
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-bold">
-                    Payment Method
-                  </h3>
-
-                  <p className="text-xs text-gray-500">
-                    Choose your preferred payment option.
-                  </p>
-                </div>
-
-              </div>
-
-              <div className="space-y-3">
-
+              <div className="mt-5 space-y-3">
                 <PaymentOption
                   selected={paymentMethod === "cod"}
                   onClick={() =>
                     setPaymentMethod("cod")
                   }
-                  icon={<Banknote size={21} />}
                   title="Cash on Delivery"
                   description="Pay when your order arrives"
+                  icon={<Banknote size={20} />}
                 />
 
                 <PaymentOption
@@ -341,9 +469,9 @@ export default function CheckoutPage() {
                   onClick={() =>
                     setPaymentMethod("upi")
                   }
-                  icon={<Wallet size={21} />}
                   title="UPI"
-                  description="Pay securely using UPI"
+                  description="Google Pay, PhonePe, Paytm & more"
+                  icon={<Smartphone size={20} />}
                 />
 
                 <PaymentOption
@@ -351,230 +479,374 @@ export default function CheckoutPage() {
                   onClick={() =>
                     setPaymentMethod("card")
                   }
-                  icon={<CreditCard size={21} />}
                   title="Credit / Debit Card"
-                  description="Visa, Mastercard and more"
+                  description="Visa, Mastercard, RuPay & more"
+                  icon={<CreditCard size={20} />}
                 />
-
               </div>
+
+              {paymentMethod !== "cod" && (
+                <div className="mt-4 rounded-xl border border-[#eadfca] bg-[#faf8f3] p-4">
+                  <div className="flex items-start gap-3">
+                    <ShieldCheck
+                      size={19}
+                      className="mt-0.5 shrink-0 text-[#b8941f]"
+                    />
+
+                    <div>
+                      <p className="text-sm font-bold">
+                        Secure Online Payment
+                      </p>
+
+                      <p className="mt-1 text-xs leading-5 text-gray-500">
+                        You will be redirected to our secure
+                        payment gateway after placing the order.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </section>
 
             {/* SECURITY */}
+            <section className="rounded-2xl border border-[#eadfca] bg-white p-5 shadow-sm sm:p-6">
+              <div className="grid gap-4 sm:grid-cols-3">
+                <SecurityItem
+                  icon={<Lock size={18} />}
+                  title="Secure Checkout"
+                  text="Your information is protected."
+                />
 
-            <div className="grid gap-4 sm:grid-cols-3">
+                <SecurityItem
+                  icon={<BadgeCheck size={18} />}
+                  title="Genuine Products"
+                  text="100% authentic products."
+                />
 
-              <SecurityItem
-                icon={<ShieldCheck size={21} />}
-                title="Secure Payment"
-                text="100% protected"
-              />
-
-              <SecurityItem
-                icon={<Truck size={21} />}
-                title="Fast Delivery"
-                text="Quick doorstep delivery"
-              />
-
-              <SecurityItem
-                icon={<CheckCircle2 size={21} />}
-                title="Easy Returns"
-                text="Simple return process"
-              />
-
-            </div>
+                <SecurityItem
+                  icon={<Truck size={18} />}
+                  title="Easy Delivery"
+                  text="Reliable doorstep delivery."
+                />
+              </div>
+            </section>
           </div>
 
-          {/* RIGHT */}
+          {/* RIGHT SUMMARY */}
+          <aside className="lg:sticky lg:top-24 lg:h-fit">
+            <section className="overflow-hidden rounded-2xl border border-[#eadfca] bg-white shadow-sm">
+              <div className="border-b border-[#eadfca] p-5 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-black">
+                    Order Summary
+                  </h2>
 
-          <aside className="h-fit lg:sticky lg:top-[95px]">
-
-            <div className="rounded-2xl border border-[#e7e2d8] bg-white p-5 shadow-sm sm:p-6">
-
-              <h3 className="mb-5 text-xl font-bold">
-                Order Summary
-              </h3>
+                  <span className="rounded-full bg-[#faf8f3] px-3 py-1 text-xs font-bold text-gray-500">
+                    {product.quantity} item
+                    {product.quantity > 1 ? "s" : ""}
+                  </span>
+                </div>
+              </div>
 
               {/* PRODUCT */}
+              <div className="border-b border-[#eadfca] p-5 sm:p-6">
+                <div className="flex gap-4">
+                  <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-[#eadfca] bg-[#faf8f3]">
+                    {product.image_url ? (
+                      <Image
+                        src={product.image_url}
+                        alt={product.name}
+                        fill
+                        className="object-contain p-2"
+                        sizes="96px"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-xs text-gray-400">
+                        No Image
+                      </div>
+                    )}
+                  </div>
 
-              <div className="flex gap-4 border-b border-[#eeeeee] pb-5">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[#b8941f]">
+                      {product.brand || "PrimeCart"}
+                    </p>
 
-                <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl bg-[#f7f6f2] p-2">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="h-full w-full object-contain"
-                  />
-                </div>
+                    <h3 className="mt-1 line-clamp-2 text-sm font-bold leading-5">
+                      {product.name}
+                    </h3>
 
-                <div className="min-w-0">
+                    {product.color && (
+                      <p className="mt-2 text-xs text-gray-500">
+                        Color:{" "}
+                        <span className="font-semibold text-gray-700">
+                          {product.color}
+                        </span>
+                      </p>
+                    )}
 
-                  <p className="text-xs font-semibold text-[#c29620]">
-                    {product.brand}
-                  </p>
-
-                  <h4 className="mt-1 line-clamp-2 text-sm font-bold">
-                    {product.name}
-                  </h4>
-
-                  <p className="mt-2 text-xs text-gray-500">
-                    Quantity: {product.quantity}
-                  </p>
-
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="font-bold">
-                      ₹{product.price.toLocaleString("en-IN")}
-                    </span>
-
-                    <span className="text-xs text-gray-400 line-through">
-                      ₹
-                      {product.originalPrice.toLocaleString(
-                        "en-IN"
-                      )}
-                    </span>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Quantity:{" "}
+                      <span className="font-semibold text-gray-700">
+                        {product.quantity}
+                      </span>
+                    </p>
                   </div>
                 </div>
               </div>
 
               {/* PRICE */}
-
-              <div className="space-y-3 border-b border-[#eeeeee] py-5">
-
+              <div className="space-y-3 p-5 sm:p-6">
                 <PriceRow
                   label="Subtotal"
-                  value={`₹${subtotal.toLocaleString(
-                    "en-IN"
-                  )}`}
+                  value={formatCurrency(subtotal)}
                 />
+
+                {discount > 0 && (
+                  <PriceRow
+                    label="Product Discount"
+                    value={`- ${formatCurrency(discount)}`}
+                    green
+                  />
+                )}
 
                 <PriceRow
                   label="Delivery"
                   value={
-                    delivery === 0
+                    deliveryCharge === 0
                       ? "FREE"
-                      : `₹${delivery}`
+                      : formatCurrency(deliveryCharge)
                   }
-                  valueClass={
-                    delivery === 0
-                      ? "text-green-600"
-                      : ""
-                  }
+                  green={deliveryCharge === 0}
                 />
 
-                <PriceRow
-                  label="Product Discount"
-                  value={`- ₹${discount.toLocaleString(
-                    "en-IN"
-                  )}`}
-                  valueClass="text-green-600"
-                />
+                <div className="my-4 border-t border-dashed border-[#e5dcc9]" />
 
+                <div className="flex items-end justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-bold text-gray-600">
+                      Total Amount
+                    </p>
+
+                    <p className="mt-1 text-xs text-gray-400">
+                      Inclusive of all applicable charges
+                    </p>
+                  </div>
+
+                  <p className="text-2xl font-black text-[#b8941f]">
+                    {formatCurrency(total)}
+                  </p>
+                </div>
+
+                {/* PLACE ORDER */}
+                <button
+                  type="button"
+                  onClick={handlePlaceOrder}
+                  disabled={placingOrder}
+                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#D4AF37] px-5 py-3.5 text-sm font-extrabold text-white shadow-sm transition hover:bg-[#b8941f] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {placingOrder ? (
+                    <>
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                      Processing Order...
+                    </>
+                  ) : (
+                    <>
+                      {paymentMethod === "cod"
+                        ? "Place Order"
+                        : "Continue to Payment"}
+
+                      <ChevronRight size={18} />
+                    </>
+                  )}
+                </button>
+
+                <div className="mt-3 flex items-center justify-center gap-2 text-[11px] font-medium text-gray-400">
+                  <Lock size={13} />
+                  Safe & secure checkout
+                </div>
               </div>
+            </section>
 
-              {/* TOTAL */}
+            {/* SAVINGS */}
+            {discount > 0 && (
+              <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-100 text-green-600">
+                    <Check size={18} />
+                  </div>
 
-              <div className="flex items-center justify-between py-5">
+                  <div>
+                    <p className="text-sm font-bold text-green-700">
+                      You&apos;re saving{" "}
+                      {formatCurrency(discount)}
+                    </p>
 
-                <span className="text-base font-bold">
-                  Total Amount
-                </span>
-
-                <span className="text-2xl font-black text-[#111]">
-                  ₹{total.toLocaleString("en-IN")}
-                </span>
-
+                    <p className="mt-0.5 text-xs text-green-600">
+                      Great choice! Your discount has been applied.
+                    </p>
+                  </div>
+                </div>
               </div>
-
-              {/* PLACE ORDER */}
-
-              <button
-                type="button"
-                onClick={handlePlaceOrder}
-                disabled={loading}
-                className="flex h-[56px] w-full items-center justify-center gap-2 rounded-xl bg-[#D4AF37] text-[15px] font-bold text-white shadow-[0_7px_20px_rgba(212,175,55,0.25)] transition hover:bg-[#bd9828] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {loading ? (
-                  <>
-                    <Loader2
-                      size={19}
-                      className="animate-spin"
-                    />
-                    Placing Order...
-                  </>
-                ) : (
-                  <>
-                    <Package size={19} />
-                    Place Order
-                  </>
-                )}
-              </button>
-
-              <p className="mt-4 text-center text-[11px] leading-5 text-gray-500">
-                By placing this order, you agree to PrimeCart's
-                terms and conditions.
-              </p>
-
-            </div>
+            )}
           </aside>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
 
 /* =========================================================
-   INPUT
+   COMPONENTS
 ========================================================= */
+
+function CheckoutStep({
+  number,
+  label,
+  active = false,
+}: {
+  number: string;
+  label: string;
+  active?: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <div
+        className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-black ${
+          active
+            ? "bg-[#D4AF37] text-white"
+            : "bg-gray-100 text-gray-400"
+        }`}
+      >
+        {number}
+      </div>
+
+      <span
+        className={`hidden text-xs font-bold sm:block ${
+          active ? "text-gray-800" : "text-gray-400"
+        }`}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function SectionHeading({
+  icon,
+  title,
+  subtitle,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#faf8f3] text-[#b8941f]">
+        {icon}
+      </div>
+
+      <div>
+        <h2 className="text-base font-black sm:text-lg">
+          {title}
+        </h2>
+
+        <p className="mt-0.5 text-xs text-gray-500 sm:text-sm">
+          {subtitle}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 function Input({
   label,
   placeholder,
   value,
   onChange,
-  maxLength,
-  inputMode,
+  error,
+  icon,
+  multiline = false,
 }: {
   label: string;
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
-  maxLength?: number;
-  inputMode?: "numeric" | "text";
+  error?: string;
+  icon?: React.ReactNode;
+  multiline?: boolean;
 }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-bold text-[#222]">
+      <label className="mb-2 block text-xs font-bold text-gray-700">
         {label}
       </label>
 
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        maxLength={maxLength}
-        inputMode={inputMode}
-        className="h-[50px] w-full rounded-xl border border-[#dedbd3] bg-white px-4 text-sm text-[#222] outline-none transition placeholder:text-gray-400 focus:border-[#D4AF37] focus:ring-4 focus:ring-[#D4AF37]/10"
-      />
+      <div className="relative">
+        {icon && (
+          <div className="pointer-events-none absolute left-3 top-3.5 text-gray-400">
+            {icon}
+          </div>
+        )}
+
+        {multiline ? (
+          <textarea
+            value={value}
+            onChange={(event) =>
+              onChange(event.target.value)
+            }
+            placeholder={placeholder}
+            rows={3}
+            className={`w-full resize-none rounded-xl border bg-white px-3 py-3 text-sm outline-none transition placeholder:text-gray-400 ${
+              icon ? "pl-10" : ""
+            } ${
+              error
+                ? "border-red-300 focus:border-red-500"
+                : "border-[#e5dcc9] focus:border-[#D4AF37]"
+            }`}
+          />
+        ) : (
+          <input
+            value={value}
+            onChange={(event) =>
+              onChange(event.target.value)
+            }
+            placeholder={placeholder}
+            className={`h-12 w-full rounded-xl border bg-white px-3 text-sm outline-none transition placeholder:text-gray-400 ${
+              icon ? "pl-10" : ""
+            } ${
+              error
+                ? "border-red-300 focus:border-red-500"
+                : "border-[#e5dcc9] focus:border-[#D4AF37]"
+            }`}
+          />
+        )}
+      </div>
+
+      {error && (
+        <p className="mt-1.5 text-xs font-medium text-red-500">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
 
-/* =========================================================
-   PAYMENT OPTION
-========================================================= */
-
-function PaymentOption({
+function DeliveryOption({
   selected,
   onClick,
-  icon,
   title,
   description,
+  price,
+  icon,
 }: {
   selected: boolean;
   onClick: () => void;
-  icon: React.ReactNode;
   title: string;
   description: string;
+  price: string;
+  icon: React.ReactNode;
 }) {
   return (
     <button
@@ -582,74 +854,130 @@ function PaymentOption({
       onClick={onClick}
       className={`flex w-full items-center gap-4 rounded-xl border p-4 text-left transition ${
         selected
-          ? "border-[#D4AF37] bg-[#fffaf0] shadow-sm"
-          : "border-[#e2e0da] bg-white hover:border-[#D4AF37]"
+          ? "border-[#D4AF37] bg-[#fffaf0]"
+          : "border-[#e5dcc9] bg-white hover:border-[#D4AF37]"
       }`}
     >
       <div
-        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
           selected
             ? "bg-[#D4AF37] text-white"
-            : "bg-[#f5f4ef] text-gray-600"
+            : "bg-[#faf8f3] text-gray-500"
         }`}
       >
         {icon}
       </div>
 
-      <div className="flex-1">
-        <p className="text-sm font-bold text-[#222]">
-          {title}
-        </p>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-bold">{title}</p>
 
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-0.5 text-xs text-gray-500">
           {description}
         </p>
       </div>
 
-      <div
-        className={`flex h-5 w-5 items-center justify-center rounded-full border ${
-          selected
-            ? "border-[#D4AF37]"
-            : "border-gray-300"
-        }`}
-      >
-        {selected && (
-          <div className="h-2.5 w-2.5 rounded-full bg-[#D4AF37]" />
-        )}
+      <div className="text-right">
+        <p
+          className={`text-sm font-black ${
+            price === "FREE"
+              ? "text-green-600"
+              : "text-gray-800"
+          }`}
+        >
+          {price}
+        </p>
+
+        <div
+          className={`mt-1 ml-auto flex h-5 w-5 items-center justify-center rounded-full border ${
+            selected
+              ? "border-[#D4AF37] bg-[#D4AF37] text-white"
+              : "border-gray-300"
+          }`}
+        >
+          {selected && <Check size={12} />}
+        </div>
       </div>
     </button>
   );
 }
 
-/* =========================================================
-   PRICE ROW
-========================================================= */
+function PaymentOption({
+  selected,
+  onClick,
+  title,
+  description,
+  icon,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex w-full items-center gap-4 rounded-xl border p-4 text-left transition ${
+        selected
+          ? "border-[#D4AF37] bg-[#fffaf0]"
+          : "border-[#e5dcc9] bg-white hover:border-[#D4AF37]"
+      }`}
+    >
+      <div
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+          selected
+            ? "bg-[#D4AF37] text-white"
+            : "bg-[#faf8f3] text-gray-500"
+        }`}
+      >
+        {icon}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-bold">{title}</p>
+
+        <p className="mt-0.5 text-xs text-gray-500">
+          {description}
+        </p>
+      </div>
+
+      <div
+        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+          selected
+            ? "border-[#D4AF37] bg-[#D4AF37] text-white"
+            : "border-gray-300"
+        }`}
+      >
+        {selected && <Check size={12} />}
+      </div>
+    </button>
+  );
+}
 
 function PriceRow({
   label,
   value,
-  valueClass = "",
+  green = false,
 }: {
   label: string;
   value: string;
-  valueClass?: string;
+  green?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between text-sm">
-      <span className="text-gray-600">
-        {label}
-      </span>
+    <div className="flex items-center justify-between gap-4 text-sm">
+      <span className="text-gray-500">{label}</span>
 
-      <span className={`font-semibold ${valueClass}`}>
+      <span
+        className={`font-bold ${
+          green ? "text-green-600" : "text-gray-800"
+        }`}
+      >
         {value}
       </span>
     </div>
   );
 }
-
-/* =========================================================
-   SECURITY ITEM
-========================================================= */
 
 function SecurityItem({
   icon,
@@ -661,18 +989,47 @@ function SecurityItem({
   text: string;
 }) {
   return (
-    <div className="rounded-xl border border-[#e7e2d8] bg-white p-4">
-      <div className="mb-2 text-[#c29620]">
+    <div className="flex items-start gap-3">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#faf8f3] text-[#b8941f]">
         {icon}
       </div>
 
-      <p className="text-xs font-bold">
-        {title}
-      </p>
+      <div>
+        <p className="text-xs font-bold">{title}</p>
 
-      <p className="mt-1 text-[10px] text-gray-500">
-        {text}
-      </p>
+        <p className="mt-0.5 text-[11px] leading-4 text-gray-400">
+          {text}
+        </p>
+      </div>
     </div>
   );
+}
+
+function CheckoutSkeleton() {
+  return (
+    <div className="min-h-screen animate-pulse bg-[#faf8f3]">
+      <div className="h-16 border-b border-[#eadfca] bg-white" />
+
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="h-8 w-40 rounded-lg bg-gray-200" />
+
+        <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_390px]">
+          <div className="space-y-6">
+            <div className="h-72 rounded-2xl bg-white" />
+            <div className="h-52 rounded-2xl bg-white" />
+            <div className="h-64 rounded-2xl bg-white" />
+          </div>
+
+          <div className="h-[560px] rounded-2xl bg-white" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function formatCurrency(value: number) {
+  return `₹${value.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
