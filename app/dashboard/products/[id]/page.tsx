@@ -26,6 +26,43 @@ import {
 
 import { createClient } from "@/lib/supabase/client";
 
+/*
+|--------------------------------------------------------------------------
+| IMAGE HELPER
+|--------------------------------------------------------------------------
+*/
+
+const getProductImage = (image: string | null) => {
+  if (!image) return "";
+
+  const cleanImage = image.trim();
+
+  if (!cleanImage) return "";
+
+  if (
+    cleanImage.startsWith("http://") ||
+    cleanImage.startsWith("https://")
+  ) {
+    return cleanImage;
+  }
+
+  if (cleanImage.startsWith("/products/")) {
+    return cleanImage;
+  }
+
+  if (cleanImage.startsWith("/")) {
+    return `/products${cleanImage}`;
+  }
+
+  return `/products/${cleanImage}`;
+};
+
+/*
+|--------------------------------------------------------------------------
+| PRODUCT TYPE
+|--------------------------------------------------------------------------
+*/
+
 type Product = {
   id: string;
   category_id: string | null;
@@ -51,6 +88,25 @@ type Category = {
   slug: string;
 };
 
+/*
+|--------------------------------------------------------------------------
+| PRODUCT IMAGE TYPE
+|--------------------------------------------------------------------------
+*/
+
+type ProductImage = {
+  id: string;
+  product_id: string;
+  image_url: string;
+  display_order: number;
+};
+
+/*
+|--------------------------------------------------------------------------
+| PAGE
+|--------------------------------------------------------------------------
+*/
+
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -66,7 +122,14 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [wishlist, setWishlist] = useState(false);
 
+  /*
+  |--------------------------------------------------------------------------
+  | PRODUCT GALLERY
+  |--------------------------------------------------------------------------
+  */
+
   const [selectedImage, setSelectedImage] = useState("");
+  const [productImages, setProductImages] = useState<ProductImage[]>([]);
 
   const [addingToCart, setAddingToCart] = useState(false);
   const [buyingNow, setBuyingNow] = useState(false);
@@ -90,6 +153,12 @@ export default function ProductDetailPage() {
         setErrorMessage("");
 
         const supabase = createClient();
+
+        /*
+        |--------------------------------------------------------------------------
+        | FETCH MAIN PRODUCT
+        |--------------------------------------------------------------------------
+        */
 
         const { data, error } = await supabase
           .from("products")
@@ -118,27 +187,86 @@ export default function ProductDetailPage() {
 
         /*
         |--------------------------------------------------------------------------
-        | SET DEFAULT IMAGE
+        | FETCH PRODUCT GALLERY IMAGES
         |--------------------------------------------------------------------------
         */
 
-        if (data.image_url) {
-          const image = String(data.image_url).trim();
+        const {
+          data: galleryData,
+          error: galleryError,
+        } = await supabase
+          .from("product_images")
+          .select(
+            "id,product_id,image_url,display_order"
+          )
+          .eq("product_id", data.id)
+          .order("display_order", {
+            ascending: true,
+          });
 
-          if (
-            image.startsWith("http://") ||
-            image.startsWith("https://")
-          ) {
-            setSelectedImage(image);
-          } else if (image.startsWith("/products/")) {
-            setSelectedImage(image);
-          } else if (image.startsWith("/")) {
-            setSelectedImage(`/products${image}`);
-          } else {
-            setSelectedImage(`/products/${image}`);
-          }
+        console.log(
+          "PRODUCT GALLERY:",
+          galleryData
+        );
+
+        console.log(
+          "PRODUCT GALLERY ERROR:",
+          galleryError
+        );
+
+        if (galleryError) {
+          console.error(
+            "Product gallery error:",
+            galleryError
+          );
+
+          setProductImages([]);
+
+          /*
+          |--------------------------------------------------------------------------
+          | FALLBACK TO PRODUCTS IMAGE_URL
+          |--------------------------------------------------------------------------
+          */
+
+          setSelectedImage(
+            getProductImage(data.image_url)
+          );
         } else {
-          setSelectedImage("");
+          const normalizedImages: ProductImage[] =
+            (galleryData || []).map((item) => ({
+              id: String(item.id),
+              product_id: String(item.product_id),
+              image_url: getProductImage(
+                String(item.image_url || "")
+              ),
+              display_order: Number(
+                item.display_order || 1
+              ),
+            }));
+
+          setProductImages(normalizedImages);
+
+          /*
+          |--------------------------------------------------------------------------
+          | FIRST GALLERY IMAGE AS MAIN IMAGE
+          |--------------------------------------------------------------------------
+          */
+
+          if (normalizedImages.length > 0) {
+            setSelectedImage(
+              normalizedImages[0].image_url
+            );
+          } else {
+            /*
+            |--------------------------------------------------------------------------
+            | FALLBACK IF NO GALLERY IMAGE
+            |--------------------------------------------------------------------------
+            */
+
+            setSelectedImage(
+              getProductImage(data.image_url)
+            );
+          }
         }
 
         /*
@@ -148,18 +276,24 @@ export default function ProductDetailPage() {
         */
 
         if (data.category_id) {
-          const { data: categoryData } = await supabase
-            .from("categories")
-            .select("id,name,slug")
-            .eq("id", data.category_id)
-            .maybeSingle();
+          const { data: categoryData } =
+            await supabase
+              .from("categories")
+              .select("id,name,slug")
+              .eq("id", data.category_id)
+              .maybeSingle();
 
           if (categoryData) {
-            setCategory(categoryData as Category);
+            setCategory(
+              categoryData as Category
+            );
           }
         }
       } catch (error) {
-        console.error("Product detail error:", error);
+        console.error(
+          "Product detail error:",
+          error
+        );
 
         setErrorMessage(
           "Something went wrong while loading this product."
@@ -185,11 +319,18 @@ export default function ProductDetailPage() {
       <main className="min-h-screen bg-white">
 
         {/* TOP BAR */}
+
         <div className="hidden border-b border-[#f0f0f0] bg-[#fffdf7] md:block">
           <div className="mx-auto flex h-9 max-w-[1400px] items-center justify-between px-5 text-[11px] text-gray-500">
+
             <div className="flex gap-8">
-              <span>📍 Deliver to Mumbai, India</span>
-              <span>🚚 Free Shipping on orders above ₹499</span>
+              <span>
+                📍 Deliver to Mumbai, India
+              </span>
+
+              <span>
+                🚚 Free Shipping on orders above ₹499
+              </span>
             </div>
 
             <div className="flex gap-8">
@@ -197,30 +338,40 @@ export default function ProductDetailPage() {
               <span>Track Order</span>
               <span>Help & Support</span>
             </div>
+
           </div>
         </div>
 
         {/* HEADER */}
+
         <header className="border-b border-gray-100 bg-white">
+
           <div className="mx-auto flex h-[78px] max-w-[1400px] items-center px-5">
 
             <div className="flex items-center gap-2">
+
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#D4AF37] text-white">
                 <ShoppingCart size={24} />
               </div>
 
               <div>
+
                 <div className="text-[24px] font-black">
-                  Prime<span className="text-[#D4AF37]">Cart</span>
+                  Prime
+                  <span className="text-[#D4AF37]">
+                    Cart
+                  </span>
                 </div>
 
                 <div className="text-[8px] font-bold tracking-[0.2em] text-gray-400">
                   SHOP • SAVE • SMILE
                 </div>
+
               </div>
+
             </div>
 
-            <div className="ml-10 hidden h-11 flex-1 max-w-[650px] overflow-hidden rounded-xl border border-gray-200 bg-gray-50 lg:flex">
+            <div className="ml-10 hidden h-11 max-w-[650px] flex-1 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 lg:flex">
 
               <button
                 type="button"
@@ -231,11 +382,16 @@ export default function ProductDetailPage() {
               </button>
 
               <div className="flex flex-1 items-center gap-3 px-4">
-                <Search size={18} className="text-gray-400" />
+
+                <Search
+                  size={18}
+                  className="text-gray-400"
+                />
 
                 <span className="text-sm text-gray-400">
                   Search for products, brands and more...
                 </span>
+
               </div>
 
               <button
@@ -244,14 +400,17 @@ export default function ProductDetailPage() {
               >
                 <Search size={19} />
               </button>
+
             </div>
 
             <div className="ml-auto flex items-center gap-6">
 
               <div className="hidden items-center gap-2 md:flex">
+
                 <User size={23} />
 
                 <div className="leading-tight">
+
                   <p className="text-[10px] text-gray-400">
                     Hello
                   </p>
@@ -259,21 +418,27 @@ export default function ProductDetailPage() {
                   <p className="text-xs font-bold">
                     Account
                   </p>
+
                 </div>
+
               </div>
 
               <div className="relative">
+
                 <Heart size={23} />
 
                 <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#D4AF37] text-[9px] text-white">
                   0
                 </span>
+
               </div>
 
               <div className="flex items-center gap-2">
+
                 <ShoppingCart size={24} />
 
                 <div className="hidden leading-tight sm:block">
+
                   <p className="text-[10px] text-gray-400">
                     Cart
                   </p>
@@ -281,14 +446,19 @@ export default function ProductDetailPage() {
                   <p className="text-xs font-bold">
                     ₹0.00
                   </p>
+
                 </div>
+
               </div>
 
             </div>
+
           </div>
+
         </header>
 
         {/* SKELETON */}
+
         <div className="mx-auto max-w-[1400px] px-5 py-8">
 
           <div className="h-4 w-72 animate-pulse rounded bg-gray-200" />
@@ -298,16 +468,25 @@ export default function ProductDetailPage() {
             <div className="h-[570px] animate-pulse rounded-2xl bg-gray-100" />
 
             <div className="space-y-5">
+
               <div className="h-5 w-32 animate-pulse rounded bg-gray-200" />
+
               <div className="h-12 w-4/5 animate-pulse rounded bg-gray-200" />
+
               <div className="h-6 w-64 animate-pulse rounded bg-gray-200" />
+
               <div className="h-12 w-72 animate-pulse rounded bg-gray-200" />
+
               <div className="h-24 w-full animate-pulse rounded bg-gray-200" />
+
               <div className="h-14 w-full animate-pulse rounded bg-gray-200" />
+
             </div>
 
           </div>
+
         </div>
+
       </main>
     );
   }
@@ -327,10 +506,12 @@ export default function ProductDetailPage() {
           <div className="max-w-md text-center">
 
             <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-gray-100">
+
               <ShoppingBag
                 size={42}
                 className="text-gray-400"
               />
+
             </div>
 
             <h1 className="mt-7 text-3xl font-black">
@@ -338,7 +519,8 @@ export default function ProductDetailPage() {
             </h1>
 
             <p className="mt-3 text-gray-500">
-              {errorMessage || "This product is unavailable."}
+              {errorMessage ||
+                "This product is unavailable."}
             </p>
 
             <Link
@@ -350,63 +532,22 @@ export default function ProductDetailPage() {
             </Link>
 
           </div>
+
         </div>
+
       </main>
     );
   }
 
   /*
   |--------------------------------------------------------------------------
-  | PRODUCT IMAGE PATH
+  | MAIN PRODUCT IMAGE
   |--------------------------------------------------------------------------
   */
 
-  const getProductImage = (image: string | null) => {
-    if (!image) return "";
-
-    const cleanImage = image.trim();
-
-    if (!cleanImage) return "";
-
-    if (
-      cleanImage.startsWith("http://") ||
-      cleanImage.startsWith("https://")
-    ) {
-      return cleanImage;
-    }
-
-    if (cleanImage.startsWith("/products/")) {
-      return cleanImage;
-    }
-
-    if (cleanImage.startsWith("/")) {
-      return `/products${cleanImage}`;
-    }
-
-    return `/products/${cleanImage}`;
-  };
-
-  const productImage = getProductImage(product.image_url);
-
-  /*
-  |--------------------------------------------------------------------------
-  | PRODUCT IMAGES
-  |--------------------------------------------------------------------------
-  |
-  | Current DB has one image_url column.
-  | Therefore all four thumbnails use the same product image.
-  | All four are still clickable.
-  |
-  */
-
-  const productImages = productImage
-    ? [
-        productImage,
-        productImage,
-        productImage,
-        productImage,
-      ]
-    : [];
+  const productImage = getProductImage(
+    product.image_url
+  );
 
   /*
   |--------------------------------------------------------------------------
@@ -425,12 +566,16 @@ export default function ProductDetailPage() {
 
   const rating = Number(product.rating || 4.5);
 
-  const reviews = Number(product.reviews_count || 0);
+  const reviews = Number(
+    product.reviews_count || 0
+  );
 
   const discount =
     originalPrice && originalPrice > price
       ? Math.round(
-          ((originalPrice - price) / originalPrice) * 100
+          ((originalPrice - price) /
+            originalPrice) *
+            100
         )
       : 0;
 
@@ -450,7 +595,9 @@ export default function ProductDetailPage() {
 
   const increaseQuantity = () => {
     setQuantity((current) =>
-      current < stock ? current + 1 : current
+      current < stock
+        ? current + 1
+        : current
     );
   };
 
@@ -461,7 +608,12 @@ export default function ProductDetailPage() {
   */
 
   const handleAddToCart = () => {
-    if (outOfStock || addingToCart) return;
+    if (
+      outOfStock ||
+      addingToCart
+    ) {
+      return;
+    }
 
     setAddingToCart(true);
 
@@ -484,7 +636,13 @@ export default function ProductDetailPage() {
   */
 
   const handleBuyNow = () => {
-    if (outOfStock || buyingNow || !product) return;
+    if (
+      outOfStock ||
+      buyingNow ||
+      !product
+    ) {
+      return;
+    }
 
     setBuyingNow(true);
 
@@ -503,12 +661,20 @@ export default function ProductDetailPage() {
     try {
       localStorage.setItem(
         "primecart_buy_now",
-        JSON.stringify(buyNowProduct)
+        JSON.stringify(
+          buyNowProduct
+        )
       );
 
-      router.push("/dashboard/checkout");
+      router.push(
+        "/dashboard/checkout"
+      );
     } catch (error) {
-      console.error("Buy Now error:", error);
+      console.error(
+        "Buy Now error:",
+        error
+      );
+
       setBuyingNow(false);
     }
   };
@@ -531,6 +697,7 @@ export default function ProductDetailPage() {
         <div className="mx-auto flex h-9 max-w-[1400px] items-center justify-between px-5 text-[11px] font-medium text-gray-500">
 
           <div className="flex items-center gap-8">
+
             <span>
               📍 Deliver to{" "}
               <b className="text-gray-700">
@@ -541,15 +708,19 @@ export default function ProductDetailPage() {
             <span>
               🚚 Free Shipping on orders above ₹499
             </span>
+
           </div>
 
           <div className="flex items-center gap-8">
+
             <span>Download App</span>
             <span>Track Order</span>
             <span>Help & Support</span>
+
           </div>
 
         </div>
+
       </div>
 
       {/* =====================================================
@@ -572,22 +743,27 @@ export default function ProductDetailPage() {
             </div>
 
             <div>
+
               <div className="text-[24px] font-black leading-none">
-                Prime<span className="text-[#D4AF37]">
+
+                Prime
+                <span className="text-[#D4AF37]">
                   Cart
                 </span>
+
               </div>
 
               <div className="mt-1 text-[8px] font-bold tracking-[0.2em] text-gray-400">
                 SHOP • SAVE • SMILE
               </div>
+
             </div>
 
           </Link>
 
           {/* SEARCH */}
 
-          <div className="ml-5 hidden h-11 flex-1 max-w-[650px] overflow-hidden rounded-xl border border-gray-200 bg-gray-50 lg:flex">
+          <div className="ml-5 hidden h-11 max-w-[650px] flex-1 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 lg:flex">
 
             <button
               type="button"
@@ -598,6 +774,7 @@ export default function ProductDetailPage() {
             </button>
 
             <div className="flex flex-1 items-center gap-3 px-4">
+
               <Search
                 size={18}
                 className="text-gray-400"
@@ -606,6 +783,7 @@ export default function ProductDetailPage() {
               <span className="text-sm text-gray-400">
                 Search for products, brands and more...
               </span>
+
             </div>
 
             <button
@@ -626,6 +804,7 @@ export default function ProductDetailPage() {
               <User size={23} />
 
               <div className="leading-tight">
+
                 <p className="text-[10px] text-gray-400">
                   Hello
                 </p>
@@ -633,6 +812,7 @@ export default function ProductDetailPage() {
                 <p className="text-xs font-bold">
                   Account
                 </p>
+
               </div>
 
             </div>
@@ -640,7 +820,9 @@ export default function ProductDetailPage() {
             <button
               type="button"
               onClick={() =>
-                setWishlist((value) => !value)
+                setWishlist(
+                  (value) => !value
+                )
               }
               className="relative"
             >
@@ -663,14 +845,17 @@ export default function ProductDetailPage() {
             <div className="flex items-center gap-2">
 
               <div className="relative">
+
                 <ShoppingCart size={24} />
 
                 <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#D4AF37] text-[9px] text-white">
                   0
                 </span>
+
               </div>
 
               <div className="hidden leading-tight sm:block">
+
                 <p className="text-[10px] text-gray-400">
                   Cart
                 </p>
@@ -678,6 +863,7 @@ export default function ProductDetailPage() {
                 <p className="text-xs font-bold">
                   ₹0.00
                 </p>
+
               </div>
 
             </div>
@@ -685,6 +871,7 @@ export default function ProductDetailPage() {
           </div>
 
         </div>
+
       </header>
 
       {/* =====================================================
@@ -732,6 +919,7 @@ export default function ProductDetailPage() {
           </div>
 
         </div>
+
       </div>
 
       {/* =====================================================
@@ -750,49 +938,96 @@ export default function ProductDetailPage() {
 
             <div className="grid grid-cols-[68px_1fr] gap-4 sm:grid-cols-[78px_1fr]">
 
-              {/* THUMBNAILS */}
+              {/* =================================================
+                  THUMBNAILS
+              ================================================= */}
 
               <div className="flex flex-col gap-3">
 
                 {productImages.length > 0 ? (
-                  productImages.map((image, index) => (
-                    <button
-                      key={`${image}-${index}`}
-                      type="button"
-                      onClick={() => setSelectedImage(image)}
-                      aria-label={`View product image ${index + 1}`}
-                      className={`relative h-[68px] overflow-hidden rounded-xl bg-white transition sm:h-[76px] ${
-                        selectedImage === image
-                          ? "border-2 border-[#D4AF37] shadow-sm"
-                          : "border border-gray-200 hover:border-[#D4AF37]"
-                      }`}
-                    >
-                      <Image
-                        src={image}
-                        alt={`${product.name} image ${index + 1}`}
-                        fill
-                        sizes="78px"
-                        className="object-contain p-2"
-                      />
-                    </button>
-                  ))
+                  productImages.map(
+                    (item, index) => {
+
+                      const image =
+                        item.image_url;
+
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() =>
+                            setSelectedImage(
+                              image
+                            )
+                          }
+                          aria-label={`View product image ${
+                            index + 1
+                          }`}
+                          className={`relative h-[68px] overflow-hidden rounded-xl bg-white transition sm:h-[76px] ${
+                            selectedImage ===
+                            image
+                              ? "border-2 border-[#D4AF37] shadow-sm"
+                              : "border border-gray-200 hover:border-[#D4AF37]"
+                          }`}
+                        >
+
+                          <Image
+                            src={image}
+                            alt={`${product.name} image ${
+                              index + 1
+                            }`}
+                            fill
+                            sizes="78px"
+                            className="object-contain p-2"
+                          />
+
+                        </button>
+                      );
+                    }
+                  )
+                ) : productImage ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSelectedImage(
+                        productImage
+                      )
+                    }
+                    className="relative h-[68px] overflow-hidden rounded-xl border-2 border-[#D4AF37] bg-white sm:h-[76px]"
+                  >
+
+                    <Image
+                      src={productImage}
+                      alt={product.name}
+                      fill
+                      sizes="78px"
+                      className="object-contain p-2"
+                    />
+
+                  </button>
                 ) : (
-                  [1, 2, 3, 4].map((item) => (
-                    <div
-                      key={item}
-                      className="relative flex h-[68px] items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-white sm:h-[76px]"
-                    >
-                      <ShoppingBag
-                        size={25}
-                        className="text-gray-300"
-                      />
-                    </div>
-                  ))
+                  [1, 2, 3, 4].map(
+                    (item) => (
+                      <div
+                        key={item}
+                        className="relative flex h-[68px] items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-white sm:h-[76px]"
+                      >
+
+                        <ShoppingBag
+                          size={25}
+                          className="text-gray-300"
+                        />
+
+                      </div>
+                    )
+                  )
                 )}
 
               </div>
 
-              {/* MAIN IMAGE */}
+              {/* =================================================
+                  MAIN IMAGE
+              ================================================= */}
 
               <div className="relative h-[430px] overflow-hidden rounded-2xl border border-gray-100 bg-[#fcfcfc] sm:h-[560px]">
 
@@ -811,10 +1046,13 @@ export default function ProductDetailPage() {
                 <button
                   type="button"
                   onClick={() =>
-                    setWishlist((value) => !value)
+                    setWishlist(
+                      (value) => !value
+                    )
                   }
                   className="absolute right-5 top-5 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-md"
                 >
+
                   <Heart
                     size={21}
                     className={
@@ -823,11 +1061,16 @@ export default function ProductDetailPage() {
                         : "text-gray-700"
                     }
                   />
+
                 </button>
 
-                {selectedImage || productImage ? (
+                {selectedImage ||
+                productImage ? (
                   <Image
-                    src={selectedImage || productImage}
+                    src={
+                      selectedImage ||
+                      productImage
+                    }
                     alt={product.name}
                     fill
                     priority
@@ -836,11 +1079,13 @@ export default function ProductDetailPage() {
                   />
                 ) : (
                   <div className="flex h-full flex-col items-center justify-center text-gray-400">
+
                     <ShoppingBag size={60} />
 
                     <p className="mt-4 font-semibold">
                       No Image Available
                     </p>
+
                   </div>
                 )}
 
@@ -849,11 +1094,14 @@ export default function ProductDetailPage() {
             </div>
 
             <div className="mt-5 flex items-center justify-center gap-2 text-xs text-gray-400">
+
               <ShieldCheck
                 size={16}
                 className="text-[#D4AF37]"
               />
+
               Secure & Quality Assured
+
             </div>
 
           </div>
@@ -891,17 +1139,20 @@ export default function ProductDetailPage() {
 
               <div className="flex gap-0.5">
 
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    size={17}
-                    className={
-                      star <= Math.round(rating)
-                        ? "fill-[#E5A900] text-[#E5A900]"
-                        : "text-gray-300"
-                    }
-                  />
-                ))}
+                {[1, 2, 3, 4, 5].map(
+                  (star) => (
+                    <Star
+                      key={star}
+                      size={17}
+                      className={
+                        star <=
+                        Math.round(rating)
+                          ? "fill-[#E5A900] text-[#E5A900]"
+                          : "text-gray-300"
+                      }
+                    />
+                  )
+                )}
 
               </div>
 
@@ -918,8 +1169,11 @@ export default function ProductDetailPage() {
               </span>
 
               <span className="flex items-center gap-1 text-sm font-bold text-[#C39B25]">
+
                 <Check size={15} />
+
                 Genuine Product
+
               </span>
 
               {product.is_featured && (
@@ -979,10 +1233,12 @@ export default function ProductDetailPage() {
                 <div className="flex items-center gap-3 border-b border-gray-100 px-4 py-3.5">
 
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFF7DD]">
+
                     <Zap
                       size={15}
                       className="text-[#D4AF37]"
                     />
+
                   </div>
 
                   <div className="flex-1">
@@ -1007,10 +1263,12 @@ export default function ProductDetailPage() {
                 <div className="flex items-center gap-3 px-4 py-3.5">
 
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFF7DD]">
+
                     <ShoppingBag
                       size={15}
                       className="text-[#D4AF37]"
                     />
+
                   </div>
 
                   <div className="flex-1">
@@ -1066,7 +1324,9 @@ export default function ProductDetailPage() {
 
                 <button
                   type="button"
-                  onClick={decreaseQuantity}
+                  onClick={
+                    decreaseQuantity
+                  }
                   disabled={quantity <= 1}
                   className="flex h-full w-9 items-center justify-center hover:bg-gray-50 disabled:opacity-30"
                 >
@@ -1079,8 +1339,12 @@ export default function ProductDetailPage() {
 
                 <button
                   type="button"
-                  onClick={increaseQuantity}
-                  disabled={quantity >= stock}
+                  onClick={
+                    increaseQuantity
+                  }
+                  disabled={
+                    quantity >= stock
+                  }
                   className="flex h-full w-9 items-center justify-center hover:bg-gray-50 disabled:opacity-30"
                 >
                   <Plus size={16} />
@@ -1092,12 +1356,19 @@ export default function ProductDetailPage() {
 
               <button
                 type="button"
-                onClick={handleAddToCart}
-                disabled={outOfStock || addingToCart}
+                onClick={
+                  handleAddToCart
+                }
+                disabled={
+                  outOfStock ||
+                  addingToCart
+                }
                 className="flex h-12 items-center justify-center gap-2 rounded-xl border-2 border-[#D4AF37] bg-white font-black text-[#B28B18] transition hover:bg-[#D4AF37] hover:text-white disabled:bg-gray-100 disabled:text-gray-400"
               >
 
-                <ShoppingCart size={19} />
+                <ShoppingCart
+                  size={19}
+                />
 
                 {addingToCart
                   ? "Adding..."
@@ -1109,12 +1380,19 @@ export default function ProductDetailPage() {
 
               <button
                 type="button"
-                onClick={handleBuyNow}
-                disabled={outOfStock || buyingNow}
+                onClick={
+                  handleBuyNow
+                }
+                disabled={
+                  outOfStock ||
+                  buyingNow
+                }
                 className="flex h-12 items-center justify-center gap-2 rounded-xl bg-[#D4AF37] font-black text-white transition hover:bg-black disabled:bg-gray-300"
               >
 
-                <ShoppingBag size={19} />
+                <ShoppingBag
+                  size={19}
+                />
 
                 {buyingNow
                   ? "Processing..."
@@ -1129,7 +1407,9 @@ export default function ProductDetailPage() {
             <button
               type="button"
               onClick={() =>
-                setWishlist((value) => !value)
+                setWishlist(
+                  (value) => !value
+                )
               }
               className="mt-4 flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-[#D4AF37]"
             >
@@ -1209,6 +1489,7 @@ export default function ProductDetailPage() {
           </div>
 
         </div>
+
       </section>
 
       {/* =====================================================
@@ -1251,6 +1532,7 @@ export default function ProductDetailPage() {
 
                 {product.brand && (
                   <div className="flex justify-between border-b border-gray-200 pb-4">
+
                     <span className="text-sm text-gray-500">
                       Brand
                     </span>
@@ -1258,6 +1540,7 @@ export default function ProductDetailPage() {
                     <span className="text-sm font-bold">
                       {product.brand}
                     </span>
+
                   </div>
                 )}
 
@@ -1312,6 +1595,7 @@ export default function ProductDetailPage() {
           </div>
 
         </div>
+
       </section>
 
       {/* =====================================================
@@ -1325,13 +1609,16 @@ export default function ProductDetailPage() {
           <div className="flex items-center gap-4">
 
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white">
+
               <Truck
                 size={22}
                 className="text-[#D4AF37]"
               />
+
             </div>
 
             <div>
+
               <p className="font-black">
                 Fast Delivery
               </p>
@@ -1339,6 +1626,7 @@ export default function ProductDetailPage() {
               <p className="mt-1 text-sm text-gray-500">
                 Safe doorstep delivery
               </p>
+
             </div>
 
           </div>
@@ -1346,13 +1634,16 @@ export default function ProductDetailPage() {
           <div className="flex items-center gap-4">
 
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white">
+
               <ShieldCheck
                 size={22}
                 className="text-[#D4AF37]"
               />
+
             </div>
 
             <div>
+
               <p className="font-black">
                 Secure Shopping
               </p>
@@ -1360,6 +1651,7 @@ export default function ProductDetailPage() {
               <p className="mt-1 text-sm text-gray-500">
                 Protected checkout
               </p>
+
             </div>
 
           </div>
@@ -1367,13 +1659,16 @@ export default function ProductDetailPage() {
           <div className="flex items-center gap-4">
 
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white">
+
               <Check
                 size={22}
                 className="text-[#D4AF37]"
               />
+
             </div>
 
             <div>
+
               <p className="font-black">
                 Quality Products
               </p>
@@ -1381,6 +1676,7 @@ export default function ProductDetailPage() {
               <p className="mt-1 text-sm text-gray-500">
                 Carefully selected
               </p>
+
             </div>
 
           </div>
