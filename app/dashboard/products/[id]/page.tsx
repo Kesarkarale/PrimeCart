@@ -37,10 +37,6 @@ type Product = {
   original_price: number | null;
   stock: number | null;
   image_url: string | null;
-
-  // Product color
-  color?: string | null;
-
   brand: string | null;
   rating: number | null;
   reviews_count: number | null;
@@ -72,9 +68,6 @@ export default function ProductDetailPage() {
 
   const [addingToCart, setAddingToCart] = useState(false);
   const [buyingNow, setBuyingNow] = useState(false);
-
-  // Selected product image
-  const [selectedImage, setSelectedImage] = useState("");
 
   /*
   |--------------------------------------------------------------------------
@@ -119,24 +112,7 @@ export default function ProductDetailPage() {
           return;
         }
 
-        const productData = data as Product;
-
-        setProduct(productData);
-
-        /*
-        |--------------------------------------------------------------------------
-        | SET INITIAL IMAGE
-        |--------------------------------------------------------------------------
-        */
-
-        if (productData.image_url) {
-          const firstImage = productData.image_url
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean)[0];
-
-          setSelectedImage(firstImage || "");
-        }
+        setProduct(data as Product);
 
         /*
         |--------------------------------------------------------------------------
@@ -144,11 +120,11 @@ export default function ProductDetailPage() {
         |--------------------------------------------------------------------------
         */
 
-        if (productData.category_id) {
+        if (data.category_id) {
           const { data: categoryData } = await supabase
             .from("categories")
             .select("id,name,slug")
-            .eq("id", productData.category_id)
+            .eq("id", data.category_id)
             .maybeSingle();
 
           if (categoryData) {
@@ -170,70 +146,6 @@ export default function ProductDetailPage() {
 
     fetchProduct();
   }, [productId]);
-
-  /*
-  |--------------------------------------------------------------------------
-  | PRODUCT IMAGE LIST
-  |--------------------------------------------------------------------------
-  |
-  | Supports:
-  |
-  | 1 image:
-  | wireless-headphones.png
-  |
-  | Multiple images:
-  | wireless-headphones.png,wireless-headphones-2.png,
-  | wireless-headphones-3.png,wireless-headphones-4.png
-  |
-  */
-
-  const productImages = useMemo(() => {
-    if (!product?.image_url) return [];
-
-    return product.image_url
-      .split(",")
-      .map((image) => image.trim())
-      .filter(Boolean)
-      .map((image) => {
-        if (image.startsWith("http://")) {
-          return image;
-        }
-
-        if (image.startsWith("https://")) {
-          return image;
-        }
-
-        if (image.startsWith("/")) {
-          return image;
-        }
-
-        return `/products/${image}`;
-      });
-  }, [product?.image_url]);
-
-  /*
-  |--------------------------------------------------------------------------
-  | FOUR THUMBNAILS
-  |--------------------------------------------------------------------------
-  */
-
-  const thumbnailImages = useMemo(() => {
-    if (productImages.length === 0) {
-      return [];
-    }
-
-    if (productImages.length >= 4) {
-      return productImages.slice(0, 4);
-    }
-
-    const result: string[] = [];
-
-    for (let i = 0; i < 4; i++) {
-      result.push(productImages[i % productImages.length]);
-    }
-
-    return result;
-  }, [productImages]);
 
   /*
   |--------------------------------------------------------------------------
@@ -369,7 +281,10 @@ export default function ProductDetailPage() {
         <div className="flex min-h-[80vh] items-center justify-center px-6">
           <div className="max-w-md text-center">
             <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-gray-100">
-              <ShoppingBag size={42} className="text-gray-400" />
+              <ShoppingBag
+                size={42}
+                className="text-gray-400"
+              />
             </div>
 
             <h1 className="mt-7 text-3xl font-black">
@@ -382,7 +297,7 @@ export default function ProductDetailPage() {
 
             <Link
               href="/dashboard/products"
-              className="mt-7 inline-flex h-12 items-center gap-2 rounded-xl bg-[#D4AF37] px-7 font-bold text-white transition hover:bg-black"
+              className="mt-7 inline-flex h-12 items-center gap-2 rounded-xl bg-[#D4AF37] px-7 font-bold text-white transition hover:bg-[#B28B18]"
             >
               <ArrowLeft size={18} />
               Back to Products
@@ -423,6 +338,63 @@ export default function ProductDetailPage() {
 
   /*
   |--------------------------------------------------------------------------
+  | IMAGE PATH
+  |--------------------------------------------------------------------------
+  */
+
+  const productImage = useMemo(() => {
+    const image = product.image_url?.trim();
+
+    if (!image) return "";
+
+    // Full external image URL
+    if (
+      image.startsWith("http://") ||
+      image.startsWith("https://")
+    ) {
+      return image;
+    }
+
+    // Already a public path
+    if (image.startsWith("/")) {
+      return image;
+    }
+
+    // Database contains only filename
+    return `/products/${image}`;
+  }, [product.image_url]);
+
+  /*
+  |--------------------------------------------------------------------------
+  | PRODUCT IMAGE LIST
+  |--------------------------------------------------------------------------
+  |
+  | Currently your DB has one image_url per product.
+  | So the same product image is displayed in 4 thumbnails.
+  | All 4 thumbnails are clickable.
+  |
+  */
+
+  const productImages = useMemo(() => {
+    if (!productImage) return [];
+
+    return [
+      productImage,
+      productImage,
+      productImage,
+      productImage,
+    ];
+  }, [productImage]);
+
+  const [selectedImage, setSelectedImage] =
+    useState(productImage);
+
+  useEffect(() => {
+    setSelectedImage(productImage);
+  }, [productImage]);
+
+  /*
+  |--------------------------------------------------------------------------
   | QUANTITY
   |--------------------------------------------------------------------------
   */
@@ -455,7 +427,6 @@ export default function ProductDetailPage() {
       name: product.name,
       price,
       quantity,
-      color: product.color || null,
     });
 
     setTimeout(() => {
@@ -483,7 +454,6 @@ export default function ProductDetailPage() {
       originalPrice,
       image_url: product.image_url,
       quantity,
-      color: product.color || null,
       stock,
     };
 
@@ -508,14 +478,12 @@ export default function ProductDetailPage() {
 
   return (
     <main className="min-h-screen bg-white text-gray-900">
-
       {/* =====================================================
           TOP BAR
       ===================================================== */}
 
       <div className="hidden border-b border-[#f0f0f0] bg-[#fffdf7] md:block">
         <div className="mx-auto flex h-9 max-w-[1400px] items-center justify-between px-5 text-[11px] font-medium text-gray-500">
-
           <div className="flex items-center gap-8">
             <span>
               📍 Deliver to{" "}
@@ -534,7 +502,6 @@ export default function ProductDetailPage() {
             <span>Track Order</span>
             <span>Help & Support</span>
           </div>
-
         </div>
       </div>
 
@@ -544,7 +511,6 @@ export default function ProductDetailPage() {
 
       <header className="border-b border-gray-100 bg-white">
         <div className="mx-auto flex h-[78px] max-w-[1400px] items-center gap-5 px-4 sm:px-6">
-
           {/* LOGO */}
 
           <Link
@@ -557,7 +523,8 @@ export default function ProductDetailPage() {
 
             <div>
               <div className="text-[24px] font-black leading-none">
-                Prime<span className="text-[#D4AF37]">
+                Prime
+                <span className="text-[#D4AF37]">
                   Cart
                 </span>
               </div>
@@ -571,7 +538,6 @@ export default function ProductDetailPage() {
           {/* SEARCH */}
 
           <div className="ml-5 hidden h-11 max-w-[650px] flex-1 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 lg:flex">
-
             <button
               type="button"
               className="flex items-center gap-2 border-r border-gray-200 px-4 text-sm font-semibold"
@@ -581,7 +547,10 @@ export default function ProductDetailPage() {
             </button>
 
             <div className="flex flex-1 items-center gap-3 px-4">
-              <Search size={18} className="text-gray-400" />
+              <Search
+                size={18}
+                className="text-gray-400"
+              />
 
               <span className="text-sm text-gray-400">
                 Search for products, brands and more...
@@ -590,17 +559,15 @@ export default function ProductDetailPage() {
 
             <button
               type="button"
-              className="flex w-12 items-center justify-center bg-[#D4AF37] text-white transition hover:bg-black"
+              className="flex w-12 items-center justify-center bg-[#D4AF37] text-white transition hover:bg-[#B28B18]"
             >
               <Search size={19} />
             </button>
-
           </div>
 
           {/* ACTIONS */}
 
           <div className="ml-auto flex items-center gap-5">
-
             <div className="hidden items-center gap-2 md:flex">
               <User size={23} />
 
@@ -621,7 +588,6 @@ export default function ProductDetailPage() {
                 setWishlist((value) => !value)
               }
               className="relative"
-              aria-label="Wishlist"
             >
               <Heart
                 size={23}
@@ -656,7 +622,6 @@ export default function ProductDetailPage() {
                 </p>
               </div>
             </div>
-
           </div>
         </div>
       </header>
@@ -667,9 +632,7 @@ export default function ProductDetailPage() {
 
       <div className="border-b border-gray-100">
         <div className="mx-auto max-w-[1400px] px-4 py-4 sm:px-6">
-
           <div className="flex flex-wrap items-center gap-2 text-sm">
-
             <Link
               href="/dashboard"
               className="font-semibold text-[#C39B25] transition hover:text-black"
@@ -701,9 +664,7 @@ export default function ProductDetailPage() {
             <span className="font-semibold text-gray-700">
               {product.name}
             </span>
-
           </div>
-
         </div>
       </div>
 
@@ -712,46 +673,43 @@ export default function ProductDetailPage() {
       ===================================================== */}
 
       <section className="mx-auto max-w-[1400px] px-4 py-7 sm:px-6 lg:py-10">
-
         <div className="grid gap-8 lg:grid-cols-2 xl:gap-12">
-
           {/* =================================================
               LEFT
           ================================================= */}
 
           <div>
-
             <div className="grid grid-cols-[68px_1fr] gap-4 sm:grid-cols-[78px_1fr]">
-
               {/* =================================================
-                  CLICKABLE THUMBNAILS
+                  THUMBNAILS
               ================================================= */}
 
               <div className="flex flex-col gap-3">
+                {productImages.map((image, index) => {
+                  const isSelected =
+                    selectedImage === image &&
+                    index ===
+                      productImages.findIndex(
+                        (item) => item === selectedImage
+                      );
 
-                {thumbnailImages.length > 0 ? (
-                  thumbnailImages.map((image, index) => {
-
-                    const isSelected =
-                      selectedImage === image;
-
-                    return (
-                      <button
-                        key={`${image}-${index}`}
-                        type="button"
-                        onClick={() =>
-                          setSelectedImage(image)
-                        }
-                        className={`relative h-[68px] overflow-hidden rounded-xl bg-white transition sm:h-[76px] ${
-                          isSelected
-                            ? "border-2 border-[#D4AF37] shadow-sm"
-                            : "border border-gray-200 hover:border-[#D4AF37]"
-                        }`}
-                        aria-label={`View product image ${
-                          index + 1
-                        }`}
-                      >
-
+                  return (
+                    <button
+                      key={`${image}-${index}`}
+                      type="button"
+                      onClick={() =>
+                        setSelectedImage(image)
+                      }
+                      aria-label={`View product image ${
+                        index + 1
+                      }`}
+                      className={`relative h-[68px] overflow-hidden rounded-xl bg-white transition sm:h-[76px] ${
+                        isSelected
+                          ? "border-2 border-[#D4AF37] shadow-sm"
+                          : "border border-gray-200 hover:border-[#D4AF37]"
+                      }`}
+                    >
+                      {image ? (
                         <Image
                           src={image}
                           alt={`${product.name} ${
@@ -761,19 +719,15 @@ export default function ProductDetailPage() {
                           sizes="78px"
                           className="object-contain p-2"
                         />
-
-                      </button>
-                    );
-                  })
-                ) : (
-                  <div className="relative h-[76px] rounded-xl border border-gray-200">
-                    <ShoppingBag
-                      size={25}
-                      className="absolute inset-0 m-auto text-gray-300"
-                    />
-                  </div>
-                )}
-
+                      ) : (
+                        <ShoppingBag
+                          size={25}
+                          className="absolute inset-0 m-auto text-gray-300"
+                        />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
 
               {/* =================================================
@@ -781,7 +735,6 @@ export default function ProductDetailPage() {
               ================================================= */}
 
               <div className="relative h-[430px] overflow-hidden rounded-2xl border border-gray-100 bg-[#fcfcfc] sm:h-[560px]">
-
                 {product.is_flash_sale && (
                   <div className="absolute left-5 top-5 z-10 rounded-full bg-black px-4 py-2 text-xs font-black text-white">
                     FLASH SALE
@@ -794,13 +747,14 @@ export default function ProductDetailPage() {
                   </div>
                 )}
 
+                {/* WISHLIST */}
+
                 <button
                   type="button"
                   onClick={() =>
                     setWishlist((value) => !value)
                   }
                   className="absolute right-5 top-5 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-md transition hover:scale-105"
-                  aria-label="Add to wishlist"
                 >
                   <Heart
                     size={21}
@@ -811,6 +765,8 @@ export default function ProductDetailPage() {
                     }
                   />
                 </button>
+
+                {/* IMAGE */}
 
                 {selectedImage ? (
                   <Image
@@ -830,9 +786,7 @@ export default function ProductDetailPage() {
                     </p>
                   </div>
                 )}
-
               </div>
-
             </div>
 
             <div className="mt-5 flex items-center justify-center gap-2 text-xs text-gray-400">
@@ -843,7 +797,6 @@ export default function ProductDetailPage() {
 
               Secure & Quality Assured
             </div>
-
           </div>
 
           {/* =================================================
@@ -851,7 +804,6 @@ export default function ProductDetailPage() {
           ================================================= */}
 
           <div className="pt-2">
-
             {/* BRAND */}
 
             {product.brand && (
@@ -876,9 +828,7 @@ export default function ProductDetailPage() {
             {/* RATING */}
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
-
               <div className="flex gap-0.5">
-
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star
                     key={star}
@@ -890,7 +840,6 @@ export default function ProductDetailPage() {
                     }
                   />
                 ))}
-
               </div>
 
               <span className="font-bold">
@@ -901,9 +850,7 @@ export default function ProductDetailPage() {
                 ({reviews} Reviews)
               </span>
 
-              <span className="text-gray-300">
-                |
-              </span>
+              <span className="text-gray-300">|</span>
 
               <span className="flex items-center gap-1 text-sm font-bold text-[#C39B25]">
                 <Check size={15} />
@@ -915,7 +862,6 @@ export default function ProductDetailPage() {
                   Best Seller
                 </span>
               )}
-
             </div>
 
             <div className="my-6 h-px bg-gray-100" />
@@ -923,9 +869,7 @@ export default function ProductDetailPage() {
             {/* PRICE */}
 
             <div>
-
               <div className="flex flex-wrap items-center gap-3">
-
                 <span className="text-3xl font-black sm:text-[38px]">
                   ₹{price.toLocaleString("en-IN")}
                 </span>
@@ -945,27 +889,22 @@ export default function ProductDetailPage() {
                       </span>
                     </>
                   )}
-
               </div>
 
               <p className="mt-1 text-xs text-gray-400">
                 Inclusive of all taxes
               </p>
-
             </div>
 
             {/* OFFERS */}
 
             <div className="mt-6">
-
               <h3 className="mb-3 text-base font-black">
                 Offers
               </h3>
 
               <div className="overflow-hidden rounded-xl border border-gray-100">
-
                 <div className="flex items-center gap-3 border-b border-gray-100 px-4 py-3.5">
-
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFF7DD]">
                     <Zap
                       size={15}
@@ -974,26 +913,23 @@ export default function ProductDetailPage() {
                   </div>
 
                   <div className="flex-1">
-
                     <p className="text-sm font-bold">
                       Bank Offer
                     </p>
 
                     <p className="mt-0.5 text-xs text-gray-500">
-                      Get extra instant discount on selected cards
+                      Get extra instant discount on selected
+                      cards
                     </p>
-
                   </div>
 
                   <ChevronRight
                     size={17}
                     className="text-gray-400"
                   />
-
                 </div>
 
                 <div className="flex items-center gap-3 px-4 py-3.5">
-
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFF7DD]">
                     <ShoppingBag
                       size={15}
@@ -1002,49 +938,27 @@ export default function ProductDetailPage() {
                   </div>
 
                   <div className="flex-1">
-
                     <p className="text-sm font-bold">
                       PrimeCart Offer
                     </p>
 
                     <p className="mt-0.5 text-xs text-gray-500">
-                      Buy more and save more on selected products
+                      Buy more and save more on selected
+                      products
                     </p>
-
                   </div>
 
                   <ChevronRight
                     size={17}
                     className="text-gray-400"
                   />
-
                 </div>
-
               </div>
-
             </div>
-
-            {/* =================================================
-                PRODUCT COLOR
-            ================================================= */}
-
-            {product.color && (
-              <div className="mt-6">
-
-                <p className="text-sm font-black">
-                  Color:{" "}
-                  <span className="font-normal text-gray-500">
-                    {product.color}
-                  </span>
-                </p>
-
-              </div>
-            )}
 
             {/* STOCK */}
 
             <div className="mt-5">
-
               {outOfStock ? (
                 <p className="font-bold text-red-500">
                   ● Out of Stock
@@ -1058,22 +972,19 @@ export default function ProductDetailPage() {
                   ● In Stock
                 </p>
               )}
-
             </div>
 
             {/* ACTIONS */}
 
             <div className="mt-5 grid gap-3 sm:grid-cols-[115px_1fr_1fr]">
-
               {/* QUANTITY */}
 
               <div className="flex h-12 items-center justify-between overflow-hidden rounded-xl border-2 border-gray-200">
-
                 <button
                   type="button"
                   onClick={decreaseQuantity}
                   disabled={quantity <= 1}
-                  className="flex h-full w-9 items-center justify-center hover:bg-gray-50 disabled:opacity-30"
+                  className="flex h-full w-9 items-center justify-center transition hover:bg-gray-50 disabled:opacity-30"
                 >
                   <Minus size={16} />
                 </button>
@@ -1086,11 +997,10 @@ export default function ProductDetailPage() {
                   type="button"
                   onClick={increaseQuantity}
                   disabled={quantity >= stock}
-                  className="flex h-full w-9 items-center justify-center hover:bg-gray-50 disabled:opacity-30"
+                  className="flex h-full w-9 items-center justify-center transition hover:bg-gray-50 disabled:opacity-30"
                 >
                   <Plus size={16} />
                 </button>
-
               </div>
 
               {/* ADD TO CART */}
@@ -1114,7 +1024,7 @@ export default function ProductDetailPage() {
                 type="button"
                 onClick={handleBuyNow}
                 disabled={outOfStock || buyingNow}
-                className="flex h-12 items-center justify-center gap-2 rounded-xl bg-[#D4AF37] font-black text-white transition hover:bg-black disabled:bg-gray-300"
+                className="flex h-12 items-center justify-center gap-2 rounded-xl bg-[#D4AF37] font-black text-white transition hover:bg-[#B28B18] disabled:bg-gray-300"
               >
                 <ShoppingBag size={19} />
 
@@ -1122,7 +1032,6 @@ export default function ProductDetailPage() {
                   ? "Processing..."
                   : "Buy Now"}
               </button>
-
             </div>
 
             {/* WISHLIST */}
@@ -1132,7 +1041,7 @@ export default function ProductDetailPage() {
               onClick={() =>
                 setWishlist((value) => !value)
               }
-              className="mt-4 flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-[#D4AF37]"
+              className="mt-4 flex items-center gap-2 text-sm font-bold text-gray-600 transition hover:text-[#D4AF37]"
             >
               <Heart
                 size={18}
@@ -1151,9 +1060,7 @@ export default function ProductDetailPage() {
             {/* BENEFITS */}
 
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
-
               <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-
                 <Truck
                   size={20}
                   className="text-[#D4AF37]"
@@ -1166,11 +1073,9 @@ export default function ProductDetailPage() {
                 <p className="mt-1 text-[11px] text-gray-500">
                   Quick doorstep delivery
                 </p>
-
               </div>
 
               <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-
                 <ShieldCheck
                   size={20}
                   className="text-[#D4AF37]"
@@ -1183,11 +1088,9 @@ export default function ProductDetailPage() {
                 <p className="mt-1 text-[11px] text-gray-500">
                   100% secure checkout
                 </p>
-
               </div>
 
               <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-
                 <RotateCcw
                   size={20}
                   className="text-[#D4AF37]"
@@ -1200,13 +1103,9 @@ export default function ProductDetailPage() {
                 <p className="mt-1 text-[11px] text-gray-500">
                   Hassle-free returns
                 </p>
-
               </div>
-
             </div>
-
           </div>
-
         </div>
       </section>
 
@@ -1215,13 +1114,9 @@ export default function ProductDetailPage() {
       ===================================================== */}
 
       <section className="border-t border-gray-100">
-
         <div className="mx-auto max-w-[1400px] px-4 py-12 sm:px-6">
-
           <div className="grid gap-10 lg:grid-cols-3">
-
             <div className="lg:col-span-2">
-
               <p className="text-xs font-black uppercase tracking-[0.18em] text-[#D4AF37]">
                 PrimeCart Product
               </p>
@@ -1235,19 +1130,16 @@ export default function ProductDetailPage() {
                   product.short_description ||
                   "No detailed description available for this product."}
               </p>
-
             </div>
 
             {/* DETAILS */}
 
             <div className="h-fit rounded-2xl border border-gray-100 bg-gray-50 p-6">
-
               <h3 className="text-xl font-black">
                 Product Details
               </h3>
 
               <div className="mt-5 space-y-4">
-
                 {product.brand && (
                   <div className="flex justify-between border-b border-gray-200 pb-4">
                     <span className="text-sm text-gray-500">
@@ -1260,20 +1152,7 @@ export default function ProductDetailPage() {
                   </div>
                 )}
 
-                {product.color && (
-                  <div className="flex justify-between border-b border-gray-200 pb-4">
-                    <span className="text-sm text-gray-500">
-                      Color
-                    </span>
-
-                    <span className="text-sm font-bold">
-                      {product.color}
-                    </span>
-                  </div>
-                )}
-
                 <div className="flex justify-between border-b border-gray-200 pb-4">
-
                   <span className="text-sm text-gray-500">
                     Rating
                   </span>
@@ -1281,11 +1160,9 @@ export default function ProductDetailPage() {
                   <span className="text-sm font-bold">
                     {rating.toFixed(1)} / 5
                   </span>
-
                 </div>
 
                 <div className="flex justify-between border-b border-gray-200 pb-4">
-
                   <span className="text-sm text-gray-500">
                     Reviews
                   </span>
@@ -1293,11 +1170,9 @@ export default function ProductDetailPage() {
                   <span className="text-sm font-bold">
                     {reviews}
                   </span>
-
                 </div>
 
                 <div className="flex justify-between">
-
                   <span className="text-sm text-gray-500">
                     Availability
                   </span>
@@ -1313,15 +1188,10 @@ export default function ProductDetailPage() {
                       ? "Out of Stock"
                       : `${stock} Available`}
                   </span>
-
                 </div>
-
               </div>
-
             </div>
-
           </div>
-
         </div>
       </section>
 
@@ -1330,11 +1200,8 @@ export default function ProductDetailPage() {
       ===================================================== */}
 
       <section className="border-t border-gray-100 bg-gray-50">
-
-        <div className="mx-auto grid max-w-[1400px] gap-8 px-4 py-10 sm:px-6 sm:grid-cols-3">
-
+        <div className="mx-auto grid max-w-[1400px] gap-8 px-4 py-10 sm:grid-cols-3 sm:px-6">
           <div className="flex items-center gap-4">
-
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white">
               <Truck
                 size={22}
@@ -1351,11 +1218,9 @@ export default function ProductDetailPage() {
                 Safe doorstep delivery
               </p>
             </div>
-
           </div>
 
           <div className="flex items-center gap-4">
-
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white">
               <ShieldCheck
                 size={22}
@@ -1372,11 +1237,9 @@ export default function ProductDetailPage() {
                 Protected checkout
               </p>
             </div>
-
           </div>
 
           <div className="flex items-center gap-4">
-
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white">
               <Check
                 size={22}
@@ -1393,13 +1256,9 @@ export default function ProductDetailPage() {
                 Carefully selected
               </p>
             </div>
-
           </div>
-
         </div>
-
       </section>
-
     </main>
   );
 }
