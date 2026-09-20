@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import {
@@ -53,7 +53,7 @@ type Category = {
 
 export default function ProductDetailPage() {
   const params = useParams();
-
+const router = useRouter();
   const productId = String(params?.id || "");
 
   const [product, setProduct] = useState<Product | null>(null);
@@ -399,22 +399,35 @@ export default function ProductDetailPage() {
   */
 
   const handleBuyNow = () => {
-    if (outOfStock || buyingNow) return;
+  if (outOfStock || buyingNow || !product) return;
 
-    setBuyingNow(true);
+  setBuyingNow(true);
 
-    console.log("BUY NOW:", {
-      product_id: product.id,
-      name: product.name,
-      price,
-      quantity,
-      color: selectedColor,
-    });
-
-    setTimeout(() => {
-      setBuyingNow(false);
-    }, 900);
+  const buyNowProduct = {
+    id: product.id,
+    name: product.name,
+    slug: product.slug,
+    brand: product.brand,
+    price,
+    originalPrice,
+    image_url: product.image_url,
+    quantity,
+    color: selectedColor,
+    stock,
   };
+
+  try {
+    localStorage.setItem(
+      "primecart_buy_now",
+      JSON.stringify(buyNowProduct)
+    );
+
+    router.push("/dashboard/checkout");
+  } catch (error) {
+    console.error("Buy Now error:", error);
+    setBuyingNow(false);
+  }
+};
 
   /*
   |--------------------------------------------------------------------------
