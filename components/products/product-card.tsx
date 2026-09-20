@@ -5,85 +5,62 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { motion } from "framer-motion";
-import {
-  Heart,
-  ImageOff,
-  ShoppingCart,
-  Star,
-  Zap,
-} from "lucide-react";
+import { Heart, ImageOff, Star, Zap } from "lucide-react";
 import { toast } from "sonner";
 
-import { addToCart } from "@/lib/cart";
 import type { Product } from "@/lib/products";
-
-/* =========================================================
-   PRODUCT CARD PROPS
-========================================================= */
 
 interface ProductCardProps {
   product: Product;
 }
-
-/* =========================================================
-   PRODUCT CARD
-========================================================= */
 
 export default function ProductCard({
   product,
 }: ProductCardProps) {
   const [imageError, setImageError] = useState(false);
   const [wishlist, setWishlist] = useState(false);
-  const [addingToCart, setAddingToCart] = useState(false);
 
-  /* =======================================================
+  /* =========================================================
      PRODUCT IMAGE
+  ========================================================= */
 
-     Supabase DB column:
-     image_url
+  const productImage = (() => {
+    const image = product.image_url?.trim();
 
-     Example:
-     /products/smartphone-x-pro.png
-  ======================================================= */
+    if (!image) return "";
 
- const productImage = (() => {
-  const image = product.image_url?.trim();
+    // Full local path
+    if (image.startsWith("/")) {
+      return image;
+    }
 
-  if (!image) return "";
+    // Filename stored in Supabase
+    return `/products/${image}`;
+  })();
 
-  // If DB already contains a full path, use it directly
-  if (image.startsWith("/")) {
-    return image;
-  }
-
-  // DB contains only filename
-  return `/products/${image}`;
-})();
-
-  /* =======================================================
-     PRODUCT RATING
-  ======================================================= */
+  /* =========================================================
+     RATING
+  ========================================================= */
 
   const productRating =
     typeof product.rating === "number"
       ? product.rating
       : Number(product.rating ?? 0);
 
-  /* =======================================================
+  /* =========================================================
      REVIEWS
-  ======================================================= */
+  ========================================================= */
 
   const reviews =
     typeof product.reviews_count === "number"
       ? product.reviews_count
       : Number(product.reviews_count ?? 0);
 
-  /* =======================================================
-     ORIGINAL PRICE
+  /* =========================================================
+     PRICE
+  ========================================================= */
 
-     Supabase DB column:
-     original_price
-  ======================================================= */
+  const currentPrice = Number(product.price ?? 0);
 
   const oldPrice =
     product.original_price !== null &&
@@ -91,9 +68,20 @@ export default function ProductCard({
       ? Number(product.original_price)
       : null;
 
-  /* =======================================================
+  /* =========================================================
+     DISCOUNT
+  ========================================================= */
+
+  const discount =
+    oldPrice !== null && oldPrice > currentPrice
+      ? Math.round(
+          ((oldPrice - currentPrice) / oldPrice) * 100
+        )
+      : 0;
+
+  /* =========================================================
      CATEGORY
-  ======================================================= */
+  ========================================================= */
 
   const category =
     typeof product.category === "string" &&
@@ -101,82 +89,44 @@ export default function ProductCard({
       ? product.category.trim()
       : "Product";
 
-  /* =======================================================
-     CURRENT PRICE
-  ======================================================= */
-
-  const currentPrice = Number(product.price ?? 0);
-
-  /* =======================================================
-     DISCOUNT
-  ======================================================= */
-
-  const discount =
-    oldPrice !== null &&
-    oldPrice > currentPrice
-      ? Math.round(
-          ((oldPrice - currentPrice) / oldPrice) * 100
-        )
-      : 0;
-
-  /* =======================================================
+  /* =========================================================
      STOCK
-  ======================================================= */
+  ========================================================= */
 
-  const hasStock =
+  const stock =
     product.stock === null ||
-    product.stock === undefined ||
-    Number(product.stock) > 0;
+    product.stock === undefined
+      ? null
+      : Number(product.stock);
 
-  /* =======================================================
+  const hasStock = stock === null || stock > 0;
+
+  /* =========================================================
      FEATURED
-
-     Supports actual DB field:
-     is_featured
-
-     Also supports compatibility field:
-     featured
-  ======================================================= */
+  ========================================================= */
 
   const isFeatured =
     product.is_featured === true ||
     product.featured === true;
 
-  /* =======================================================
-     ADD TO CART
-  ======================================================= */
+  /* =========================================================
+     FLASH SALE
+  ========================================================= */
 
-  const handleAddToCart = async () => {
-    if (!hasStock) {
-      toast.error("This product is out of stock");
-      return;
-    }
+  const isFlashSale =
+    product.is_flash_sale === true ||
+    product.flash_sale === true;
 
-    try {
-      setAddingToCart(true);
-
-      await addToCart(product as any);
-
-      toast.success("Product added to cart 🛒");
-    } catch (error: unknown) {
-      console.error("Add to cart error:", error);
-
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Please login first";
-
-      toast.error(message);
-    } finally {
-      setAddingToCart(false);
-    }
-  };
-
-  /* =======================================================
+  /* =========================================================
      WISHLIST
-  ======================================================= */
+  ========================================================= */
 
-  const handleWishlist = () => {
+  const handleWishlist = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
     setWishlist((current) => {
       const next = !current;
 
@@ -190,22 +140,25 @@ export default function ProductCard({
     });
   };
 
-  /* =======================================================
-     RESET IMAGE ERROR WHEN IMAGE URL CHANGES
-  ======================================================= */
+  /* =========================================================
+     PRODUCT DETAIL URL
 
-  const imageKey = productImage;
+     IMPORTANT:
+     This matches:
+     /dashboard/products/[id]
+  ========================================================= */
 
-  /* =======================================================
+  const productUrl = `/dashboard/products/${product.id}`;
+
+  /* =========================================================
      RENDER
-  ======================================================= */
+  ========================================================= */
 
   return (
     <motion.article
-      key={imageKey}
       initial={{
         opacity: 0,
-        y: 24,
+        y: 20,
       }}
       whileInView={{
         opacity: 1,
@@ -216,7 +169,7 @@ export default function ProductCard({
         amount: 0.15,
       }}
       whileHover={{
-        y: -7,
+        y: -6,
       }}
       transition={{
         duration: 0.3,
@@ -226,7 +179,7 @@ export default function ProductCard({
         group
         relative
         overflow-hidden
-        rounded-3xl
+        rounded-2xl
         border
         border-gray-200
         bg-white
@@ -242,9 +195,9 @@ export default function ProductCard({
         dark:shadow-none
       "
     >
-      {/* ===================================================
+      {/* =====================================================
           BADGES
-      ==================================================== */}
+      ====================================================== */}
 
       <div
         className="
@@ -278,6 +231,30 @@ export default function ProductCard({
           </span>
         )}
 
+        {/* FLASH SALE */}
+
+        {isFlashSale && (
+          <span
+            className="
+              flex
+              items-center
+              gap-1
+              rounded-full
+              bg-black
+              px-3
+              py-1
+              text-[10px]
+              font-extrabold
+              uppercase
+              tracking-wide
+              text-white
+            "
+          >
+            <Zap size={11} />
+            Deal
+          </span>
+        )}
+
         {/* FEATURED */}
 
         {isFeatured && (
@@ -294,7 +271,6 @@ export default function ProductCard({
               uppercase
               tracking-wide
               text-[#8A6A00]
-              shadow-sm
 
               dark:border-[#D4AF37]/30
               dark:bg-[#D4AF37]/15
@@ -306,9 +282,9 @@ export default function ProductCard({
         )}
       </div>
 
-      {/* ===================================================
-          WISHLIST BUTTON
-      ==================================================== */}
+      {/* =====================================================
+          WISHLIST
+      ====================================================== */}
 
       <button
         type="button"
@@ -322,7 +298,7 @@ export default function ProductCard({
           absolute
           right-4
           top-4
-          z-20
+          z-30
           flex
           h-10
           w-10
@@ -331,7 +307,7 @@ export default function ProductCard({
           rounded-full
           border
           border-gray-200
-          bg-white/90
+          bg-white/95
           text-gray-700
           shadow-sm
           backdrop-blur
@@ -354,15 +330,19 @@ export default function ProductCard({
         />
       </button>
 
-      {/* ===================================================
-          PRODUCT IMAGE
-      ==================================================== */}
+      {/* =====================================================
+          ENTIRE PRODUCT AREA
+      ====================================================== */}
 
       <Link
-        href={`/dashboard/products/${product.id}`}
-        className="block"
+        href={productUrl}
         aria-label={`View ${product.name}`}
+        className="block"
       >
+        {/* ===================================================
+            PRODUCT IMAGE
+        ==================================================== */}
+
         <div
           className="
             relative
@@ -454,6 +434,7 @@ export default function ProductCard({
                 z-10
                 object-contain
                 p-8
+
                 transition-transform
                 duration-500
                 ease-out
@@ -482,62 +463,53 @@ export default function ProductCard({
             "
           />
         </div>
-      </Link>
 
-      {/* ===================================================
-          PRODUCT INFORMATION
-      ==================================================== */}
+        {/* ===================================================
+            PRODUCT INFORMATION
+        ==================================================== */}
 
-      <div className="p-5">
-        {/* =================================================
-            CATEGORY
-        ================================================== */}
+        <div className="p-5">
+          {/* CATEGORY */}
 
-        <p
-          className="
-            text-[10px]
-            font-extrabold
-            uppercase
-            tracking-[0.18em]
-            text-[#B28D1A]
-
-            dark:text-[#D4AF37]
-          "
-        >
-          {category}
-        </p>
-
-        {/* =================================================
-            BRAND
-        ================================================== */}
-
-        {product.brand && (
           <p
             className="
-              mt-1.5
-              text-[11px]
-              font-medium
-              text-gray-400
+              text-[10px]
+              font-extrabold
+              uppercase
+              tracking-[0.18em]
+              text-[#B28D1A]
 
-              dark:text-gray-500
+              dark:text-[#D4AF37]
             "
           >
-            {product.brand}
+            {category}
           </p>
-        )}
 
-        {/* =================================================
-            PRODUCT NAME
-        ================================================== */}
+          {/* BRAND */}
 
-        <Link
-          href={`/dashboard/products/${product.id}`}
-        >
+          {product.brand && (
+            <p
+              className="
+                mt-1.5
+                text-[11px]
+                font-medium
+                text-gray-400
+
+                dark:text-gray-500
+              "
+            >
+              {product.brand}
+            </p>
+          )}
+
+          {/* PRODUCT NAME */}
+
           <h3
             title={product.name}
             className="
               mt-2
-              line-clamp-1
+              line-clamp-2
+              min-h-[44px]
               text-lg
               font-bold
               leading-tight
@@ -552,267 +524,205 @@ export default function ProductCard({
           >
             {product.name}
           </h3>
-        </Link>
 
-        {/* =================================================
-            SHORT DESCRIPTION
-        ================================================== */}
+          {/* SHORT DESCRIPTION */}
 
-        {product.short_description && (
-          <p
-            className="
-              mt-2
-              line-clamp-2
-              min-h-[32px]
-              text-xs
-              leading-5
-              text-gray-500
-
-              dark:text-gray-400
-            "
-          >
-            {product.short_description}
-          </p>
-        )}
-
-        {/* =================================================
-            RATING
-        ================================================== */}
-
-        <div
-          className="
-            mt-3
-            flex
-            items-center
-            gap-2
-          "
-        >
-          <div
-            className="
-              flex
-              items-center
-              gap-1
-              rounded-lg
-              bg-[#D4AF37]
-              px-2
-              py-1
-              text-xs
-              font-extrabold
-              text-black
-            "
-          >
-            <Star
-              size={13}
-              fill="currentColor"
-            />
-
-            {productRating > 0
-              ? productRating.toFixed(1)
-              : "New"}
-          </div>
-
-          {reviews > 0 && (
-            <span
+          {product.short_description && (
+            <p
               className="
+                mt-2
+                line-clamp-2
+                min-h-[32px]
                 text-xs
+                leading-5
                 text-gray-500
 
                 dark:text-gray-400
               "
             >
-              {reviews.toLocaleString("en-IN")}{" "}
-              {reviews === 1 ? "review" : "reviews"}
-            </span>
+              {product.short_description}
+            </p>
           )}
-        </div>
 
-        {/* =================================================
-            PRICE
-        ================================================== */}
+          {/* =================================================
+              RATING
+          ================================================== */}
 
-        <div
-          className="
-            mt-4
-            flex
-            items-center
-            gap-3
-          "
-        >
-          <span
+          <div
             className="
-              text-2xl
-              font-extrabold
-              tracking-tight
-              text-[#B28D1A]
-
-              dark:text-[#D4AF37]
+              mt-3
+              flex
+              items-center
+              gap-2
             "
           >
-            ₹
-            {currentPrice.toLocaleString("en-IN")}
-          </span>
+            <div
+              className="
+                flex
+                items-center
+                gap-1
+                rounded-md
+                bg-[#D4AF37]
+                px-2
+                py-1
+                text-xs
+                font-extrabold
+                text-black
+              "
+            >
+              <Star
+                size={12}
+                fill="currentColor"
+              />
 
-          {oldPrice !== null &&
-            oldPrice > currentPrice && (
+              {productRating > 0
+                ? productRating.toFixed(1)
+                : "New"}
+            </div>
+
+            {reviews > 0 && (
               <span
                 className="
-                  text-sm
-                  font-medium
-                  text-gray-400
-                  line-through
+                  text-xs
+                  text-gray-500
 
-                  dark:text-gray-500
+                  dark:text-gray-400
                 "
               >
-                ₹
-                {oldPrice.toLocaleString("en-IN")}
+                {reviews.toLocaleString("en-IN")}{" "}
+                {reviews === 1
+                  ? "review"
+                  : "reviews"}
               </span>
             )}
-        </div>
-
-        {/* =================================================
-            STOCK STATUS
-        ================================================== */}
-
-        {typeof product.stock === "number" && (
-          <div className="mt-2">
-            {product.stock > 0 ? (
-              <p
-                className="
-                  text-xs
-                  font-semibold
-                  text-green-600
-
-                  dark:text-green-400
-                "
-              >
-                {product.stock}{" "}
-                {product.stock === 1 ? "item" : "items"}{" "}
-                available
-              </p>
-            ) : (
-              <p
-                className="
-                  text-xs
-                  font-semibold
-                  text-red-500
-
-                  dark:text-red-400
-                "
-              >
-                Out of stock
-              </p>
-            )}
           </div>
-        )}
 
-        {/* =================================================
-            ACTION BUTTONS
-        ================================================== */}
-
-        <div
-          className="
-            mt-5
-            grid
-            grid-cols-2
-            gap-3
-          "
-        >
           {/* =================================================
-              ADD TO CART
+              PRICE
           ================================================== */}
 
-          <button
-            type="button"
-            onClick={handleAddToCart}
-            disabled={addingToCart || !hasStock}
+          <div
             className="
+              mt-4
+              flex
+              flex-wrap
+              items-baseline
+              gap-2
+            "
+          >
+            <span
+              className="
+                text-2xl
+                font-extrabold
+                tracking-tight
+                text-[#B28D1A]
+
+                dark:text-[#D4AF37]
+              "
+            >
+              ₹{currentPrice.toLocaleString("en-IN")}
+            </span>
+
+            {oldPrice !== null &&
+              oldPrice > currentPrice && (
+                <span
+                  className="
+                    text-sm
+                    font-medium
+                    text-gray-400
+                    line-through
+
+                    dark:text-gray-500
+                  "
+                >
+                  ₹{oldPrice.toLocaleString("en-IN")}
+                </span>
+              )}
+          </div>
+
+          {/* =================================================
+              STOCK
+          ================================================== */}
+
+          {stock !== null && (
+            <div className="mt-2">
+              {stock > 0 ? (
+                <p
+                  className="
+                    text-xs
+                    font-semibold
+                    text-green-600
+
+                    dark:text-green-400
+                  "
+                >
+                  {stock <= 5
+                    ? `Only ${stock} left in stock`
+                    : "In stock"}
+                </p>
+              ) : (
+                <p
+                  className="
+                    text-xs
+                    font-semibold
+                    text-red-500
+
+                    dark:text-red-400
+                  "
+                >
+                  Currently unavailable
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* =================================================
+              VIEW PRODUCT
+          ================================================== */}
+
+          <div
+            className="
+              mt-4
               flex
               items-center
-              justify-center
-              gap-2
-              rounded-xl
-              border
-              border-gray-200
-              bg-gray-100
-              px-3
-              py-3
-              text-sm
-              font-semibold
-              text-gray-900
-              transition-all
-              duration-200
-
-              hover:border-[#D4AF37]
-              hover:bg-[#D4AF37]
-              hover:text-black
-
-              disabled:cursor-not-allowed
-              disabled:opacity-50
-              disabled:hover:border-gray-200
-              disabled:hover:bg-gray-100
+              justify-between
+              border-t
+              border-gray-100
+              pt-4
 
               dark:border-white/10
-              dark:bg-white/[0.07]
-              dark:text-white
-
-              dark:disabled:hover:border-white/10
-              dark:disabled:hover:bg-white/[0.07]
             "
           >
-            {addingToCart ? (
-              <span
-                className="
-                  h-4
-                  w-4
-                  animate-spin
-                  rounded-full
-                  border-2
-                  border-gray-400
-                  border-t-transparent
-                "
-              />
-            ) : (
-              <ShoppingCart size={17} />
-            )}
+            <span
+              className="
+                text-xs
+                font-semibold
+                text-gray-500
 
-            <span>
-              {addingToCart ? "Adding..." : "Cart"}
+                dark:text-gray-400
+              "
+            >
+              View product details
             </span>
-          </button>
 
-          {/* =================================================
-              BUY NOW
-          ================================================== */}
+            <span
+              className="
+                text-sm
+                font-bold
+                text-[#B28D1A]
+                transition-transform
+                duration-200
 
-          <Link
-            href={`/checkout?product=${product.id}`}
-            className="
-              flex
-              items-center
-              justify-center
-              gap-2
-              rounded-xl
-              bg-[#D4AF37]
-              px-3
-              py-3
-              text-sm
-              font-extrabold
-              text-black
-              transition-all
-              duration-200
+                group-hover:translate-x-1
 
-              hover:scale-[1.02]
-              hover:bg-[#C9A227]
-              active:scale-[0.98]
-            "
-          >
-            <Zap size={17} />
-
-            <span>Buy Now</span>
-          </Link>
+                dark:text-[#D4AF37]
+              "
+            >
+              →
+            </span>
+          </div>
         </div>
-      </div>
+      </Link>
     </motion.article>
   );
 }
