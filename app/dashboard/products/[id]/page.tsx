@@ -26,9 +26,41 @@ import {
 
 import { createClient } from "@/lib/supabase/client";
 
+type Product = {
+  id: string;
+  category_id: string | null;
+  name: string;
+  slug: string;
+  short_description: string | null;
+  description: string | null;
+  price: number;
+  original_price: number | null;
+  stock: number | null;
+  image_url: string | null;
+  brand: string | null;
+  rating: number | null;
+  reviews_count: number | null;
+  is_featured: boolean;
+  is_flash_sale: boolean;
+  is_active: boolean;
+};
+
+type Category = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
+type ProductImage = {
+  id: string;
+  product_id: string;
+  image_url: string;
+  display_order: number;
+};
+
 /*
 |--------------------------------------------------------------------------
-| IMAGE HELPER
+| PRODUCT IMAGE PATH
 |--------------------------------------------------------------------------
 */
 
@@ -57,56 +89,6 @@ const getProductImage = (image: string | null) => {
   return `/products/${cleanImage}`;
 };
 
-/*
-|--------------------------------------------------------------------------
-| PRODUCT TYPE
-|--------------------------------------------------------------------------
-*/
-
-type Product = {
-  id: string;
-  category_id: string | null;
-  name: string;
-  slug: string;
-  short_description: string | null;
-  description: string | null;
-  price: number;
-  original_price: number | null;
-  stock: number | null;
-  image_url: string | null;
-  brand: string | null;
-  rating: number | null;
-  reviews_count: number | null;
-  is_featured: boolean;
-  is_flash_sale: boolean;
-  is_active: boolean;
-};
-
-type Category = {
-  id: string;
-  name: string;
-  slug: string;
-};
-
-/*
-|--------------------------------------------------------------------------
-| PRODUCT IMAGE TYPE
-|--------------------------------------------------------------------------
-*/
-
-type ProductImage = {
-  id: string;
-  product_id: string;
-  image_url: string;
-  display_order: number;
-};
-
-/*
-|--------------------------------------------------------------------------
-| PAGE
-|--------------------------------------------------------------------------
-*/
-
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -116,27 +98,22 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [category, setCategory] = useState<Category | null>(null);
 
+  const [productImages, setProductImages] = useState<ProductImage[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
   const [quantity, setQuantity] = useState(1);
   const [wishlist, setWishlist] = useState(false);
 
-  /*
-  |--------------------------------------------------------------------------
-  | PRODUCT GALLERY
-  |--------------------------------------------------------------------------
-  */
-
   const [selectedImage, setSelectedImage] = useState("");
-  const [productImages, setProductImages] = useState<ProductImage[]>([]);
 
   const [addingToCart, setAddingToCart] = useState(false);
   const [buyingNow, setBuyingNow] = useState(false);
 
   /*
   |--------------------------------------------------------------------------
-  | FETCH PRODUCT
+  | FETCH PRODUCT + IMAGES + CATEGORY
   |--------------------------------------------------------------------------
   */
 
@@ -156,7 +133,7 @@ export default function ProductDetailPage() {
 
         /*
         |--------------------------------------------------------------------------
-        | FETCH MAIN PRODUCT
+        | PRODUCT
         |--------------------------------------------------------------------------
         */
 
@@ -187,86 +164,76 @@ export default function ProductDetailPage() {
 
         /*
         |--------------------------------------------------------------------------
-        | FETCH PRODUCT GALLERY IMAGES
+        | MAIN PRODUCT IMAGE FALLBACK
+        |--------------------------------------------------------------------------
+        */
+
+        const defaultProductImage = getProductImage(
+          data.image_url
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | FETCH 4 PRODUCT IMAGES
         |--------------------------------------------------------------------------
         */
 
         const {
-          data: galleryData,
-          error: galleryError,
+          data: imageData,
+          error: imageError,
         } = await supabase
           .from("product_images")
           .select(
-            "id,product_id,image_url,display_order"
+            "id, product_id, image_url, display_order"
           )
           .eq("product_id", data.id)
           .order("display_order", {
             ascending: true,
           });
 
-        console.log(
-          "PRODUCT GALLERY:",
-          galleryData
-        );
-
+        console.log("PRODUCT GALLERY:", imageData);
         console.log(
           "PRODUCT GALLERY ERROR:",
-          galleryError
+          imageError
         );
 
-        if (galleryError) {
+        if (imageError) {
           console.error(
-            "Product gallery error:",
-            galleryError
+            "PRODUCT IMAGES ERROR:",
+            imageError
           );
+        }
 
-          setProductImages([]);
+        /*
+        |--------------------------------------------------------------------------
+        | NORMALIZE IMAGES
+        |--------------------------------------------------------------------------
+        */
 
-          /*
-          |--------------------------------------------------------------------------
-          | FALLBACK TO PRODUCTS IMAGE_URL
-          |--------------------------------------------------------------------------
-          */
+        const normalizedImages: ProductImage[] =
+          (imageData || []).map((item) => ({
+            id: item.id,
+            product_id: item.product_id,
+            image_url: getProductImage(
+              item.image_url
+            ),
+            display_order: item.display_order,
+          }));
 
+        setProductImages(normalizedImages);
+
+        /*
+        |--------------------------------------------------------------------------
+        | SET FIRST IMAGE
+        |--------------------------------------------------------------------------
+        */
+
+        if (normalizedImages.length > 0) {
           setSelectedImage(
-            getProductImage(data.image_url)
+            normalizedImages[0].image_url
           );
         } else {
-          const normalizedImages: ProductImage[] =
-            (galleryData || []).map((item) => ({
-              id: String(item.id),
-              product_id: String(item.product_id),
-              image_url: getProductImage(
-                String(item.image_url || "")
-              ),
-              display_order: Number(
-                item.display_order || 1
-              ),
-            }));
-
-          setProductImages(normalizedImages);
-
-          /*
-          |--------------------------------------------------------------------------
-          | FIRST GALLERY IMAGE AS MAIN IMAGE
-          |--------------------------------------------------------------------------
-          */
-
-          if (normalizedImages.length > 0) {
-            setSelectedImage(
-              normalizedImages[0].image_url
-            );
-          } else {
-            /*
-            |--------------------------------------------------------------------------
-            | FALLBACK IF NO GALLERY IMAGE
-            |--------------------------------------------------------------------------
-            */
-
-            setSelectedImage(
-              getProductImage(data.image_url)
-            );
-          }
+          setSelectedImage(defaultProductImage);
         }
 
         /*
@@ -276,12 +243,21 @@ export default function ProductDetailPage() {
         */
 
         if (data.category_id) {
-          const { data: categoryData } =
-            await supabase
-              .from("categories")
-              .select("id,name,slug")
-              .eq("id", data.category_id)
-              .maybeSingle();
+          const {
+            data: categoryData,
+            error: categoryError,
+          } = await supabase
+            .from("categories")
+            .select("id,name,slug")
+            .eq("id", data.category_id)
+            .maybeSingle();
+
+          if (categoryError) {
+            console.error(
+              "CATEGORY ERROR:",
+              categoryError
+            );
+          }
 
           if (categoryData) {
             setCategory(
@@ -345,17 +321,18 @@ export default function ProductDetailPage() {
         {/* HEADER */}
 
         <header className="border-b border-gray-100 bg-white">
-
           <div className="mx-auto flex h-[78px] max-w-[1400px] items-center px-5">
 
-            <div className="flex items-center gap-2">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-2"
+            >
 
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#D4AF37] text-white">
                 <ShoppingCart size={24} />
               </div>
 
               <div>
-
                 <div className="text-[24px] font-black">
                   Prime
                   <span className="text-[#D4AF37]">
@@ -366,10 +343,9 @@ export default function ProductDetailPage() {
                 <div className="text-[8px] font-bold tracking-[0.2em] text-gray-400">
                   SHOP • SAVE • SMILE
                 </div>
-
               </div>
 
-            </div>
+            </Link>
 
             <div className="ml-10 hidden h-11 max-w-[650px] flex-1 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 lg:flex">
 
@@ -382,7 +358,6 @@ export default function ProductDetailPage() {
               </button>
 
               <div className="flex flex-1 items-center gap-3 px-4">
-
                 <Search
                   size={18}
                   className="text-gray-400"
@@ -391,7 +366,6 @@ export default function ProductDetailPage() {
                 <span className="text-sm text-gray-400">
                   Search for products, brands and more...
                 </span>
-
               </div>
 
               <button
@@ -405,12 +379,13 @@ export default function ProductDetailPage() {
 
             <div className="ml-auto flex items-center gap-6">
 
-              <div className="hidden items-center gap-2 md:flex">
-
+              <Link
+                href="/dashboard/profile"
+                className="hidden items-center gap-2 md:flex"
+              >
                 <User size={23} />
 
                 <div className="leading-tight">
-
                   <p className="text-[10px] text-gray-400">
                     Hello
                   </p>
@@ -418,27 +393,43 @@ export default function ProductDetailPage() {
                   <p className="text-xs font-bold">
                     Account
                   </p>
-
                 </div>
+              </Link>
 
-              </div>
-
-              <div className="relative">
-
-                <Heart size={23} />
+              <button
+                type="button"
+                onClick={() =>
+                  setWishlist((value) => !value)
+                }
+                className="relative"
+              >
+                <Heart
+                  size={23}
+                  className={
+                    wishlist
+                      ? "fill-red-500 text-red-500"
+                      : "text-gray-800"
+                  }
+                />
 
                 <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#D4AF37] text-[9px] text-white">
-                  0
+                  {wishlist ? 1 : 0}
                 </span>
+              </button>
 
-              </div>
+              <Link
+                href="/dashboard/cart"
+                className="flex items-center gap-2"
+              >
+                <div className="relative">
+                  <ShoppingCart size={24} />
 
-              <div className="flex items-center gap-2">
-
-                <ShoppingCart size={24} />
+                  <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#D4AF37] text-[9px] text-white">
+                    0
+                  </span>
+                </div>
 
                 <div className="hidden leading-tight sm:block">
-
                   <p className="text-[10px] text-gray-400">
                     Cart
                   </p>
@@ -446,15 +437,12 @@ export default function ProductDetailPage() {
                   <p className="text-xs font-bold">
                     ₹0.00
                   </p>
-
                 </div>
-
-              </div>
+              </Link>
 
             </div>
 
           </div>
-
         </header>
 
         {/* SKELETON */}
@@ -468,23 +456,15 @@ export default function ProductDetailPage() {
             <div className="h-[570px] animate-pulse rounded-2xl bg-gray-100" />
 
             <div className="space-y-5">
-
               <div className="h-5 w-32 animate-pulse rounded bg-gray-200" />
-
               <div className="h-12 w-4/5 animate-pulse rounded bg-gray-200" />
-
               <div className="h-6 w-64 animate-pulse rounded bg-gray-200" />
-
               <div className="h-12 w-72 animate-pulse rounded bg-gray-200" />
-
               <div className="h-24 w-full animate-pulse rounded bg-gray-200" />
-
               <div className="h-14 w-full animate-pulse rounded bg-gray-200" />
-
             </div>
 
           </div>
-
         </div>
 
       </main>
@@ -506,12 +486,10 @@ export default function ProductDetailPage() {
           <div className="max-w-md text-center">
 
             <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-gray-100">
-
               <ShoppingBag
                 size={42}
                 className="text-gray-400"
               />
-
             </div>
 
             <h1 className="mt-7 text-3xl font-black">
@@ -541,13 +519,38 @@ export default function ProductDetailPage() {
 
   /*
   |--------------------------------------------------------------------------
-  | MAIN PRODUCT IMAGE
+  | PRODUCT IMAGE
   |--------------------------------------------------------------------------
   */
 
   const productImage = getProductImage(
     product.image_url
   );
+
+  /*
+  |--------------------------------------------------------------------------
+  | GALLERY IMAGES
+  |--------------------------------------------------------------------------
+  |
+  | If product_images has 4 rows:
+  | image 1
+  | image 2
+  | image 3
+  | image 4
+  |
+  | If no product_images rows exist,
+  | products.image_url is used as fallback.
+  |
+  */
+
+  const galleryImages =
+    productImages.length > 0
+      ? productImages.map(
+          (item) => item.image_url
+        )
+      : productImage
+        ? [productImage]
+        : [];
 
   /*
   |--------------------------------------------------------------------------
@@ -564,7 +567,9 @@ export default function ProductDetailPage() {
 
   const stock = Number(product.stock || 0);
 
-  const rating = Number(product.rating || 4.5);
+  const rating = Number(
+    product.rating || 4.5
+  );
 
   const reviews = Number(
     product.reviews_count || 0
@@ -608,12 +613,7 @@ export default function ProductDetailPage() {
   */
 
   const handleAddToCart = () => {
-    if (
-      outOfStock ||
-      addingToCart
-    ) {
-      return;
-    }
+    if (outOfStock || addingToCart) return;
 
     setAddingToCart(true);
 
@@ -653,7 +653,8 @@ export default function ProductDetailPage() {
       brand: product.brand,
       price,
       originalPrice,
-      image_url: product.image_url,
+      image_url:
+        selectedImage || product.image_url,
       quantity,
       stock,
     };
@@ -712,11 +713,9 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="flex items-center gap-8">
-
             <span>Download App</span>
             <span>Track Order</span>
             <span>Help & Support</span>
-
           </div>
 
         </div>
@@ -745,12 +744,10 @@ export default function ProductDetailPage() {
             <div>
 
               <div className="text-[24px] font-black leading-none">
-
                 Prime
                 <span className="text-[#D4AF37]">
                   Cart
                 </span>
-
               </div>
 
               <div className="mt-1 text-[8px] font-bold tracking-[0.2em] text-gray-400">
@@ -799,7 +796,12 @@ export default function ProductDetailPage() {
 
           <div className="ml-auto flex items-center gap-5">
 
-            <div className="hidden items-center gap-2 md:flex">
+            {/* ACCOUNT */}
+
+            <Link
+              href="/dashboard/profile"
+              className="hidden items-center gap-2 md:flex"
+            >
 
               <User size={23} />
 
@@ -815,7 +817,9 @@ export default function ProductDetailPage() {
 
               </div>
 
-            </div>
+            </Link>
+
+            {/* WISHLIST */}
 
             <button
               type="button"
@@ -842,7 +846,12 @@ export default function ProductDetailPage() {
 
             </button>
 
-            <div className="flex items-center gap-2">
+            {/* CART */}
+
+            <Link
+              href="/dashboard/cart"
+              className="flex items-center gap-2 transition hover:text-[#D4AF37]"
+            >
 
               <div className="relative">
 
@@ -866,7 +875,7 @@ export default function ProductDetailPage() {
 
               </div>
 
-            </div>
+            </Link>
 
           </div>
 
@@ -938,22 +947,20 @@ export default function ProductDetailPage() {
 
             <div className="grid grid-cols-[68px_1fr] gap-4 sm:grid-cols-[78px_1fr]">
 
-              {/* =================================================
-                  THUMBNAILS
-              ================================================= */}
+              {/* THUMBNAILS */}
 
               <div className="flex flex-col gap-3">
 
-                {productImages.length > 0 ? (
-                  productImages.map(
-                    (item, index) => {
-
-                      const image =
-                        item.image_url;
-
-                      return (
+                {galleryImages.length > 0 ? (
+                  galleryImages
+                    .slice(0, 4)
+                    .map(
+                      (
+                        image,
+                        index
+                      ) => (
                         <button
-                          key={item.id}
+                          key={`${image}-${index}`}
                           type="button"
                           onClick={() =>
                             setSelectedImage(
@@ -982,29 +989,8 @@ export default function ProductDetailPage() {
                           />
 
                         </button>
-                      );
-                    }
-                  )
-                ) : productImage ? (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setSelectedImage(
-                        productImage
                       )
-                    }
-                    className="relative h-[68px] overflow-hidden rounded-xl border-2 border-[#D4AF37] bg-white sm:h-[76px]"
-                  >
-
-                    <Image
-                      src={productImage}
-                      alt={product.name}
-                      fill
-                      sizes="78px"
-                      className="object-contain p-2"
-                    />
-
-                  </button>
+                    )
                 ) : (
                   [1, 2, 3, 4].map(
                     (item) => (
@@ -1012,22 +998,40 @@ export default function ProductDetailPage() {
                         key={item}
                         className="relative flex h-[68px] items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-white sm:h-[76px]"
                       >
-
                         <ShoppingBag
                           size={25}
                           className="text-gray-300"
                         />
-
                       </div>
                     )
                   )
                 )}
 
+                {/* EMPTY BOXES IF LESS THAN 4 IMAGES */}
+
+                {galleryImages.length > 0 &&
+                  galleryImages.length < 4 &&
+                  Array.from({
+                    length:
+                      4 -
+                      galleryImages.length,
+                  }).map(
+                    (_, index) => (
+                      <div
+                        key={`empty-${index}`}
+                        className="relative flex h-[68px] items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-white sm:h-[76px]"
+                      >
+                        <ShoppingBag
+                          size={22}
+                          className="text-gray-200"
+                        />
+                      </div>
+                    )
+                  )}
+
               </div>
 
-              {/* =================================================
-                  MAIN IMAGE
-              ================================================= */}
+              {/* MAIN IMAGE */}
 
               <div className="relative h-[430px] overflow-hidden rounded-2xl border border-gray-100 bg-[#fcfcfc] sm:h-[560px]">
 
@@ -1042,6 +1046,8 @@ export default function ProductDetailPage() {
                     {discount}% OFF
                   </div>
                 )}
+
+                {/* WISHLIST */}
 
                 <button
                   type="button"
@@ -1063,6 +1069,8 @@ export default function ProductDetailPage() {
                   />
 
                 </button>
+
+                {/* MAIN PRODUCT IMAGE */}
 
                 {selectedImage ||
                 productImage ? (
@@ -1146,7 +1154,9 @@ export default function ProductDetailPage() {
                       size={17}
                       className={
                         star <=
-                        Math.round(rating)
+                        Math.round(
+                          rating
+                        )
                           ? "fill-[#E5A900] text-[#E5A900]"
                           : "text-gray-300"
                       }
@@ -1169,11 +1179,8 @@ export default function ProductDetailPage() {
               </span>
 
               <span className="flex items-center gap-1 text-sm font-bold text-[#C39B25]">
-
                 <Check size={15} />
-
                 Genuine Product
-
               </span>
 
               {product.is_featured && (
@@ -1193,11 +1200,15 @@ export default function ProductDetailPage() {
               <div className="flex flex-wrap items-center gap-3">
 
                 <span className="text-3xl font-black sm:text-[38px]">
-                  ₹{price.toLocaleString("en-IN")}
+                  ₹
+                  {price.toLocaleString(
+                    "en-IN"
+                  )}
                 </span>
 
                 {originalPrice &&
-                  originalPrice > price && (
+                  originalPrice >
+                    price && (
                     <>
                       <span className="text-lg text-gray-400 line-through">
                         ₹
@@ -1233,12 +1244,10 @@ export default function ProductDetailPage() {
                 <div className="flex items-center gap-3 border-b border-gray-100 px-4 py-3.5">
 
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFF7DD]">
-
                     <Zap
                       size={15}
                       className="text-[#D4AF37]"
                     />
-
                   </div>
 
                   <div className="flex-1">
@@ -1263,12 +1272,10 @@ export default function ProductDetailPage() {
                 <div className="flex items-center gap-3 px-4 py-3.5">
 
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFF7DD]">
-
                     <ShoppingBag
                       size={15}
                       className="text-[#D4AF37]"
                     />
-
                   </div>
 
                   <div className="flex-1">
@@ -1327,7 +1334,9 @@ export default function ProductDetailPage() {
                   onClick={
                     decreaseQuantity
                   }
-                  disabled={quantity <= 1}
+                  disabled={
+                    quantity <= 1
+                  }
                   className="flex h-full w-9 items-center justify-center hover:bg-gray-50 disabled:opacity-30"
                 >
                   <Minus size={16} />
@@ -1366,9 +1375,7 @@ export default function ProductDetailPage() {
                 className="flex h-12 items-center justify-center gap-2 rounded-xl border-2 border-[#D4AF37] bg-white font-black text-[#B28B18] transition hover:bg-[#D4AF37] hover:text-white disabled:bg-gray-100 disabled:text-gray-400"
               >
 
-                <ShoppingCart
-                  size={19}
-                />
+                <ShoppingCart size={19} />
 
                 {addingToCart
                   ? "Adding..."
@@ -1390,9 +1397,7 @@ export default function ProductDetailPage() {
                 className="flex h-12 items-center justify-center gap-2 rounded-xl bg-[#D4AF37] font-black text-white transition hover:bg-black disabled:bg-gray-300"
               >
 
-                <ShoppingBag
-                  size={19}
-                />
+                <ShoppingBag size={19} />
 
                 {buyingNow
                   ? "Processing..."
@@ -1551,7 +1556,10 @@ export default function ProductDetailPage() {
                   </span>
 
                   <span className="text-sm font-bold">
-                    {rating.toFixed(1)} / 5
+                    {rating.toFixed(
+                      1
+                    )}{" "}
+                    / 5
                   </span>
 
                 </div>
