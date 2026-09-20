@@ -54,6 +54,7 @@ type Category = {
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
+
   const productId = String(params?.id || "");
 
   const [product, setProduct] = useState<Product | null>(null);
@@ -64,7 +65,8 @@ export default function ProductDetailPage() {
 
   const [quantity, setQuantity] = useState(1);
   const [wishlist, setWishlist] = useState(false);
-  const [selectedColor, setSelectedColor] = useState("Black");
+
+  const [selectedImage, setSelectedImage] = useState("");
 
   const [addingToCart, setAddingToCart] = useState(false);
   const [buyingNow, setBuyingNow] = useState(false);
@@ -113,6 +115,31 @@ export default function ProductDetailPage() {
         }
 
         setProduct(data as Product);
+
+        /*
+        |--------------------------------------------------------------------------
+        | SET DEFAULT IMAGE
+        |--------------------------------------------------------------------------
+        */
+
+        if (data.image_url) {
+          const image = String(data.image_url).trim();
+
+          if (
+            image.startsWith("http://") ||
+            image.startsWith("https://")
+          ) {
+            setSelectedImage(image);
+          } else if (image.startsWith("/products/")) {
+            setSelectedImage(image);
+          } else if (image.startsWith("/")) {
+            setSelectedImage(`/products${image}`);
+          } else {
+            setSelectedImage(`/products/${image}`);
+          }
+        } else {
+          setSelectedImage("");
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -195,7 +222,10 @@ export default function ProductDetailPage() {
 
             <div className="ml-10 hidden h-11 flex-1 max-w-[650px] overflow-hidden rounded-xl border border-gray-200 bg-gray-50 lg:flex">
 
-              <button className="flex items-center gap-2 border-r border-gray-200 px-4 text-sm font-semibold">
+              <button
+                type="button"
+                className="flex items-center gap-2 border-r border-gray-200 px-4 text-sm font-semibold"
+              >
                 All Categories
                 <ChevronDown size={15} />
               </button>
@@ -208,7 +238,10 @@ export default function ProductDetailPage() {
                 </span>
               </div>
 
-              <button className="flex w-12 items-center justify-center bg-[#D4AF37] text-white">
+              <button
+                type="button"
+                className="flex w-12 items-center justify-center bg-[#D4AF37] text-white"
+              >
                 <Search size={19} />
               </button>
             </div>
@@ -326,13 +359,6 @@ export default function ProductDetailPage() {
   |--------------------------------------------------------------------------
   | PRODUCT IMAGE PATH
   |--------------------------------------------------------------------------
-  |
-  | DB example:
-  | wireless-headphones.png
-  |
-  | Actual file:
-  | public/products/wireless-headphones.png
-  |
   */
 
   const getProductImage = (image: string | null) => {
@@ -342,7 +368,6 @@ export default function ProductDetailPage() {
 
     if (!cleanImage) return "";
 
-    // Full external URL
     if (
       cleanImage.startsWith("http://") ||
       cleanImage.startsWith("https://")
@@ -350,21 +375,38 @@ export default function ProductDetailPage() {
       return cleanImage;
     }
 
-    // Already correct path
     if (cleanImage.startsWith("/products/")) {
       return cleanImage;
     }
 
-    // If DB contains /filename.png
     if (cleanImage.startsWith("/")) {
       return `/products${cleanImage}`;
     }
 
-    // DB contains only filename
     return `/products/${cleanImage}`;
   };
 
   const productImage = getProductImage(product.image_url);
+
+  /*
+  |--------------------------------------------------------------------------
+  | PRODUCT IMAGES
+  |--------------------------------------------------------------------------
+  |
+  | Current DB has one image_url column.
+  | Therefore all four thumbnails use the same product image.
+  | All four are still clickable.
+  |
+  */
+
+  const productImages = productImage
+    ? [
+        productImage,
+        productImage,
+        productImage,
+        productImage,
+      ]
+    : [];
 
   /*
   |--------------------------------------------------------------------------
@@ -428,7 +470,6 @@ export default function ProductDetailPage() {
       name: product.name,
       price,
       quantity,
-      color: selectedColor,
     });
 
     setTimeout(() => {
@@ -456,7 +497,6 @@ export default function ProductDetailPage() {
       originalPrice,
       image_url: product.image_url,
       quantity,
-      color: selectedColor,
       stock,
     };
 
@@ -714,74 +754,41 @@ export default function ProductDetailPage() {
 
               <div className="flex flex-col gap-3">
 
-                {/* THUMBNAIL 1 */}
-
-                <div className="relative h-[68px] overflow-hidden rounded-xl border-2 border-[#D4AF37] bg-white sm:h-[76px]">
-
-                  {productImage ? (
-                    <Image
-                      src={productImage}
-                      alt={product.name}
-                      fill
-                      sizes="78px"
-                      className="object-contain p-2"
-                    />
-                  ) : (
-                    <ShoppingBag
-                      size={25}
-                      className="absolute inset-0 m-auto text-gray-300"
-                    />
-                  )}
-
-                </div>
-
-                {/* THUMBNAIL 2 */}
-
-                <div className="relative h-[68px] overflow-hidden rounded-xl border border-gray-200 bg-white sm:h-[76px]">
-
-                  {productImage ? (
-                    <Image
-                      src={productImage}
-                      alt={product.name}
-                      fill
-                      sizes="78px"
-                      className="object-contain p-2"
-                    />
-                  ) : null}
-
-                </div>
-
-                {/* THUMBNAIL 3 */}
-
-                <div className="relative h-[68px] overflow-hidden rounded-xl border border-gray-200 bg-white sm:h-[76px]">
-
-                  {productImage ? (
-                    <Image
-                      src={productImage}
-                      alt={product.name}
-                      fill
-                      sizes="78px"
-                      className="object-contain p-2"
-                    />
-                  ) : null}
-
-                </div>
-
-                {/* THUMBNAIL 4 */}
-
-                <div className="relative h-[68px] overflow-hidden rounded-xl border border-gray-200 bg-white sm:h-[76px]">
-
-                  {productImage ? (
-                    <Image
-                      src={productImage}
-                      alt={product.name}
-                      fill
-                      sizes="78px"
-                      className="object-contain p-2"
-                    />
-                  ) : null}
-
-                </div>
+                {productImages.length > 0 ? (
+                  productImages.map((image, index) => (
+                    <button
+                      key={`${image}-${index}`}
+                      type="button"
+                      onClick={() => setSelectedImage(image)}
+                      aria-label={`View product image ${index + 1}`}
+                      className={`relative h-[68px] overflow-hidden rounded-xl bg-white transition sm:h-[76px] ${
+                        selectedImage === image
+                          ? "border-2 border-[#D4AF37] shadow-sm"
+                          : "border border-gray-200 hover:border-[#D4AF37]"
+                      }`}
+                    >
+                      <Image
+                        src={image}
+                        alt={`${product.name} image ${index + 1}`}
+                        fill
+                        sizes="78px"
+                        className="object-contain p-2"
+                      />
+                    </button>
+                  ))
+                ) : (
+                  [1, 2, 3, 4].map((item) => (
+                    <div
+                      key={item}
+                      className="relative flex h-[68px] items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-white sm:h-[76px]"
+                    >
+                      <ShoppingBag
+                        size={25}
+                        className="text-gray-300"
+                      />
+                    </div>
+                  ))
+                )}
 
               </div>
 
@@ -818,9 +825,9 @@ export default function ProductDetailPage() {
                   />
                 </button>
 
-                {productImage ? (
+                {selectedImage || productImage ? (
                   <Image
-                    src={productImage}
+                    src={selectedImage || productImage}
                     alt={product.name}
                     fill
                     priority
@@ -1024,59 +1031,6 @@ export default function ProductDetailPage() {
                   />
 
                 </div>
-
-              </div>
-
-            </div>
-
-            {/* COLOR */}
-
-            <div className="mt-6">
-
-              <p className="text-sm font-black">
-                Color:{" "}
-                <span className="font-normal text-gray-500">
-                  {selectedColor}
-                </span>
-              </p>
-
-              <div className="mt-3 flex gap-3">
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setSelectedColor("Black")
-                  }
-                  className={`h-10 w-10 rounded-full border-4 bg-black ${
-                    selectedColor === "Black"
-                      ? "border-[#D4AF37] ring-2 ring-[#D4AF37]/20"
-                      : "border-white shadow ring-1 ring-gray-200"
-                  }`}
-                />
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setSelectedColor("Red")
-                  }
-                  className={`h-10 w-10 rounded-full border-4 bg-red-500 ${
-                    selectedColor === "Red"
-                      ? "border-[#D4AF37] ring-2 ring-[#D4AF37]/20"
-                      : "border-white shadow ring-1 ring-gray-200"
-                  }`}
-                />
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setSelectedColor("Gold")
-                  }
-                  className={`h-10 w-10 rounded-full border-4 bg-[#D4AF37] ${
-                    selectedColor === "Gold"
-                      ? "border-black ring-2 ring-[#D4AF37]/20"
-                      : "border-white shadow ring-1 ring-gray-200"
-                  }`}
-                />
 
               </div>
 
