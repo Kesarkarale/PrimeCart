@@ -53,7 +53,7 @@ type Category = {
 
 export default function ProductDetailPage() {
   const params = useParams();
-const router = useRouter();
+  const router = useRouter();
   const productId = String(params?.id || "");
 
   const [product, setProduct] = useState<Product | null>(null);
@@ -309,7 +309,7 @@ const router = useRouter();
             </p>
 
             <Link
-              href="/dashboard/product"
+              href="/dashboard/products"
               className="mt-7 inline-flex h-12 items-center gap-2 rounded-xl bg-[#D4AF37] px-7 font-bold text-white hover:bg-black"
             >
               <ArrowLeft size={18} />
@@ -321,6 +321,50 @@ const router = useRouter();
       </main>
     );
   }
+
+  /*
+  |--------------------------------------------------------------------------
+  | PRODUCT IMAGE PATH
+  |--------------------------------------------------------------------------
+  |
+  | DB example:
+  | wireless-headphones.png
+  |
+  | Actual file:
+  | public/products/wireless-headphones.png
+  |
+  */
+
+  const getProductImage = (image: string | null) => {
+    if (!image) return "";
+
+    const cleanImage = image.trim();
+
+    if (!cleanImage) return "";
+
+    // Full external URL
+    if (
+      cleanImage.startsWith("http://") ||
+      cleanImage.startsWith("https://")
+    ) {
+      return cleanImage;
+    }
+
+    // Already correct path
+    if (cleanImage.startsWith("/products/")) {
+      return cleanImage;
+    }
+
+    // If DB contains /filename.png
+    if (cleanImage.startsWith("/")) {
+      return `/products${cleanImage}`;
+    }
+
+    // DB contains only filename
+    return `/products/${cleanImage}`;
+  };
+
+  const productImage = getProductImage(product.image_url);
 
   /*
   |--------------------------------------------------------------------------
@@ -399,35 +443,35 @@ const router = useRouter();
   */
 
   const handleBuyNow = () => {
-  if (outOfStock || buyingNow || !product) return;
+    if (outOfStock || buyingNow || !product) return;
 
-  setBuyingNow(true);
+    setBuyingNow(true);
 
-  const buyNowProduct = {
-    id: product.id,
-    name: product.name,
-    slug: product.slug,
-    brand: product.brand,
-    price,
-    originalPrice,
-    image_url: product.image_url,
-    quantity,
-    color: selectedColor,
-    stock,
+    const buyNowProduct = {
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      brand: product.brand,
+      price,
+      originalPrice,
+      image_url: product.image_url,
+      quantity,
+      color: selectedColor,
+      stock,
+    };
+
+    try {
+      localStorage.setItem(
+        "primecart_buy_now",
+        JSON.stringify(buyNowProduct)
+      );
+
+      router.push("/dashboard/checkout");
+    } catch (error) {
+      console.error("Buy Now error:", error);
+      setBuyingNow(false);
+    }
   };
-
-  try {
-    localStorage.setItem(
-      "primecart_buy_now",
-      JSON.stringify(buyNowProduct)
-    );
-
-    router.push("/dashboard/checkout");
-  } catch (error) {
-    console.error("Buy Now error:", error);
-    setBuyingNow(false);
-  }
-};
 
   /*
   |--------------------------------------------------------------------------
@@ -670,11 +714,13 @@ const router = useRouter();
 
               <div className="flex flex-col gap-3">
 
+                {/* THUMBNAIL 1 */}
+
                 <div className="relative h-[68px] overflow-hidden rounded-xl border-2 border-[#D4AF37] bg-white sm:h-[76px]">
 
-                  {product.image_url ? (
+                  {productImage ? (
                     <Image
-                      src={product.image_url}
+                      src={productImage}
                       alt={product.name}
                       fill
                       sizes="78px"
@@ -689,11 +735,13 @@ const router = useRouter();
 
                 </div>
 
+                {/* THUMBNAIL 2 */}
+
                 <div className="relative h-[68px] overflow-hidden rounded-xl border border-gray-200 bg-white sm:h-[76px]">
 
-                  {product.image_url ? (
+                  {productImage ? (
                     <Image
-                      src={product.image_url}
+                      src={productImage}
                       alt={product.name}
                       fill
                       sizes="78px"
@@ -703,11 +751,13 @@ const router = useRouter();
 
                 </div>
 
+                {/* THUMBNAIL 3 */}
+
                 <div className="relative h-[68px] overflow-hidden rounded-xl border border-gray-200 bg-white sm:h-[76px]">
 
-                  {product.image_url ? (
+                  {productImage ? (
                     <Image
-                      src={product.image_url}
+                      src={productImage}
                       alt={product.name}
                       fill
                       sizes="78px"
@@ -717,11 +767,13 @@ const router = useRouter();
 
                 </div>
 
+                {/* THUMBNAIL 4 */}
+
                 <div className="relative h-[68px] overflow-hidden rounded-xl border border-gray-200 bg-white sm:h-[76px]">
 
-                  {product.image_url ? (
+                  {productImage ? (
                     <Image
-                      src={product.image_url}
+                      src={productImage}
                       alt={product.name}
                       fill
                       sizes="78px"
@@ -766,9 +818,9 @@ const router = useRouter();
                   />
                 </button>
 
-                {product.image_url ? (
+                {productImage ? (
                   <Image
-                    src={product.image_url}
+                    src={productImage}
                     alt={product.name}
                     fill
                     priority
